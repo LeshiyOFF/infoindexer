@@ -1,58 +1,64 @@
 # Security Checklist
 
-## Текущее состояние (Итерация 1)
+## Текущее состояние (После Итерации 2)
 
-| Компонент | Статус | Действие |
-|-----------|--------|----------|
-| SSH ключи | ✅ | Создан через `setup-server.sh` |
-| Deploy пользователь | ✅ | Создан с доступом к docker |
+| Компонент | Статус | Детали |
+|-----------|--------|--------|
+| SSH ключи | ✅ | Deploy ключ активен |
+| Deploy пользователь | ❌ | Не создан (используется root с ключом) |
 | GitHub Secrets | ⚠️ | Нужно добавить вручную |
-| SSH password auth | ⚠️ | Всё ещё включён |
-| Firewall | ❌ | Не настроен |
-| Fail2Ban | ❌ | Не установлен |
+| SSH password auth | ✅ **ОТКЛЮЧЁН** | Только ключи |
+| PermitRootLogin | ✅ | prohibit-password (только ключ) |
+| Firewall | ✅ **АКТИВЕН** | UFW: 22, 80, 443 |
+| Fail2Ban | ✅ **АКТИВЕН** | SSH jail: 3 попытки → бан 24ч |
 
-## Итерация 2 (Server Hardening)
+## Итерация 2: Выполнено
 
-### SSH Security
+### ✅ SSH Security
 
-**Файл:** `/etc/ssh/sshd_config`
-
+**Файл:** `/etc/ssh/sshd_config.d/security.conf`
 ```bash
-# Отключить парольную аутентификацию
-PasswordAuthentication no
-PermitRootLogin prohibit-password
-
-# Опционально: сменить порт
-# Port 2222
+PasswordAuthentication no      # ✅ Отключено
+PermitRootLogin prohibit-password  # ✅ Только ключ
+PubkeyAuthentication yes        # ✅ Включено
+KbdInteractiveAuthentication no # ✅ Отключено
 ```
 
-### Firewall (UFW)
+### ✅ Firewall (UFW)
 
 ```bash
-# Разрешить SSH
-ufw allow 22/tcp
-
-# Разрешить HTTP/HTTPS
-ufw allow 80/tcp
-ufw allow 443/tcp
-
-# Заблокировать остальное
-ufw default deny incoming
-ufw enable
+Status: active
+22/tcp   ALLOW  # SSH
+80/tcp   ALLOW  # HTTP
+443/tcp  ALLOW  # HTTPS
+Default: deny incoming
 ```
 
-### Fail2Ban
+### ✅ Fail2Ban
 
 ```bash
-# Установить
-apt install fail2ban
+Jail: sshd
+- MaxRetry: 3
+- BanTime: 24h
+- FindTime: 10m
+Status: Active
+```
 
-# Настроить SSH jail
-[sshd]
-enabled = true
-port = 22
-maxretry = 5
-bantime = 1h
+### ✅ Monitoring
+
+```bash
+/usr/local/bin/server-health.sh  # Health check скрипт
+/etc/logrotate.d/docker-compose  # Log rotation
+```
+
+### ✅ Backups
+
+```
+/root/backup/
+├── sshd_config.backup-YYYYMMDD
+├── passwd
+├── shadow
+└── packages-list.txt
 ```
 
 ## Best Practices
@@ -62,7 +68,7 @@ bantime = 1h
 ✅ **DO:**
 - Хранить секреты в GitHub Secrets
 - Использовать разные пароли для сервисов
-- ротировать ключи регулярно
+- Ротировать ключи регулярно
 
 ❌ **DON'T:**
 - Коммитить `.env` файлы
@@ -71,21 +77,20 @@ bantime = 1h
 
 ### SSH Access
 
-✅ **DO:**
-- Использовать SSH ключи (ed25519)
-- Отключить password auth
-- Ограничить пользователей
+✅ **IN USE:**
+- SSH ключи (ed25519)
+- Отключен password auth
+- Root только с ключом
 
-❌ **DON'T:**
-- Разрешать root login с паролем
-- Использовать один ключ для всего
+❌ **BLOCKED:**
+- Парольная аутентификация
+- Keyboard-interactive
 
 ### Docker Security
 
 ✅ **DO:**
-- Запускать от непривилегированного пользователя
-- Использовать `--read-only` где возможно
 - Ограничивать ресурсы
+- Использовать специфичные образы
 
 ```yaml
 deploy:
@@ -95,9 +100,8 @@ deploy:
 ```
 
 ❌ **DON'T:**
-- Запускать как root
+- Запускать как root (когда возможно)
 - Использовать `--privileged`
-- Забывать обновлять образы
 
 ## Monitoring
 
@@ -109,6 +113,9 @@ docker compose logs -f
 
 # Системные логи
 journalctl -u docker -f
+
+# Auth логи (для Fail2Ban)
+grep "Failed password" /var/log/auth.log
 ```
 
 ### Аудит
@@ -117,17 +124,36 @@ journalctl -u docker -f
 # Кто подключался по SSH
 last
 
-# Failed login attempts
-grep "Failed password" /var/log/auth.log
+# Fail2Ban статус
+fail2ban-client status sshd
+
+# Firewall статус
+ufw status verbose
 ```
+
+## Rollback Commands
+
+| Проблема | Команда |
+|----------|---------|
+| SSH не работает | `cp /root/backup/sshd_config.backup-* /etc/ssh/sshd_config && systemctl restart sshd` |
+| Firewall блокирует | `ufw --force disable` |
+| Fail2Ban банит | `fail2ban-client set sshd unbanip IP` |
+| Полный откат | Восстановить из `/root/backup/` |
 
 ## Checklist перед продом
 
-- [ ] Все секреты в GitHub Secrets
-- [ ] SSH ключи добавлены
+- [x] SSH password auth отключён
+- [x] Firewall активен (UFW)
+- [x] Fail2Ban настроен
+- [x] Бэкапы созданы
+- [ ] GitHub Secrets добавлены (DEPLOY_SSH_KEY, SERVER_HOST, SERVER_USER)
 - [ ] `.env` файл настроен на сервере
-- [ ] Docker образы приватные
-- [ ] Firewall включён
-- [ ] Fail2Ban настроен
-- [ ] Логи настроены
-- [ ] Backup стратегия
+- [ ] Первый деплой выполнен
+- [ ] Health check работает
+
+## Следующие шаги
+
+1. Добавить `DEPLOY_SSH_KEY` в GitHub Secrets (публичный ключ: `~/.ssh/server_deploy.pub`)
+2. Настроить `.env` на сервере
+3. Первый деплой через GitHub Actions
+4. Проверить что всё работает
