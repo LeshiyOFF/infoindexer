@@ -9,6 +9,4 @@ export declare const PROGRESS_MAJOR_REPORT_INTERVAL = 500000;
 export declare const ENRICHMENT_BATCH_SIZE = 100;
 export declare const ENRICHMENT_MAX_DISTANCE = 3;
 export declare const ENRICHMENT_MIN_CONFIDENCE = 0.7;
-export declare const DADATA_REQUEST_TIMEOUT = 5000;
-export declare const ENRICHMENT_PARALLEL_REQUESTS = 5;
 export declare const ENRICHMENT_RATE_LIMIT_DELAY = 100;

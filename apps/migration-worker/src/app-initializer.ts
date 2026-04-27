@@ -57,14 +57,37 @@ export interface AppDependencies {
  * - Создаёт миграционный сервис
  */
 export async function initializeApp(): Promise<AppDependencies> {
-  // Создаём ClickHouse клиент
+  const targetDatabase = process.env.CLICKHOUSE_DB || 'infoindexer';
+
+  // Создаём ClickHouse клиент (сначала к default для создания базы)
   const clickhouseClient = createClient({
     url: process.env.CLICKHOUSE_SECURE === 'true'
       ? `https://${process.env.CLICKHOUSE_HOST || 'localhost'}:8443`
       : `http://${process.env.CLICKHOUSE_HOST || 'localhost'}:8123`,
     username: process.env.CLICKHOUSE_USER || 'default',
     password: process.env.CLICKHOUSE_PASSWORD || '',
-    database: process.env.CLICKHOUSE_DB || 'default',
+    database: 'default',
+    request_timeout: 30000,
+    compression: {
+      response: true,
+      request: true
+    }
+  });
+
+  // Создаём базу данных если не существует
+  await clickhouseClient.query({
+    query: `CREATE DATABASE IF NOT EXISTS ${targetDatabase}`
+  });
+
+  // Переключаемся на целевую базу
+  await clickhouseClient.close();
+  const dbClient = createClient({
+    url: process.env.CLICKHOUSE_SECURE === 'true'
+      ? `https://${process.env.CLICKHOUSE_HOST || 'localhost'}:8443`
+      : `http://${process.env.CLICKHOUSE_HOST || 'localhost'}:8123`,
+    username: process.env.CLICKHOUSE_USER || 'default',
+    password: process.env.CLICKHOUSE_PASSWORD || '',
+    database: targetDatabase,
     request_timeout: 30000,
     compression: {
       response: true,
@@ -87,7 +110,7 @@ export async function initializeApp(): Promise<AppDependencies> {
   const distributedLock = new RedisDistributedLockAdapter(redisClient);
 
   // Создаём migration runner (для cleanup и других операций)
-  const migrationRunner = createClickHouseMigrationAdapter(clickhouseClient);
+  const migrationRunner = createClickHouseMigrationAdapter(dbClient);
 
   // Путь к директории с миграциями
   const migrationsBaseDir = process.env.MIGRATIONS_BASE_DIR ||
@@ -95,7 +118,7 @@ export async function initializeApp(): Promise<AppDependencies> {
 
   // Создаём миграционный сервис
   const migrationOrchestrator = createUnifiedMigrationOrchestrator({
-    clickhouseClient,
+    clickhouseClient: dbClient,
     redisClient,
     migrationsBaseDir
   });
@@ -103,7 +126,7 @@ export async function initializeApp(): Promise<AppDependencies> {
   return {
     migrationOrchestrator,
     migrationRunner,
-    clickhouseClient,
+    clickhouseClient: dbClient,
     redisClient,
     distributedLock
   };

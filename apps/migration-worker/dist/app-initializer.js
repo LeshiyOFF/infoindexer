@@ -28,14 +28,34 @@ const migrations_1 = require("shared/infrastructure/migrations");
  * - Создаёт миграционный сервис
  */
 async function initializeApp() {
-    // Создаём ClickHouse клиент
+    const targetDatabase = process.env.CLICKHOUSE_DB || 'infoindexer';
+    // Создаём ClickHouse клиент (сначала к default для создания базы)
     const clickhouseClient = (0, client_1.createClient)({
         url: process.env.CLICKHOUSE_SECURE === 'true'
             ? `https://${process.env.CLICKHOUSE_HOST || 'localhost'}:8443`
             : `http://${process.env.CLICKHOUSE_HOST || 'localhost'}:8123`,
         username: process.env.CLICKHOUSE_USER || 'default',
         password: process.env.CLICKHOUSE_PASSWORD || '',
-        database: process.env.CLICKHOUSE_DB || 'default',
+        database: 'default',
+        request_timeout: 30000,
+        compression: {
+            response: true,
+            request: true
+        }
+    });
+    // Создаём базу данных если не существует
+    await clickhouseClient.query({
+        query: `CREATE DATABASE IF NOT EXISTS ${targetDatabase}`
+    });
+    // Переключаемся на целевую базу
+    await clickhouseClient.close();
+    const dbClient = (0, client_1.createClient)({
+        url: process.env.CLICKHOUSE_SECURE === 'true'
+            ? `https://${process.env.CLICKHOUSE_HOST || 'localhost'}:8443`
+            : `http://${process.env.CLICKHOUSE_HOST || 'localhost'}:8123`,
+        username: process.env.CLICKHOUSE_USER || 'default',
+        password: process.env.CLICKHOUSE_PASSWORD || '',
+        database: targetDatabase,
         request_timeout: 30000,
         compression: {
             response: true,
@@ -56,20 +76,20 @@ async function initializeApp() {
     // Создаём distributed lock
     const distributedLock = new migrations_1.RedisDistributedLockAdapter(redisClient);
     // Создаём migration runner (для cleanup и других операций)
-    const migrationRunner = (0, migrations_1.createClickHouseMigrationAdapter)(clickhouseClient);
+    const migrationRunner = (0, migrations_1.createClickHouseMigrationAdapter)(dbClient);
     // Путь к директории с миграциями
     const migrationsBaseDir = process.env.MIGRATIONS_BASE_DIR ||
         '/app/packages/shared/infrastructure/migrations/files';
     // Создаём миграционный сервис
     const migrationOrchestrator = (0, migrations_1.createUnifiedMigrationOrchestrator)({
-        clickhouseClient,
+        clickhouseClient: dbClient,
         redisClient,
         migrationsBaseDir
     });
     return {
         migrationOrchestrator,
         migrationRunner,
-        clickhouseClient,
+        clickhouseClient: dbClient,
         redisClient,
         distributedLock
     };

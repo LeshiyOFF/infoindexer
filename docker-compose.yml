@@ -24,7 +24,7 @@ x-common: &common
       condition: service_healthy
   environment:
     - CLICKHOUSE_HOST=clickhouse
-    - CLICKHOUSE_DB=default
+    - CLICKHOUSE_DB=infoindexer
     - CLICKHOUSE_USER=default
     - CLICKHOUSE_PASSWORD=
     - CLICKHOUSE_SECURE=${CLICKHOUSE_SECURE:-}
@@ -48,7 +48,7 @@ services:
         reservations:
           memory: 2G
     environment:
-      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_DB=infoindexer
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASSWORD=
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
@@ -105,7 +105,7 @@ services:
     command: node apps/migration-worker/dist/index.js
     environment:
       - CLICKHOUSE_HOST=clickhouse
-      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_DB=infoindexer
       - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASSWORD=
       - CLICKHOUSE_SECURE=${CLICKHOUSE_SECURE:-}
