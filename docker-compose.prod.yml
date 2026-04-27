@@ -40,6 +40,7 @@ services:
     command: ["node", "apps/migration-worker/dist/index.js"]
     environment:
       - NODE_ENV=production
+      - CLICKHOUSE_DB=infoindexer
       - MIGRATIONS_BASE_DIR=/app/packages/shared/infrastructure/migrations/files
       - MIGRATION_MODE=once
       - MIGRATION_AUTO_CLEANUP=${MIGRATION_AUTO_CLEANUP:-false}
