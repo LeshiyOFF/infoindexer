@@ -52,7 +52,7 @@ wait_for_clickhouse() {
   while [[ $retries -lt $MAX_RETRIES ]]; do
     if clickhouse-client \
       --host "$CLICKHOUSE_HOST" \
-      --port "$CLICKHOUSE_HTTP_PORT" \
+      --port "$CLICKHOUSE_PORT" \
       --user "$CLICKHOUSE_USER" \
       --password "$CLICKHOUSE_PASSWORD" \
       --query "SELECT 1" &>/dev/null; then
@@ -78,7 +78,7 @@ create_database() {
 
   clickhouse-client \
     --host "$CLICKHOUSE_HOST" \
-    --port "$CLICKHOUSE_HTTP_PORT" \
+    --port "$CLICKHOUSE_PORT" \
     --user "$CLICKHOUSE_USER" \
     --password "$CLICKHOUSE_PASSWORD" \
     --multiquery \
@@ -93,7 +93,7 @@ verify_database() {
   local result
   result=$(clickhouse-client \
     --host "$CLICKHOUSE_HOST" \
-    --port "$CLICKHOUSE_HTTP_PORT" \
+    --port "$CLICKHOUSE_PORT" \
     --user "$CLICKHOUSE_USER" \
     --password "$CLICKHOUSE_PASSWORD" \
     --format "TSV" \
@@ -115,7 +115,7 @@ verify_database() {
 main() {
   log_info "Starting ClickHouse database initialization..."
   log_info "Target database: $DATABASE"
-  log_info "ClickHouse host: $CLICKHOUSE_HOST:$CLICKHOUSE_HTTP_PORT"
+  log_info "ClickHouse host: $CLICKHOUSE_HOST:$CLICKHOUSE_PORT (native protocol)"
 
   # Step 1: Wait for ClickHouse
   if ! wait_for_clickhouse; then
