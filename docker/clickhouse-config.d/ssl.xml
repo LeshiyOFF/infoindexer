@@ -1,0 +1,53 @@
+<!--
+  ClickHouse SSL/TLS Configuration
+
+  @remarks
+  Enables TLS encryption for ClickHouse HTTP interface.
+  Part of Iteration 9: TLS/SSL + Certificates.
+  See: PLAN_NADEZHNOSTI_BD.md
+
+  Architecture:
+  - Server certificates are mounted from /etc/clickhouse-server/certs
+  - Client verification is disabled for development (verificationMode=none)
+  - Production should use verificationMode=strict
+
+  Files required:
+  - server-cert.pem  Server certificate (public)
+  - server-key.pem   Server private key (SECRET)
+  - ca-cert.pem      CA certificate (public)
+
+  Port mapping:
+  - HTTP:  8123 (default)
+  - HTTPS: 8443 (TLS)
+-->
+<clickhouse>
+  <openSSL>
+    <server>
+      <!-- Server certificate (public key) -->
+      <certificateFile>/etc/clickhouse-server/certs/server-cert.pem</certificateFile>
+
+      <!-- Server private key (SECRET) -->
+      <privateKeyFile>/etc/clickhouse-server/certs/server-key.pem</privateKeyFile>
+
+      <!-- CA certificate for client verification -->
+      <caConfig>/etc/clickhouse-server/certs/ca-cert.pem</caConfig>
+
+      <!-- Verification mode:
+           - none:       Don't verify clients (development)
+           - relaxed:    Verify if client provides cert
+           - strict:     Require client certificate (production)
+           - once:       Verify only on first connection
+      -->
+      <verificationMode>none</verificationMode>
+
+      <!-- Don't load system CA (use only our CA) -->
+      <loadDefaultCAFile>false</loadDefaultCAFile>
+
+      <!-- TLS protocol version (minimum) -->
+      <protocol>TLSv1.2</protocol>
+    </server>
+  </openSSL>
+
+  <!-- Enable HTTPS interface on port 8443 -->
+  <https_port>8443</https_port>
+</clickhouse>

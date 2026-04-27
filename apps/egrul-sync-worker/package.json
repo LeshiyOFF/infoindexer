@@ -1,0 +1,32 @@
+{
+  "name": "egrul-sync-worker",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon --watch src -e ts --exec ts-node src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@clickhouse/client": "^1.0.1",
+    "axios": "^1.13.6",
+    "duckdb": "^1.4.4",
+    "ioredis": "^5.3.2",
+    "shared": "*",
+    "socks-proxy-agent": "^8.0.5",
+    "stream-chain": "^3.0.0",
+    "stream-json": "^1.8.0",
+    "unzipper": "^0.10.14"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "nodemon": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0",
+    "vitest": "^1.4.0",
+    "@vitest/coverage-v8": "^1.4.0"
+  }
+}

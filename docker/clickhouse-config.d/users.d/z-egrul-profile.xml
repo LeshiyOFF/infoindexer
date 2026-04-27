@@ -1,0 +1,16 @@
+<!--
+  Default User Settings Override
+
+  @remarks
+  Overrides default user profile from users.xml.
+  Assigns egrul_worker profile with higher memory limit for EGRUL sync queries.
+-->
+
+<clickhouse>
+  <users>
+    <default>
+      <!-- Use egrul_worker profile with 7GB memory limit -->
+      <profile>egrul_worker</profile>
+    </default>
+  </users>
+</clickhouse>

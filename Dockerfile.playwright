@@ -1,0 +1,27 @@
+# Use official Playwright image for runtime stability
+FROM mcr.microsoft.com/playwright:v1.42.1-jammy
+
+WORKDIR /app
+
+# Copy global and workspace configs
+COPY package*.json ./
+COPY packages/shared/package.json packages/shared/
+COPY apps/contacts-parser/package.json apps/contacts-parser/
+
+# Build shared and contacts-parser
+# PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: пропускаем下载 в npm ci, установим нужный browser позже
+# --ignore-scripts: postinstall пытается создать сертификаты до копирования кода
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --ignore-scripts
+
+# Copy source and build (transpile)
+COPY . .
+RUN npm run build --workspace=packages/shared
+RUN npm run build --workspace=apps/contacts-parser
+
+# Pre-install only needed browser
+RUN npx playwright install chromium
+
+# Start from compiled JS
+CMD ["node", "apps/contacts-parser/dist/index.js"]

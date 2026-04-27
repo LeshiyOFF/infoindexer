@@ -1,0 +1,41 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./client": {
+      "import": "./dist/esm/client.js",
+      "require": "./dist/cjs/client.js",
+      "types": "./dist/types/client.d.ts"
+    },
+    "./infrastructure/migrations": {
+      "import": "./dist/esm/infrastructure/migrations/index.js",
+      "require": "./dist/cjs/infrastructure/migrations/index.js",
+      "types": "./dist/types/infrastructure/migrations/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:types": "tsc -p tsconfig.types.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2",
+    "@clickhouse/client": "^1.0.1",
+    "node-vault": "^0.10.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "vitest": "^1.4.0"
+  }
+}

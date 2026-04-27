@@ -1,0 +1,47 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "ignoreDependencies": [
+    "@clickhouse/client",
+    "ioredis",
+    "duckdb",
+    "@base-ui/react",
+    "class-variance-authority",
+    "shadcn",
+    "tw-animate-css",
+    "stream-chain",
+    "stream-json",
+    "unzipper",
+    "ts-node",
+    "@types/stream-json",
+    "@types/unzipper"
+  ],
+  "ignore": [
+    "apps/admin-ui/src/components/ui/button.tsx",
+    "apps/admin-ui/src/components/ui/card.tsx",
+    "apps/admin-ui/src/components/ui/input.tsx",
+    "apps/admin-ui/src/components/ui/label.tsx",
+    "apps/admin-ui/src/components/ui/skeleton.tsx",
+    "packages/shared/dist/**",
+    "apps/admin-ui/.next/**",
+    "apps/*/dist/**",
+    "scripts/profile-api.js"
+  ],
+  "workspaces": {
+    "apps/admin-ui": {
+      "entry": ["src/app/**/{layout,page,route}.{ts,tsx}", "src/app/api/**/route.ts"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "apps/sync-worker": {
+      "project": ["src/**/*.ts"]
+    },
+    "apps/egrul-sync-worker": {
+      "project": ["src/**/*.ts"]
+    },
+    "apps/contacts-parser": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/shared": {
+      "project": ["**/*.ts"]
+    }
+  }
+}

@@ -1,0 +1,197 @@
+networks:
+  infoindexer_net:
+    driver: bridge
+
+# Anchors for DRY compose
+x-common-env: &common-env
+  CLICKHOUSE_HOST: clickhouse
+  CLICKHOUSE_USER: default
+  CLICKHOUSE_PASSWORD: ""
+  CLICKHOUSE_SECURE: ""
+  REDIS_HOST: redis
+  NODE_ENV: production
+
+x-common: &common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  networks:
+    - infoindexer_net
+  depends_on:
+    clickhouse:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  environment:
+    - CLICKHOUSE_HOST=clickhouse
+    - CLICKHOUSE_DB=default
+    - CLICKHOUSE_USER=default
+    - CLICKHOUSE_PASSWORD=
+    - CLICKHOUSE_SECURE=${CLICKHOUSE_SECURE:-}
+    - CLICKHOUSE_ADMIN_PASSWORD=${CLICKHOUSE_ADMIN_PASSWORD:-}
+    - CLICKHOUSE_WORKER_PASSWORD=${CLICKHOUSE_WORKER_PASSWORD:-}
+    - CLICKHOUSE_API_PASSWORD=${CLICKHOUSE_API_PASSWORD:-}
+    - REDIS_HOST=redis
+    - NODE_ENV=production
+  restart: unless-stopped
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    deploy:
+      # Memory limits for production: 10GB limit, 6GB guaranteed
+      # Formula: 6GB guaranteed gives ClickHouse enough for EGRUL sync queries
+      # See: docs/docker-setup.md for calculations
+      resources:
+        limits:
+          memory: 5G
+        reservations:
+          memory: 2G
+    environment:
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+      - CLICKHOUSE_ADMIN_PASSWORD=${CLICKHOUSE_ADMIN_PASSWORD:-admin123}
+      - CLICKHOUSE_WORKER_PASSWORD=${CLICKHOUSE_WORKER_PASSWORD:-worker123}
+      - CLICKHOUSE_API_PASSWORD=${CLICKHOUSE_API_PASSWORD:-api123}
+      - CLICKHOUSE_DISABLE_DEFAULT=${CLICKHOUSE_DISABLE_DEFAULT:-false}
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./docker/clickhouse-config.d/merge-tree-broken-parts.xml:/etc/clickhouse-server/config.d/merge-tree-broken-parts.xml:ro
+      - ./docker/clickhouse-config.d/ssl.xml:/etc/clickhouse-server/config.d/ssl.xml:ro
+      - ./docker/clickhouse-config.d/profiles.xml:/etc/clickhouse-server/config.d/profiles.xml:ro
+      - ./docker/clickhouse-config.d/audit-log.xml:/etc/clickhouse-server/config.d/audit-log.xml:ro
+      - ./docker/clickhouse-config.d/resource-guards.xml:/etc/clickhouse-server/config.d/resource-guards.xml:ro
+      - ./docker/clickhouse-config.d/profiles-users.xml:/etc/clickhouse-server/users.d/profiles-users.xml:ro
+      - ./docker/clickhouse-config.d/users.d/zzz-default-profile.xml:/etc/clickhouse-server/users.d/zzz-default-profile.xml:ro
+      - clickhouse_certs:/etc/clickhouse-server/certs
+    networks:
+      - infoindexer_net
+    ports:
+      - "8123:8123"
+      - "8443:8443"
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7.4-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - infoindexer_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migration-worker:
+    networks:
+      - infoindexer_net
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    build:
+      context: .
+      dockerfile: apps/migration-worker/Dockerfile
+    command: node apps/migration-worker/dist/index.js
+    environment:
+      - CLICKHOUSE_HOST=clickhouse
+      - CLICKHOUSE_DB=default
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=
+      - CLICKHOUSE_SECURE=${CLICKHOUSE_SECURE:-}
+      - CLICKHOUSE_ADMIN_PASSWORD=${CLICKHOUSE_ADMIN_PASSWORD:-}
+      - CLICKHOUSE_WORKER_PASSWORD=${CLICKHOUSE_WORKER_PASSWORD:-}
+      - CLICKHOUSE_API_PASSWORD=${CLICKHOUSE_API_PASSWORD:-}
+      - REDIS_HOST=redis
+      - NODE_ENV=production
+      - MIGRATIONS_BASE_DIR=/app/packages/shared/infrastructure/migrations/files
+      - MIGRATION_MODE=once
+      - MIGRATION_AUTO_CLEANUP=${MIGRATION_AUTO_CLEANUP:-false}
+    restart: "no"
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /tmp/migrations-completed && grep -q '\"success\":true' /tmp/migrations-completed || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 1
+      start_period: 10s
+
+  sync-worker:
+    <<: *common
+    command: node apps/sync-worker/dist/index.js
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migration-worker:
+        condition: service_completed_successfully
+
+  egrul-sync-worker:
+    <<: *common
+    build:
+      context: .
+      dockerfile: apps/egrul-sync-worker/Dockerfile
+    command: node apps/egrul-sync-worker/dist/src/index.js
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migration-worker:
+        condition: service_completed_successfully
+    environment:
+      <<: *common-env
+      SOCKS_PROXY_URL: ${SOCKS_PROXY_URL:-}
+      BATCH_SIZE: ${BATCH_SIZE:-10000}
+
+  admin-ui:
+    <<: *common
+    ports:
+      - "3140:3000"
+    command: npm start --workspace=apps/admin-ui
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migration-worker:
+        condition: service_completed_successfully
+    environment:
+      <<: *common-env
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+
+  contacts-parser:
+    build:
+      context: .
+      dockerfile: Dockerfile.playwright
+    networks:
+      - infoindexer_net
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migration-worker:
+        condition: service_completed_successfully
+    environment:
+      <<: *common-env
+      CLICKHOUSE_SECURE: ${CLICKHOUSE_SECURE:-}
+      CLICKHOUSE_ADMIN_PASSWORD: ${CLICKHOUSE_ADMIN_PASSWORD:-}
+      CLICKHOUSE_WORKER_PASSWORD: ${CLICKHOUSE_WORKER_PASSWORD:-}
+      CLICKHOUSE_API_PASSWORD: ${CLICKHOUSE_API_PASSWORD:-}
+    restart: unless-stopped
+
+volumes:
+  clickhouse_data:
+  clickhouse_certs:
+  redis_data:

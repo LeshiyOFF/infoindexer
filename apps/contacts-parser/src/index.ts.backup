@@ -1,0 +1,470 @@
+import { chromium } from 'playwright-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import type { Page } from 'playwright';
+import { redisSub, redisClient, clickhouseClient } from 'shared';
+
+chromium.use(StealthPlugin());
+
+/** Максимум целевых страниц на один поисковый запрос */
+const TARGET_PAGES_MAX = 5;
+/** Задержка между переходами на целевые страницы (мс) */
+const TARGET_PAGE_DELAY_MS = 1500;
+/** Домены, на которые не переходим */
+const BLOCKED_DOMAINS = ['checko.ru', 'rusprofile.ru', 'sbis.ru', 'duckduckgo.com'];
+
+interface ContactItem { val: string; source: string; type?: 'direct' | 'official' | 'general' | 'verified'; }
+interface SourceStatus { name: string; found: boolean; status: 'completed' | 'error' | 'skipped'; }
+interface ContactInfo {
+  emails: ContactItem[];
+  phones: ContactItem[];
+  websites: string[];
+  name?: string;
+  directorName?: string;
+  address?: string;
+  sourcesChecked: SourceStatus[];
+}
+
+const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+const PHONE_REGEX = /(?:\+7|8)[\s\-(]*\d{3}[\s\-)]*\d{3}[\s\-]*\d{2}[\s\-]*\d{2}/g;
+
+/** Почты-плейсхолдеры и обратной связи агрегаторов — не личные контакты директора */
+const BLOCKED_EMAILS = [
+  'sentry', 'wix', 'example', 'noreply', 'no-reply', 'donotreply',
+  'companycardsfeedback', 'cardsfeedback', 'feedback@rbc',
+  'mailer-daemon', 'postmaster', 'abuse@', 'webmaster@',
+  'duckduckgo', 'error-lite', 'sales_support@interfax'
+];
+
+/** Домены email, которые всегда считаются мусором (DDG, примеры и т.п.) */
+const BLOCKED_EMAIL_DOMAINS = ['duckduckgo.com', 'example.com', 'test.com'];
+
+function isBlockedEmail(email: string): boolean {
+  const lower = email.toLowerCase();
+  if (BLOCKED_EMAILS.some(block => lower.includes(block))) return true;
+  const domain = lower.split('@')[1];
+  if (domain && BLOCKED_EMAIL_DOMAINS.some(d => domain === d || domain.endsWith('.' + d))) return true;
+  return false;
+}
+
+function normalizePhone(p: string) {
+  let cleaned = p.replace(/[^0-9]/g, '');
+  if (cleaned.length === 11 && cleaned.startsWith('8')) cleaned = '7' + cleaned.substring(1);
+  if (cleaned.length === 10) cleaned = '7' + cleaned;
+  if (cleaned.length !== 11) return p;
+  return `+7 (${cleaned.substring(1, 4)}) ${cleaned.substring(4, 7)}-${cleaned.substring(7, 9)}-${cleaned.substring(9, 11)}`;
+}
+
+/**
+ * Извлекает реальный URL из redirect-ссылки DuckDuckGo.
+ * DDG использует href вида: duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.com%2Fpage&rut=...
+ */
+function resolveDuckDuckGoRedirect(href: string): string | null {
+  if (!href || typeof href !== 'string') return null;
+  const trimmed = href.trim();
+  if (!trimmed) return null;
+
+  // Если href уже ведёт на внешний домен (не duckduckgo), вернуть как есть
+  try {
+    const lower = trimmed.toLowerCase();
+    if (!lower.includes('duckduckgo.com') && (trimmed.startsWith('http://') || trimmed.startsWith('https://'))) {
+      return trimmed;
+    }
+    if (trimmed.startsWith('//')) {
+      const withProtocol = 'https:' + trimmed;
+      if (!withProtocol.includes('duckduckgo.com')) return withProtocol;
+    }
+  } catch {
+    return null;
+  }
+
+  // Парсинг uddg параметра
+  try {
+    const uddgMatch = trimmed.match(/[?&]uddg=([^&]+)/);
+    if (uddgMatch) {
+      const decoded = decodeURIComponent(uddgMatch[1]);
+      if (decoded.startsWith('http://') || decoded.startsWith('https://')) {
+        return decoded;
+      }
+      return 'https://' + decoded.replace(/^\/+/, '');
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Извлекает URL результатов поиска со страницы DDG HTML.
+ * Использует селекторы a.result__a и .result a[href*="uddg"], fallback на .result__url.
+ */
+async function extractResultUrlsFromDDG(page: Page, maxUrls: number): Promise<string[]> {
+  const rawHrefs = await page.evaluate(() => {
+    const links: string[] = [];
+    // Ссылки в результатах DDG: .result a (href может быть uddg redirect или прямой)
+    const anchors = document.querySelectorAll('.result a[href], a.result__a[href], .result__url[href]');
+    anchors.forEach((a) => {
+      const el = a as HTMLAnchorElement;
+      const href = el.href || el.getAttribute?.('href');
+      if (href && href.trim()) {
+        links.push(href);
+      }
+    });
+    return links;
+  });
+
+  const resolved = new Set<string>();
+  for (const href of rawHrefs) {
+    const url = resolveDuckDuckGoRedirect(href);
+    if (!url) continue;
+    const lower = url.toLowerCase();
+    const isBlocked = BLOCKED_DOMAINS.some((d) => lower.includes(d));
+    if (isBlocked) continue;
+    resolved.add(url);
+    if (resolved.size >= maxUrls) break;
+  }
+  return Array.from(resolved);
+}
+
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+let sharedBrowser: any = null;
+
+async function getBrowser() {
+  if (sharedBrowser) return sharedBrowser;
+  sharedBrowser = await chromium.launch({ 
+    headless: true, 
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] 
+  });
+  return sharedBrowser;
+}
+
+const BATCH_TTL_SEC = 7 * 24 * 60 * 60;
+
+async function getEnrichedData(inn: string, batchId?: string) {
+  let context;
+  const contacts: ContactInfo = { emails: [], phones: [], websites: [], sourcesChecked: [] };
+  
+  const addSource = (name: string, found: boolean, status: 'completed' | 'error' | 'skipped' = 'completed') => {
+    contacts.sourcesChecked.push({ name, found, status });
+  };
+
+  try {
+    const browser = await getBrowser();
+    context = await browser.newContext({
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    });
+
+    console.log(`[Waterfall] Enrichment INN: ${inn}`);
+    await redisClient.hset(`contacts:status:${inn}`, { status: 'running' });
+
+    // STAGE 0: Get Director from Clickhouse
+    try {
+      const chResult = await clickhouseClient.query({
+        query: 'SELECT any(director) as director, any(name) as name FROM companies_meta WHERE inn = {inn: String}',
+        query_params: { inn },
+        format: 'JSONEachRow'
+      });
+      const rows = await chResult.json() as { director?: string; name?: string }[];
+      if (rows && rows.length > 0) {
+        if (rows[0].director) contacts.directorName = rows[0].director;
+        if (rows[0].name) contacts.name = rows[0].name;
+      }
+      addSource('Внутренняя БД', !!(contacts.directorName || contacts.name));
+    } catch (e) {
+      console.error('[Waterfall] ClickHouse error:', e);
+      addSource('Внутренняя БД', false, 'error');
+    }
+
+    const page = await context.newPage();
+    // Set default timeout for all operations
+    page.setDefaultTimeout(15000);
+
+    // STAGE 1: Checko (Direct)
+    try {
+      console.log('[Waterfall] Checko...');
+      await redisClient.hset(`contacts:status:${inn}`, { status: 'running', stage: '1/21: Checko' });
+      await page.goto(`https://checko.ru/company/${inn}`, { waitUntil: 'domcontentloaded' });
+      const body = await page.innerText('body');
+      let foundInChecko = false;
+      if (!body.includes('CAPTCHA')) {
+        if (!contacts.name) contacts.name = await page.locator('h1').innerText().catch(() => '');
+        
+        // Try to get director if not found in CH
+        if (!contacts.directorName) {
+           const dirLoc = page.locator('text="Руководитель"').locator('..').locator('a');
+           if (await dirLoc.count() > 0) {
+             contacts.directorName = await dirLoc.first().innerText();
+           }
+        }
+
+        const emails = (body.match(EMAIL_REGEX) || []);
+        const phones = (body.match(PHONE_REGEX) || []);
+        
+        if (emails.length > 0 || phones.length > 0) foundInChecko = true;
+
+        emails.filter((e: string) => !isBlockedEmail(e.toLowerCase())).forEach((e: string) => contacts.emails.push({ val: e.toLowerCase(), source: 'Checko', type: 'official' }));
+        phones.forEach((p: string) => contacts.phones.push({ val: normalizePhone(p), source: 'Checko', type: 'official' }));
+      }
+      addSource('Checko', foundInChecko);
+    } catch (e) {
+      console.error('[Waterfall] Checko error:', e);
+      addSource('Checko', false, 'error');
+    }
+
+    // STAGE 2: DDG (HTML mode is bot-friendly)
+    try {
+      console.log('[Waterfall] DuckDuckGo (Company)...');
+      await redisClient.hset(`contacts:status:${inn}`, { status: 'running', stage: '2/21: DuckDuckGo (Компания)' });
+      await page.goto(`https://html.duckduckgo.com/html/?q=ИНН+${inn}+контакты`, { waitUntil: 'domcontentloaded' });
+      const body = await page.innerText('body');
+      const emails = (body.match(EMAIL_REGEX) || []);
+      const phones = (body.match(PHONE_REGEX) || []);
+      
+      emails.filter((e: string) => !isBlockedEmail(e.toLowerCase())).forEach((e: string) => contacts.emails.push({ val: e.toLowerCase(), source: 'Поиск (Организация)', type: 'general' }));
+      phones.forEach((p: string) => contacts.phones.push({ val: normalizePhone(p), source: 'Поиск (Организация)', type: 'general' }));
+      
+      const site = await page.evaluate(() => 
+        Array.from(document.querySelectorAll('.result__url')).map(el => el.textContent?.trim() || '').find(l => !l.includes('checko') && !l.includes('rusprofile') && !l.includes('sbis'))
+      );
+      if (site) contacts.websites.push(site);
+      addSource('DuckDuckGo (Компания)', emails.length > 0 || phones.length > 0 || !!site);
+    } catch (e) {
+      console.error('[Waterfall] DuckDuckGo (Компания) error:', e);
+      addSource('DuckDuckGo (Компания)', false, 'error');
+    }
+
+    // STAGE 3: Search for specific site if found
+    if (contacts.websites.length > 0) {
+      try {
+        const url = contacts.websites[0].includes('http') ? contacts.websites[0] : `http://${contacts.websites[0]}`;
+        console.log(`[Waterfall] Site ${url}...`);
+        await redisClient.hset(`contacts:status:${inn}`, { status: 'running', stage: '3/21: Официальный сайт' });
+        await page.goto(url, { waitUntil: 'domcontentloaded' });
+        const body = await page.innerText('body');
+        const emails = (body.match(EMAIL_REGEX) || []);
+        const phones = (body.match(PHONE_REGEX) || []);
+        
+        emails.filter((e: string) => !isBlockedEmail(e.toLowerCase())).forEach((e: string) => contacts.emails.push({ val: e.toLowerCase(), source: 'Офиц. сайт', type: 'verified' }));
+        phones.forEach((p: string) => contacts.phones.push({ val: normalizePhone(p), source: 'Офиц. сайт', type: 'verified' }));
+        addSource('Официальный сайт', emails.length > 0 || phones.length > 0);
+      } catch (e) {
+        console.error('[Waterfall] Официальный сайт error:', e);
+        addSource('Официальный сайт', false, 'error');
+      }
+    } else {
+      addSource('Официальный сайт', false, 'skipped');
+    }
+
+    // === ИСТОЧНИКИ ПО ФИО ДИРЕКТОРА (личные контакты ЛПР) ===
+    const directorName = contacts.directorName;
+    const companyName = contacts.name || '';
+
+    const runDDGSearchWithTargetVisit = async (
+      query: string,
+      sourceLabel: string
+    ): Promise<{ emails: string[]; phones: string[] }> => {
+      const allEmails = new Set<string>();
+      const allPhones = new Set<string>();
+
+      try {
+        await page.goto(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, { waitUntil: 'domcontentloaded' });
+        const body = await page.innerText('body');
+
+        // 1. Парсинг сниппетов DDG (fallback)
+        (body.match(EMAIL_REGEX) || []).forEach((e: string) => allEmails.add(e.toLowerCase()));
+        (body.match(PHONE_REGEX) || []).forEach((p: string) => allPhones.add(normalizePhone(p)));
+
+        // 2. Извлечение URL и переход на целевые страницы
+        const urls = await extractResultUrlsFromDDG(page, TARGET_PAGES_MAX);
+        for (const url of urls) {
+          try {
+            await delay(TARGET_PAGE_DELAY_MS);
+            const fullUrl = url.startsWith('http') ? url : `https://${url}`;
+            await page.goto(fullUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+            const targetBody = await page.innerText('body');
+            if (targetBody.includes('CAPTCHA')) continue;
+            (targetBody.match(EMAIL_REGEX) || []).forEach((e: string) => allEmails.add(e.toLowerCase()));
+            (targetBody.match(PHONE_REGEX) || []).forEach((p: string) => allPhones.add(normalizePhone(p)));
+          } catch (err) {
+            console.warn(`[Waterfall] Target page ${url.slice(0, 50)}... skip:`, (err as Error).message);
+          }
+        }
+      } catch (e) {
+        console.error(`[Waterfall] runDDGSearchWithTargetVisit "${sourceLabel}" error:`, e);
+      }
+
+      return {
+        emails: Array.from(allEmails),
+        phones: Array.from(allPhones)
+      };
+    };
+
+    const runDirectorSource = async (_name: string, query: string, sourceLabel: string): Promise<{ emails: string[]; phones: string[] }> => {
+      return runDDGSearchWithTargetVisit(query, sourceLabel);
+    };
+
+    const addDirectorContacts = (emails: string[], phones: string[], source: string) => {
+      emails.filter((e: string) => !isBlockedEmail(e)).forEach((e: string) => contacts.emails.push({ val: e, source, type: 'direct' }));
+      phones.filter(p => p.replace(/[^0-9]/g, '').length >= 10).forEach(p => contacts.phones.push({ val: p, source, type: 'direct' }));
+    };
+
+    // STAGE 4: OSINT Директор (основной поиск)
+    if (directorName) {
+      const stages: Array<{ n: number; label: string; query: string }> = [
+        { n: 4, label: 'ОСИНТ (Директор)', query: `"${directorName}" ${companyName ? `"${companyName}"` : ''} телефон email -site:checko.ru -site:rusprofile.ru -site:sbis.ru` },
+        { n: 5, label: 'DDG расширенный', query: `"${directorName}" email OR телефон -site:checko.ru -site:rusprofile.ru -site:sbis.ru -site:rbc.ru` },
+        { n: 6, label: 'VK', query: `site:vk.com "${directorName}"` },
+        { n: 7, label: 'LinkedIn', query: `site:linkedin.com/in "${directorName}" ${companyName ? `"${companyName}"` : ''}` },
+        { n: 8, label: 'Telegram', query: `"${directorName}" telegram OR t.me` },
+        { n: 9, label: 'Госзакупки', query: `site:zakupki.gov.ru "${directorName}"` },
+        { n: 10, label: 'HH.ru', query: `site:hh.ru "${directorName}" директор` },
+        { n: 11, label: 'Executive.ru', query: `site:executive.ru "${directorName}"` },
+        { n: 12, label: 'Rating.gd.ru', query: `site:rating.gd.ru "${directorName}"` },
+        { n: 13, label: 'Конференции', query: `"${directorName}" конференция спикер контакт` },
+        { n: 14, label: 'Судебные реестры', query: `site:kad.arbitr.ru OR site:sudact.ru "${directorName}"` },
+        { n: 15, label: 'Реестр АУ', query: `site:fedresurs.ru OR site:tbankrot.ru "${directorName}"` },
+        { n: 16, label: 'Habr Career', query: `site:career.habr.com "${directorName}"` },
+        { n: 17, label: 'Ассоциации', query: `"${directorName}" ${companyName ? `"${companyName}"` : ''} ассоциация союз член контакт` },
+      ];
+      for (let i = 0; i < stages.length; i++) {
+        const s = stages[i];
+        try {
+          console.log(`[Waterfall] ${s.label}: ${directorName}...`);
+          await redisClient.hset(`contacts:status:${inn}`, { status: 'running', stage: `${s.n}/21: ${s.label}` });
+          const { emails, phones } = await runDirectorSource(directorName, s.query, s.label);
+          addDirectorContacts(emails, phones, s.label);
+          addSource(s.label, emails.length > 0 || phones.length > 0);
+        } catch (e) {
+          console.error(`[Waterfall] ${s.label} error:`, e);
+          addSource(s.label, false, 'error');
+        }
+      }
+    } else {
+      ['ОСИНТ (Директор)', 'DDG расширенный', 'VK', 'LinkedIn', 'Telegram', 'Госзакупки', 'HH.ru', 'Executive.ru', 'Rating.gd.ru', 'Конференции', 'Судебные реестры', 'Реестр АУ', 'Habr Career', 'Ассоциации'].forEach(l => addSource(l, false, 'skipped'));
+    }
+
+    // STAGE 17-19: Реестры по ИНН (официальные контакты компании, иногда ЛПР) с переходом на целевые страницы
+    const registryStages: Array<{ label: string; stage: string; query: string }> = [
+      { label: 'ЕФРСБ', stage: '18/21: ЕФРСБ', query: `site:bankrot.fedresurs.ru "${inn}" контакты` },
+      { label: 'Росаккредитация', stage: '19/21: Росаккредитация', query: `site:pub.fsa.gov.ru "${inn}" телефон` },
+      { label: 'Реестр ККТ', stage: '21/21: Реестр ККТ', query: `"${inn}" регистрация ККТ телефон` }
+    ];
+    for (const s of registryStages) {
+      try {
+        console.log(`[Waterfall] ${s.label}: ${inn}...`);
+        await redisClient.hset(`contacts:status:${inn}`, { status: 'running', stage: s.stage });
+        const { emails, phones } = await runDDGSearchWithTargetVisit(s.query, s.label);
+        emails.filter((e: string) => !isBlockedEmail(e.toLowerCase())).forEach((e: string) => contacts.emails.push({ val: e.toLowerCase(), source: s.label, type: 'official' }));
+        phones.forEach((p: string) => contacts.phones.push({ val: normalizePhone(p), source: s.label, type: 'official' }));
+        addSource(s.label, emails.length > 0 || phones.length > 0);
+      } catch (e) {
+        console.error(`[Waterfall] ${s.label} error:`, e);
+        addSource(s.label, false, 'error');
+      }
+    }
+
+    // Deduplicate and prioritize types
+    const prioritize = (items: ContactItem[]) => {
+      const typePriority = { direct: 0, verified: 1, official: 2, general: 3 };
+      const map = new Map<string, ContactItem & { allSources: string[] }>();
+      
+      for (const item of items) {
+        const existing = map.get(item.val);
+        const currentPriority = typePriority[item.type || 'general'] ?? 9;
+        const existingPriority = existing ? (typePriority[existing.type || 'general'] ?? 9) : 99;
+        
+        if (!existing || currentPriority < existingPriority) {
+          map.set(item.val, { 
+            ...item, 
+            allSources: existing ? [...new Set([...existing.allSources, item.source])] : [item.source] 
+          });
+        } else {
+          // If existing is better or same, just add the source to the list
+          existing.allSources = [...new Set([...existing.allSources, item.source])];
+        }
+      }
+      
+      return Array.from(map.values()).map(item => ({
+        ...item,
+        source: item.allSources.join(', ')
+      }));
+    };
+
+    const final = {
+      name: contacts.name,
+      director: contacts.directorName,
+      emails: prioritize(contacts.emails.filter((e: ContactItem) => !isBlockedEmail(e.val))),
+      phones: prioritize(contacts.phones.filter(p => p.val.replace(/[^0-9]/g, '').length >= 10)),
+      sourcesChecked: contacts.sourcesChecked,
+      url: contacts.websites[0] || '',
+      updated_at: new Date().toISOString()
+    };
+
+
+    await redisClient.hset(`contacts:status:${inn}`, { status: 'completed', data: JSON.stringify(final) });
+    if (batchId) {
+      await redisClient.hset(`batch:${batchId}:inn_status`, inn, 'completed');
+      await redisClient.expire(`batch:${batchId}:inn_status`, BATCH_TTL_SEC);
+    }
+    const errorsCount = final.sourcesChecked.filter(s => s.status === 'error').length;
+    if (final.emails.length === 0 && final.phones.length === 0) {
+      console.log(`[Waterfall] Done ${inn}. Found 0 contacts. Stages with errors: ${errorsCount}`);
+    } else {
+      console.log(`[Waterfall] Done ${inn}. Found ${final.emails.length} emails, ${final.phones.length} phones. Stages with errors: ${errorsCount}`);
+    }
+
+  } catch (err: any) {
+    console.error(`[Waterfall] Error ${inn}:`, err);
+    await redisClient.hset(`contacts:status:${inn}`, { status: 'error', error: err.message });
+    if (batchId) {
+      await redisClient.hset(`batch:${batchId}:inn_status`, inn, 'error');
+      await redisClient.expire(`batch:${batchId}:inn_status`, BATCH_TTL_SEC);
+    }
+  } finally {
+    if (context) await context.close();
+  }
+}
+
+/** Параллельный пул: до PARSE_CONCURRENCY ИНН обрабатываются одновременно (изоляция через отдельный context на задачу) */
+const PARSE_CONCURRENCY = 3;
+
+interface QueuedTask {
+  inn: string;
+  batchId?: string;
+}
+
+const queue: QueuedTask[] = [];
+let inFlight = 0;
+
+function processNext(): void {
+  if (inFlight >= PARSE_CONCURRENCY || queue.length === 0) return;
+  const task = queue.shift();
+  if (!task) return;
+
+  inFlight++;
+  getEnrichedData(task.inn, task.batchId)
+    .catch((e) => {
+      console.error(`[Waterfall] Queue error ${task.inn}:`, e);
+      redisClient.hset(`contacts:status:${task.inn}`, { status: 'error', error: String(e) }).catch(() => {});
+      if (task.batchId) {
+        redisClient.hset(`batch:${task.batchId}:inn_status`, task.inn, 'error').catch(() => {});
+      }
+    })
+    .finally(() => {
+      inFlight--;
+      processNext();
+    });
+}
+
+function enqueue(inn: string, batchId?: string): void {
+  queue.push({ inn, batchId });
+  processNext();
+}
+
+redisSub.subscribe('contacts:parse', (err) => { if (!err) console.log('OSINT Waterfall Enricher listening...'); });
+redisSub.on('message', async (channel, message) => {
+  if (channel === 'contacts:parse') {
+    const { inn, batchId } = JSON.parse(message) as { inn: string; batchId?: string };
+    enqueue(inn, batchId);
+  }
+});

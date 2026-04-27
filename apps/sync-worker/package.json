@@ -1,0 +1,22 @@
+{
+  "name": "sync-worker",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon --watch src -e ts --exec ts-node -T src/index.ts"
+  },
+  "dependencies": {
+    "@clickhouse/client": "^1.0.1",
+    "duckdb": "^1.4.4",
+    "ioredis": "^5.3.2",
+    "shared": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "nodemon": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
+  }
+}

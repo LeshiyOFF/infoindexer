@@ -1,0 +1,18 @@
+-- ═══════════════════════════════════════════════════════════════════
+-- Migration 004: Update Summary Checker for View + MV
+-- ═══════════════════════════════════════════════════════════════════
+--
+-- Placeholder для логики проверки SummaryChecker.
+--
+-- Реализована в коде (Infrastructure Layer), не в SQL:
+-- - ISummaryChecker порт
+-- - ClickHouseSummaryChecker адаптер
+--
+-- Checker проверяет:
+-- 1. Существование MV: financial_reports_summary_mv
+-- 2. Существование View: financial_reports_summary
+-- 3. Наличие данных в View
+--
+-- См. packages/shared/services/organization-search/adapters/clickhouse-summary-checker.adapter.ts
+--
+-- ═══════════════════════════════════════════════════════════════════

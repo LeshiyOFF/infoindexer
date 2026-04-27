@@ -1,0 +1,4 @@
+/**
+ * Спецификация для NullMetricsAdapter
+ */
+export {};

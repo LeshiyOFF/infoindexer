@@ -1,0 +1,4 @@
+/**
+ * Спецификация для CircuitBreakerAdapter
+ */
+export {};

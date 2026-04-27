@@ -1,0 +1,59 @@
+<!--
+  ClickHouse Audit Logging Configuration
+
+  @remarks
+  Enables system-level query and trace logging for audit purposes.
+  Part of Iteration 12: Audit Logging.
+
+  Architecture:
+  - query_log: Records all executed queries
+  - trace_log: Records distributed query traces
+  - TTL: Automatic cleanup of old logs
+
+  Security:
+  - Logs contain query text (may include sensitive data)
+  - query_log.enabled: 1 (always enable in production)
+  - trace_log.enabled: 1 (enable for distributed queries debugging)
+
+  Storage:
+  - query_log: 30 days retention
+  - trace_log: 7 days retention (heavier, shorter retention)
+-->
+
+<clickhouse>
+
+  <!--
+    Query Log Configuration
+
+    @remarks
+    Records all queries executed on the server.
+    Essential for:
+    - Security auditing (who ran what)
+    - Performance analysis (slow queries)
+    - Compliance (query history)
+  -->
+  <query_log>
+    <database>system</database>
+    <table>query_log</table>
+    <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+  </query_log>
+
+  <!--
+    Trace Log Configuration
+
+    @remarks
+    Records distributed query execution traces.
+    Useful for debugging:
+    - Distributed query performance
+    - Remote query execution
+    - Cluster communication issues
+
+    Shorter retention due to higher volume.
+  -->
+  <trace_log>
+    <database>system</database>
+    <table>trace_log</table>
+    <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+  </trace_log>
+
+</clickhouse>

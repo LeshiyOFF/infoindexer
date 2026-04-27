@@ -1,0 +1,4 @@
+/**
+ * Спецификация для ClickHouseMetricsService
+ */
+export {};

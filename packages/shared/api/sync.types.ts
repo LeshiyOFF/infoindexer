@@ -1,0 +1,138 @@
+/**
+ * Sync Types
+ *
+ * Типы для синхронизации данных (EGRUL + Sanctions)
+ */
+
+import type { ApiResponse } from './responses';
+
+/**
+ * Стадии синхронизации
+ */
+export enum SyncStage {
+  IDLE = 'idle',
+
+  // EGRUL stages (0-40%)
+  EGRUL_DOWNLOAD = 'egrul_download',
+  EGRUL_PARSE = 'egrul_parse',
+
+  // Sanctions stages (40-70%)
+  SANCTIONS_DOWNLOAD = 'sanctions_download',
+  SANCTIONS_PARSE = 'sanctions_parse',
+
+  // Merge stages (70-90%)
+  MERGE_COMPANIES = 'merge_companies',
+  MERGE_SANCTIONS = 'merge_sanctions',
+
+  // Cleanup (90-100%)
+  CLEANUP = 'cleanup',
+
+  COMPLETED = 'completed',
+  ERROR = 'error'
+}
+
+/**
+ * Статус синхронизации
+ */
+export type SyncStatus =
+  | 'idle'
+  | 'running'
+  | 'completed'
+  | 'error';
+
+/**
+ * Данные о статусе синхронизации
+ */
+export interface SyncStatusData {
+  readonly status: SyncStatus;
+  readonly stage: SyncStage;
+  readonly percentage?: number;
+  readonly message: string;
+  readonly startedAt?: string;
+  readonly completedAt?: string;
+  readonly error?: string;
+}
+
+/**
+ * Response для статуса синхронизации
+ */
+export type SyncStatusResponse = ApiResponse<SyncStatusData>;
+
+/**
+ * Progress обновления стадии
+ */
+export interface StageProgress {
+  readonly stage: SyncStage;
+  readonly percentage: number;
+  readonly message: string;
+  readonly details?: Record<string, unknown>;
+}
+
+/**
+ * Результат выполнения стадии
+ */
+export type StageResult =
+  | { success: true; processed: number }
+  | { success: false; error: string };
+
+/**
+ * Конфигурация синхронизации
+ */
+export interface SyncConfig {
+  readonly batchSize: number;
+  readonly maxRetries: number;
+  readonly timeout: number;
+  readonly skipExisting: boolean;
+}
+
+/**
+ * Значения конфигурации по умолчанию
+ */
+export const DEFAULT_SYNC_CONFIG: SyncConfig = {
+  batchSize: 1000,
+  maxRetries: 3,
+  timeout: 30000,
+  skipExisting: false
+} as const;
+
+/**
+ * Создаёт данные статуса синхронизации
+ */
+export function createSyncStatus(
+  status: SyncStatus,
+  stage: SyncStage,
+  message: string,
+  percentage?: number,
+  startedAt?: string,
+  error?: string
+): SyncStatusData {
+  return {
+    status,
+    stage,
+    ...(percentage !== undefined && { percentage: Math.max(0, Math.min(100, percentage)) }),
+    message,
+    ...(startedAt && { startedAt }),
+    ...(status === 'completed' && { completedAt: new Date().toISOString() }),
+    ...(error && { error })
+  };
+}
+
+/**
+ * Вычисляет процент выполнения по стадии
+ */
+export function calculateStagePercentage(stage: SyncStage): number {
+  const stageWeights: Readonly<Record<SyncStage, number>> = {
+    [SyncStage.IDLE]: 0,
+    [SyncStage.EGRUL_DOWNLOAD]: 5,
+    [SyncStage.EGRUL_PARSE]: 20,
+    [SyncStage.SANCTIONS_DOWNLOAD]: 25,
+    [SyncStage.SANCTIONS_PARSE]: 40,
+    [SyncStage.MERGE_COMPANIES]: 70,
+    [SyncStage.MERGE_SANCTIONS]: 85,
+    [SyncStage.CLEANUP]: 95,
+    [SyncStage.COMPLETED]: 100,
+    [SyncStage.ERROR]: 0
+  };
+
+  return stageWeights[stage];
+}

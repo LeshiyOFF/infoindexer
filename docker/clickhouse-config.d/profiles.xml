@@ -1,0 +1,139 @@
+<!--
+  ClickHouse Profiles and Quotas Configuration
+
+  @remarks
+  Defines user profiles and resource quotas for ClickHouse.
+  Part of Iteration 10: RBAC + Users.
+  See: PLAN_NADEZHNOSTI_BD.md
+
+  Architecture:
+  - Profiles: Predefined settings for different user types
+  - Quotas: Resource limits over time intervals
+
+  Profiles:
+  - readonly: Read-only access for API users
+  - workers: Background job workers with extended limits
+  - default: Standard profile (inherited from ClickHouse)
+
+  Quotas:
+  - default: Hourly limits for queries and resources
+
+  Security:
+  - readonly profile: readonly=1 prevents data modifications
+  - workers profile: Optimized for batch processing
+-->
+
+<clickhouse>
+  <!--
+    Profiles Configuration
+
+    @remarks
+    Profiles define settings that apply to user sessions.
+    Users are assigned a profile via the SETTINGS PROFILE clause.
+  -->
+  <profiles>
+
+    <!-- Default profile with increased memory limit -->
+    <default>
+      <!-- Memory limit (10GB) - sufficient for all operations -->
+      <max_memory_usage>10000000000</max_memory_usage>
+    </default>
+
+    <!-- EGRUL Worker profile - for EGRUL sync operations with high memory requirements -->
+    <egrul_worker>
+      <!-- Memory limit (7GB) - sufficient for EGRUL sync queries -->
+      <max_memory_usage>7000000000</max_memory_usage>
+
+      <!-- Extended execution time for complex queries -->
+      <max_execution_time>3600</max_execution_time>
+
+      <!-- Large result sets -->
+      <max_result_rows>10000000</max_result_rows>
+      <max_result_bytes>5000000000</max_result_bytes>
+    </egrul_worker>
+
+    <!-- Read-only profile for API users -->
+    <readonly>
+      <!-- Prevent any data modifications -->
+      <readonly>1</readonly>
+
+      <!-- Query execution limits -->
+      <max_execution_time>300</max_execution_time>
+      <max_memory_usage>2000000000</max_memory_usage>
+
+      <!-- Result size limits -->
+      <max_result_rows>100000</max_result_rows>
+      <max_result_bytes>1000000000</max_result_bytes>
+    </readonly>
+
+    <!-- Worker profile for background jobs -->
+    <workers>
+      <!-- Allow data modifications -->
+      <readonly>0</readonly>
+
+      <!-- Extended execution time for batch processing -->
+      <max_execution_time>3600</max_execution_time>
+
+      <!-- Memory limit for workers (10GB) -->
+      <max_memory_usage>10000000000</max_memory_usage>
+
+      <!-- Large result sets for batch operations -->
+      <max_result_rows>10000000</max_result_rows>
+      <max_result_bytes>10000000000</max_result_bytes>
+
+      <!-- Block size for inserts -->
+      <max_insert_block_size>1048576</max_insert_block_size>
+
+      <!-- Optimize for batch queries -->
+      <optimize_read_in_order>1</optimize_read_in_order>
+      <allow_experimental_parallel_reading>1</allow_experimental_parallel_reading>
+      <max_threads>4</max_threads>
+    </workers>
+
+  </profiles>
+
+  <!--
+    Quotas Configuration
+
+    @remarks
+    Quotas limit resource usage over time intervals.
+    All users must have a quota assigned.
+  -->
+  <quotas>
+
+    <!-- Default quota - hourly limits -->
+    <default>
+      <!-- 1-hour interval -->
+      <interval>
+        <duration>3600</duration>
+
+        <!-- Maximum queries per hour -->
+        <queries>10000</queries>
+
+        <!-- Maximum errors per hour -->
+        <errors>100</errors>
+
+        <!-- Maximum result rows per hour -->
+        <result_rows>1000000000</result_rows>
+
+        <!-- Maximum rows read per hour -->
+        <read_rows>10000000000</read_rows>
+
+        <!-- Maximum execution time per hour (cumulative) -->
+        <execution_time>3600</execution_time>
+      </interval>
+
+      <!-- 24-hour interval (for capacity planning) -->
+      <interval>
+        <duration>86400</duration>
+
+        <queries>100000</queries>
+        <errors>1000</errors>
+        <result_rows>10000000000</result_rows>
+        <read_rows>100000000000</read_rows>
+        <execution_time>72000</execution_time>
+      </interval>
+    </default>
+
+  </quotas>
+</clickhouse>

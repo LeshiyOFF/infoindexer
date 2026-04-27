@@ -1,0 +1,17 @@
+<!--
+  ClickHouse User Profiles
+  @remarks
+  Defines egrul_worker profile with 7GB memory limit.
+  This file must be merged into users.xml, not config.xml.
+-->
+
+<clickhouse>
+  <profiles>
+    <egrul_worker>
+      <max_memory_usage>7000000000</max_memory_usage>
+      <max_execution_time>3600</max_execution_time>
+      <max_result_rows>10000000</max_result_rows>
+      <max_result_bytes>5000000000</max_result_bytes>
+    </egrul_worker>
+  </profiles>
+</clickhouse>

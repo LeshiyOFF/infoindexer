@@ -1,0 +1,4 @@
+-- Migration 003: Enhance companies_meta table
+-- Purpose: Базовая таблица создаётся в shared/001
+-- Здесь ничего не делаем — таблица уже готова
+-- Placeholder для совместимости с существующей нумерацией

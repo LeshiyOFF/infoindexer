@@ -1,0 +1,4 @@
+/**
+ * Спецификация для CircuitBreakerManager
+ */
+export {};

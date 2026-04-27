@@ -1,0 +1,6 @@
+<!-- Временное повышение лимита: после аварийного стопа ЕГРЮЛ-синка накопились пустые части MergeTree -->
+<clickhouse>
+  <merge_tree>
+    <max_suspicious_broken_parts>5000</max_suspicious_broken_parts>
+  </merge_tree>
+</clickhouse>
