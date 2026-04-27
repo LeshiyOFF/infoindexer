@@ -43,8 +43,8 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built app
-COPY --from=builder /app/apps/admin-ui/.next/standalone ./
+# Copy built app - standalone includes server.js and node_modules
+COPY --from=builder /app/apps/admin-ui/.next/standalone/apps/admin-ui ./
 COPY --from=builder /app/apps/admin-ui/.next/static ./.next/static
 COPY --from=builder /app/apps/admin-ui/public ./public
 
