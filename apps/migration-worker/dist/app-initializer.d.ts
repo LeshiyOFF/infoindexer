@@ -38,6 +38,8 @@ export interface AppDependencies {
  * - Создаёт ClickHouse клиент
  * - Создаёт Redis клиент
  * - Создаёт миграционный сервис
+ *
+ * Following SRP: database creation is handled by clickhouse-init container
  */
 export declare function initializeApp(): Promise<AppDependencies>;
 /**

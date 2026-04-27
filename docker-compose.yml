@@ -8,8 +8,18 @@ x-common-env: &common-env
   CLICKHOUSE_USER: default
   CLICKHOUSE_PASSWORD: ""
   CLICKHOUSE_SECURE: ""
+  CLICKHOUSE_DB: infoindexer
   REDIS_HOST: redis
   NODE_ENV: production
+
+x-requires-init: &requires-init
+  depends_on:
+    clickhouse:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    clickhouse-init:
+      condition: service_completed_successfully
 
 x-common: &common
   build:
@@ -91,32 +101,35 @@ services:
       timeout: 3s
       retries: 5
 
-  migration-worker:
+  clickhouse-init:
+    build:
+      context: ./docker/clickhouse-init
+      dockerfile: Dockerfile
+    environment:
+      <<: *common-env
+      CLICKHOUSE_HTTP_PORT: 8123
+      MAX_RETRIES: 30
+      RETRY_INTERVAL: 2
     networks:
       - infoindexer_net
     depends_on:
       clickhouse:
         condition: service_healthy
-      redis:
-        condition: service_healthy
+    restart: "no"
+
+  migration-worker:
+    networks:
+      - infoindexer_net
+    <<: *requires-init
     build:
       context: .
       dockerfile: apps/migration-worker/Dockerfile
     command: node apps/migration-worker/dist/index.js
     environment:
-      - CLICKHOUSE_HOST=clickhouse
-      - CLICKHOUSE_DB=infoindexer
-      - CLICKHOUSE_USER=default
-      - CLICKHOUSE_PASSWORD=
-      - CLICKHOUSE_SECURE=${CLICKHOUSE_SECURE:-}
-      - CLICKHOUSE_ADMIN_PASSWORD=${CLICKHOUSE_ADMIN_PASSWORD:-}
-      - CLICKHOUSE_WORKER_PASSWORD=${CLICKHOUSE_WORKER_PASSWORD:-}
-      - CLICKHOUSE_API_PASSWORD=${CLICKHOUSE_API_PASSWORD:-}
-      - REDIS_HOST=redis
-      - NODE_ENV=production
-      - MIGRATIONS_BASE_DIR=/app/packages/shared/infrastructure/migrations/files
-      - MIGRATION_MODE=once
-      - MIGRATION_AUTO_CLEANUP=${MIGRATION_AUTO_CLEANUP:-false}
+      <<: *common-env
+      MIGRATIONS_BASE_DIR=/app/packages/shared/infrastructure/migrations/files
+      MIGRATION_MODE=once
+      MIGRATION_AUTO_CLEANUP=${MIGRATION_AUTO_CLEANUP:-false}
     restart: "no"
     healthcheck:
       test: ["CMD-SHELL", "test -f /tmp/migrations-completed && grep -q '\"success\":true' /tmp/migrations-completed || exit 1"]
@@ -129,10 +142,6 @@ services:
     <<: *common
     command: node apps/sync-worker/dist/index.js
     depends_on:
-      clickhouse:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
       migration-worker:
         condition: service_completed_successfully
 
@@ -143,10 +152,6 @@ services:
       dockerfile: apps/egrul-sync-worker/Dockerfile
     command: node apps/egrul-sync-worker/dist/src/index.js
     depends_on:
-      clickhouse:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
       migration-worker:
         condition: service_completed_successfully
     environment:
@@ -160,10 +165,6 @@ services:
       - "3140:3000"
     command: npm start --workspace=apps/admin-ui
     depends_on:
-      clickhouse:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
       migration-worker:
         condition: service_completed_successfully
     environment:
@@ -176,19 +177,9 @@ services:
       dockerfile: Dockerfile.playwright
     networks:
       - infoindexer_net
-    depends_on:
-      clickhouse:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      migration-worker:
-        condition: service_completed_successfully
+    <<: *requires-init
     environment:
       <<: *common-env
-      CLICKHOUSE_SECURE: ${CLICKHOUSE_SECURE:-}
-      CLICKHOUSE_ADMIN_PASSWORD: ${CLICKHOUSE_ADMIN_PASSWORD:-}
-      CLICKHOUSE_WORKER_PASSWORD: ${CLICKHOUSE_WORKER_PASSWORD:-}
-      CLICKHOUSE_API_PASSWORD: ${CLICKHOUSE_API_PASSWORD:-}
     restart: unless-stopped
 
 volumes:

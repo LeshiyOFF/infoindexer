@@ -74,6 +74,17 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Build and push clickhouse-init
+      - name: Build and push clickhouse-init
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/clickhouse-init
+          file: ./docker/clickhouse-init/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:clickhouse-init-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       # Build and push sync-worker
       - name: Extract metadata for sync-worker
         id: meta-sync

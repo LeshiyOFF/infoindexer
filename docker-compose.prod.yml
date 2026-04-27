@@ -6,6 +6,18 @@ networks:
     external: true
 
 services:
+  clickhouse-init:
+    image: ghcr.io/leshiyoff/infoindexer:clickhouse-init-latest
+    environment:
+      - CLICKHOUSE_HOST=clickhouse
+      - CLICKHOUSE_DB=infoindexer
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=
+      - CLICKHOUSE_HTTP_PORT=8123
+      - MAX_RETRIES=30
+      - RETRY_INTERVAL=2
+    restart: "no"
+
   sync-worker:
     image: ghcr.io/leshiyoff/infoindexer:latest
     command: ["node", "apps/sync-worker/dist/index.js"]
@@ -40,7 +52,6 @@ services:
     command: ["node", "apps/migration-worker/dist/index.js"]
     environment:
       - NODE_ENV=production
-      - CLICKHOUSE_DB=infoindexer
       - MIGRATIONS_BASE_DIR=/app/packages/shared/infrastructure/migrations/files
       - MIGRATION_MODE=once
       - MIGRATION_AUTO_CLEANUP=${MIGRATION_AUTO_CLEANUP:-false}
