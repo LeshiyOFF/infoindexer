@@ -1,12 +1,15 @@
 # ClickHouse Init Container
 #
-# Minimal image for database initialization
+# Image for database initialization
 # Implements IDatabaseInitializer port adapter
 #
 # Responsibility: Create ClickHouse database on startup
 # Follows SRP: single purpose, no extra dependencies
+#
+# Base image: clickhouse/clickhouse-server (same version as main service)
+# Contains clickhouse-client needed for database operations
 
-FROM bitnami/clickhouse:24.3
+FROM clickhouse/clickhouse-server:24.3
 
 # Labels for metadata
 LABEL maintainer="infoindexer"
