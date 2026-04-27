@@ -1,54 +1,126 @@
 # Деплой через GitHub Actions
 
-## Настройка SSH ключей
+## Быстрый старт
 
-### 1. Генерация SSH ключа на сервере
-
-```bash
-ssh-keygen -t ed25519 -C "github-actions" -f ~/.ssh/github_actions -N ""
-cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
-```
-
-### 2. Добавление Secrets в GitHub
-
-Перейдите в: https://github.com/LeshiyOFF/infoindexer/settings/secrets/actions
-
-Добавьте следующие secrets:
-
-| Name | Value | Описание |
-|------|-------|----------|
-| `SSH_PRIVATE_KEY` | (приватный ключ) | Содержимое `~/.ssh/github_actions` |
-| `SERVER_HOST` | `38.180.146.98` | IP сервера |
-| `SERVER_USER` | `root` | Пользователь SSH |
-
-### 3. Первоначальная настройка сервера
+### 1. Настройка сервера (один раз)
 
 ```bash
 # SSH на сервер
 ssh root@38.180.146.98
 
-# Клонировать репозиторий
+# Скачать и запустить setup скрипт
 cd /root
 git clone https://github.com/LeshiyOFF/infoindexer.git
 cd infoindexer
-
-# Настроить .env (скопировать с локальной машины или создать заново)
-cp .env.example .env
-# редактировать .env
-
-# Запустить
-docker-compose up -d --build
+chmod +x scripts/setup-server.sh
+sudo ./scripts/setup-server.sh
 ```
 
-### 4. Проверка деплоя
+### 2. Добавить Secrets в GitHub
 
-Теперь при каждом push в ветку `master`:
-1. Собирается проект
-2. Подключается к серверу по SSH
-3. Git pull
-4. Пересобираются Docker контейнеры
-5. Проверяется health
+Перейти в: https://github.com/LeshiyOFF/infoindexer/settings/secrets/actions
 
-## Ручной запуск деплоя
+| Secret | Value |
+|--------|-------|
+| `DEPLOY_SSH_KEY` | Вывод команды (приватный ключ из `setup-server.sh`) |
+| `SERVER_HOST` | `38.180.146.98` |
+| `SERVER_USER` | `root` |
 
-GitHub Actions → Workflows → Deploy to Production Server → Run workflow
+### 3. Настроить .env на сервере
+
+```bash
+ssh root@38.180.146.98
+cd /root/infoindexer
+cp .env.example .env
+nano .env  # отредактировать
+```
+
+### 4. Первый запуск
+
+```bash
+cd /root/infoindexer
+docker compose up -d
+```
+
+## Автоматический деплой
+
+После настройки — каждый push в `master` автоматически деплоится:
+
+```
+push → CI → Docker Build → Deploy → Health Check
+```
+
+## Ручной деплой
+
+### Через GitHub Actions
+
+1. GitHub Actions → Workflows → Deploy to Production
+2. Нажать "Run workflow"
+
+### Через SSH
+
+```bash
+ssh root@38.180.146.98
+/usr/local/bin/infoindexer-deploy
+```
+
+### Вручную
+
+```bash
+ssh root@38.180.146.98
+cd /root/infoindexer
+git pull origin master
+docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+## Мониторинг
+
+```bash
+# Статус сервисов
+ssh root@SERVER_HOST "cd /root/infoindexer && docker compose ps"
+
+# Логи
+ssh root@SERVER_HOST "cd /root/infoindexer && docker compose logs -f"
+
+# Health check
+curl http://38.180.146.98:3140/api/health
+```
+
+## Откат
+
+```bash
+ssh root@SERVER_HOST
+cd /root/infoindexer
+./scripts/rollback.sh
+```
+
+Подробнее: см. [docs/ROLLBACK.md](ROLLBACK.md)
+
+## Troubleshooting
+
+### Деплой не запускается
+
+Проверить GitHub Secrets:
+```bash
+# Проверить SSH ключ
+ssh -i ~/.ssh/deploy_key root@38.180.146.98
+```
+
+### Контейнеры не стартуют
+
+```bash
+ssh root@SERVER_HOST
+cd /root/infoindexer
+docker compose logs
+```
+
+### Нет доступа к API
+
+```bash
+# Проверить порт
+curl http://38.180.146.98:3140/api/health
+
+# Проверить firewall на сервере
+ufw status
+```

@@ -1,14 +1,55 @@
+# Dependencies
 node_modules
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build artifacts
+dist
+.next
+build
+*.tsbuildinfo
+
+# Git
 .git
 .github
+
+# Environment
 .env
 .env.*
 !.env.example
+
+# Documentation (not needed in container)
 *.md
-.next
-dist
-coverage
+docs
+Plans
+
+# IDE
 .vscode
 .cursor
-*.log
+.idea
+*.swp
+*.swo
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Testing
+coverage
+*.test.ts
+*.spec.ts
+__tests__
+
+# Temporary
+tmp
+*.tmp
+*.log
+
+# Old files
+*.zip
+
+# Secrets
+secrets
+docker/certs/*.pem
+docker/certs/*.srl

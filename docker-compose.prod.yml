@@ -1,0 +1,39 @@
+# Production override - uses pre-built images from GHCR
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+networks:
+  infoindexer_net:
+    external: true
+
+services:
+  sync-worker:
+    image: ghcr.io/leshiyoff/infoindexer:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+
+  egrul-sync-worker:
+    image: ghcr.io/leshiyoff/infoindexer:latest
+    build:
+      context: .
+      dockerfile: apps/egrul-sync-worker/Dockerfile
+    environment:
+      - NODE_ENV=production
+
+  admin-ui:
+    image: ghcr.io/leshiyoff/infoindexer:admin-ui-latest
+    build:
+      context: .
+      dockerfile: apps/admin-ui/Dockerfile
+    environment:
+      - NODE_ENV=production
+
+  contacts-parser:
+    image: ghcr.io/leshiyoff/infoindexer:contacts-parser-latest
+    build:
+      context: .
+      dockerfile: Dockerfile.playwright
+    environment:
+      - NODE_ENV=production

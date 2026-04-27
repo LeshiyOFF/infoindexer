@@ -1,51 +1,83 @@
-name: Deploy to Production Server
+name: Deploy to Production
 
 on:
-  push:
-    branches: [master, main]
+  workflow_run:
+    workflows: ["Docker Build"]
+    types: [completed]
+    branches: [main, master]
   workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build all packages
-        run: npm run build
-
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy to server
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+            set -e
+
             cd /root/infoindexer
-            git pull origin master
-            docker-compose pull
-            docker-compose down
-            docker-compose up -d --build
-            docker system prune -f
+
+            # Pull latest code
+            git fetch origin
+            git reset --hard origin/master
+
+            # Pull latest images
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+
+            # Restart services
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+            # Cleanup old images
+            docker image prune -af --filter "until=24h"
+
+            echo "Deploy completed at $(date)"
           ENDSSH
 
       - name: Health check
         run: |
-          sleep 10
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
-            docker ps --format "table {{.Names}}\t{{.Status}}"
-            curl -f http://localhost:3000/api/health || exit 1
+          sleep 15
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+            cd /root/infoindexer
+            docker compose ps
+
+            # Check ClickHouse
+            echo "Checking ClickHouse..."
+            docker exec infoindexer-clickhouse-1 clickhouse-client --query "SELECT 1"
+
+            # Check Redis
+            echo "Checking Redis..."
+            docker exec infoindexer-redis-1 redis-cli ping
+
+            # Check API
+            echo "Checking Admin UI..."
+            curl -f http://localhost:3140/api/health || echo "API not responding yet"
+          ENDSSH
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Deploy failed! Check logs on server."
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+            cd /root/infoindexer
+            docker compose logs --tail=50
           ENDSSH
