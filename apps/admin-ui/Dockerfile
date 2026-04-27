@@ -5,21 +5,20 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ../../package*.json ./
+COPY package*.json ./
 COPY packages/shared/package*.json ./packages/shared/
 COPY apps/admin-ui/package*.json ./apps/admin-ui/
 
-# Install dependencies
-RUN npm ci --legacy-peer-deps --ignore-scripts && \
-    npm cache clean --force
+# Install all workspace dependencies
+RUN npm ci --legacy-peer-deps --ignore-scripts --workspaces=false && \
+    npm install --legacy-peer-deps --ignore-scripts
 
 # Stage 2: Build
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy dependencies from deps stage
+# Copy all dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 
 # Copy source files
 COPY packages/shared ./packages/shared
