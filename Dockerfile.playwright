@@ -1,27 +1,45 @@
-# Use official Playwright image for runtime stability
-FROM mcr.microsoft.com/playwright:v1.42.1-jammy
+# Dockerfile for contacts-parser with Playwright
+# Multi-stage build for efficient layer caching
+
+FROM mcr.microsoft.com/playwright:v1.42.1-jammy AS base
+
+# Install only Chromium browser (smaller footprint)
+RUN playwright install --with-deps chromium
 
 WORKDIR /app
 
-# Copy global and workspace configs
+# Copy package files for better layer caching
 COPY package*.json ./
-COPY packages/shared/package.json packages/shared/
-COPY apps/contacts-parser/package.json apps/contacts-parser/
+COPY packages/shared/package*.json ./packages/shared/
+COPY apps/contacts-parser/package*.json ./apps/contacts-parser/
 
-# Build shared and contacts-parser
-# PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: пропускаем下载 в npm ci, установим нужный browser позже
-# --ignore-scripts: postinstall пытается создать сертификаты до копирования кода
+# Install dependencies
+# PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: skip browser download during npm ci
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --ignore-scripts
+    npm ci --legacy-peer-deps --ignore-scripts && \
+    npm cache clean --force
 
-# Copy source and build (transpile)
-COPY . .
+# Copy source files
+COPY packages/shared ./packages/shared
+COPY apps/contacts-parser ./apps/contacts-parser
+
+# Build shared package
 RUN npm run build --workspace=packages/shared
+
+# Build contacts-parser
 RUN npm run build --workspace=apps/contacts-parser
 
-# Pre-install only needed browser
-RUN npx playwright install chromium
+# Create non-root user for security
+RUN useradd -m -u 1001 parser && \
+    chown -R parser:parser /app
 
-# Start from compiled JS
+USER parser
+
+ENV NODE_ENV=production
+ENV PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD node -e "require('ioredis').createClient().ping()" || exit 1
+
 CMD ["node", "apps/contacts-parser/dist/index.js"]

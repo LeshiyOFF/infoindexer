@@ -8,32 +8,33 @@ networks:
 services:
   sync-worker:
     image: ghcr.io/leshiyoff/infoindexer:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
     environment:
       - NODE_ENV=production
 
   egrul-sync-worker:
-    image: ghcr.io/leshiyoff/infoindexer:latest
-    build:
-      context: .
-      dockerfile: apps/egrul-sync-worker/Dockerfile
+    image: ghcr.io/leshiyoff/infoindexer:egrul-latest
     environment:
       - NODE_ENV=production
+      - SOCKS_PROXY_URL=${SOCKS_PROXY_URL:-}
+      - BATCH_SIZE=${BATCH_SIZE:-10000}
 
   admin-ui:
     image: ghcr.io/leshiyoff/infoindexer:admin-ui-latest
-    build:
-      context: .
-      dockerfile: apps/admin-ui/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+    ports:
+      - "3140:3000"
+
+  contacts-parser:
+    image: ghcr.io/leshiyoff/infoindexer:contacts-latest
     environment:
       - NODE_ENV=production
 
-  contacts-parser:
-    image: ghcr.io/leshiyoff/infoindexer:contacts-parser-latest
-    build:
-      context: .
-      dockerfile: Dockerfile.playwright
+  migration-worker:
+    image: ghcr.io/leshiyoff/infoindexer:migration-latest
     environment:
       - NODE_ENV=production
+      - MIGRATIONS_BASE_DIR=/app/packages/shared/infrastructure/migrations/files
+      - MIGRATION_MODE=once
+      - MIGRATION_AUTO_CLEANUP=${MIGRATION_AUTO_CLEANUP:-false}

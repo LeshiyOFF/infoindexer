@@ -30,42 +30,94 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
+      # Build admin-ui (Next.js)
+      - name: Extract metadata for admin-ui
+        id: meta-admin-ui
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix={{branch}}-admin-ui-
+            type=raw,value=admin-ui-latest,enable={{is_default_branch}}
+          flavor: |
+            suffix=-admin-ui
 
-      - name: Build and push main image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Build and push admin-ui image
+      - name: Build and push admin-ui
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./apps/admin-ui/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:admin-ui-latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:admin-ui-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-admin-ui.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          labels: ${{ steps.meta-admin-ui.outputs.labels }}
 
-      - name: Build and push contacts-parser image
+      # Build egrul-sync-worker
+      - name: Extract metadata for egrul-worker
+        id: meta-egrul
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix={{branch}}-egrul-
+            type=raw,value=egrul-latest,enable={{is_default_branch}}
+          flavor: |
+            suffix=-egrul
+
+      - name: Build and push egrul-sync-worker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/egrul-sync-worker/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:egrul-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-egrul.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: ${{ steps.meta-egrul.outputs.labels }}
+
+      # Build migration-worker
+      - name: Extract metadata for migration-worker
+        id: meta-migration
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix={{branch}}-migration-
+            type=raw,value=migration-latest,enable={{is_default_branch}}
+          flavor: |
+            suffix=-migration
+
+      - name: Build and push migration-worker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/migration-worker/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:migration-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-migration.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: ${{ steps.meta-migration.outputs.labels }}
+
+      # Build contacts-parser (Playwright)
+      - name: Extract metadata for contacts-parser
+        id: meta-contacts
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix={{branch}}-contacts-
+            type=raw,value=contacts-latest,enable={{is_default_branch}}
+          flavor: |
+            suffix=-contacts
+
+      - name: Build and push contacts-parser
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile.playwright
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:contacts-parser-latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:contacts-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-contacts.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          labels: ${{ steps.meta-contacts.outputs.labels }}
