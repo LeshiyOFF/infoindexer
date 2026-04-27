@@ -43,13 +43,10 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built app - standalone includes server.js and node_modules
-COPY --from=builder /app/apps/admin-ui/.next/standalone/apps/admin-ui ./
-COPY --from=builder /app/apps/admin-ui/.next/static ./.next/static
-COPY --from=builder /app/apps/admin-ui/public ./public
-
-# Set permissions
-RUN chown -R nextjs:nodejs /app
+# Copy standalone output which includes server.js and node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/static ./apps/admin-ui/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/public ./apps/admin-ui/public
 
 USER nextjs
 
