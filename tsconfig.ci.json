@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "declaration": false
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.d.ts",
+    "apps/*/dist",
+    "packages/*/dist"
+  ]
+}

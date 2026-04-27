@@ -13,9 +13,6 @@ import { LinearProgressIndicator, type ProgressData } from '@/components/ui/Line
 import { CancelButton, type CancelButtonState } from '@/components/ui/CancelButton';
 import type { EgrulStatus } from '@/types/settings.types';
 
-// Примерное общее количество строк в ЕГРЮЛ
-const ESTIMATED_EGRUL_TOTAL = 20_000_000;
-
 interface Props {
   readonly egrulStatus: EgrulStatus;
   readonly anySyncRunning: boolean;

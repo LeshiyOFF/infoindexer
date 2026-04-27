@@ -63,7 +63,7 @@ export function getBarColorClass(status: string): string {
 /**
  * Проверяет, нужно ли показывать shimmer анимацию
  */
-export function shouldShowShimmer(status: string, percentage: number): boolean {
+export function shouldShowShimmer(status: string): boolean {
   return status === 'running' || status === 'stopping';
 }
 

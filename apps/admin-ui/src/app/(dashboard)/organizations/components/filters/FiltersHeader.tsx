@@ -13,10 +13,10 @@ import { memo } from 'react';
 import { Filter, Search } from 'lucide-react';
 import type { ISearchPort, IFilterVisibilityPort, IFilterStatisticsPort } from '../../domain/ports/filter-ports';
 
-export interface FiltersHeaderProps extends
-  ISearchPort,
-  IFilterVisibilityPort,
-  IFilterStatisticsPort {}
+export type FiltersHeaderProps =
+  ISearchPort &
+  IFilterVisibilityPort &
+  IFilterStatisticsPort
 
 export const FiltersHeader = memo(function FiltersHeader({
   totalCount,
@@ -44,7 +44,7 @@ export const FiltersHeader = memo(function FiltersHeader({
 
 // === Sub-components ===
 
-interface FilterStatsProps extends Pick<IFilterStatisticsPort, 'totalCount' | 'totalPages'> {}
+type FilterStatsProps = Pick<IFilterStatisticsPort, 'totalCount' | 'totalPages'>
 
 const FilterStats = memo(function FilterStats({ totalCount, totalPages }: FilterStatsProps) {
   return (

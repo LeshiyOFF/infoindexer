@@ -13,8 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createBatchServices } from '@/components/batches/services';
 import type {
   BatchArchiveMeta,
-  BatchResults,
-  BatchInnItem
+  BatchResults
 } from '@/components/batches/ports';
 
 /** Интервал polling для архива (мс) */

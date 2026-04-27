@@ -8,8 +8,7 @@
 
 import type {
   IBatchHistoryPort,
-  BatchHistoryItem,
-  BatchStatus
+  BatchHistoryItem
 } from '../ports';
 import { getProgressPercentage } from '@/lib/batch-status.utils';
 

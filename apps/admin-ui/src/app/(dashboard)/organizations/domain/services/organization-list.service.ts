@@ -9,8 +9,6 @@
  * - DIP: Зависит от Port-ов (абстракций), не от реализаций
  */
 
-import type { CompanyMeta } from 'shared/client';
-
 export interface OrganizationListViewModel {
   readonly pagination: {
     readonly currentPage: number;

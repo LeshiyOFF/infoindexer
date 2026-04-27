@@ -27,7 +27,6 @@ export interface BatchResultsFeedProps {
   readonly batchId: string | null;
   readonly archiveResults: Readonly<Record<string, { status: string; data?: unknown; error?: string }>> | null;
   readonly archiveInns?: readonly { inn: string; name: string }[];
-  readonly selectedCompanyInn?: string | null;
 }
 
 /**
@@ -76,8 +75,7 @@ export function BatchResultsFeed({
   isArchive,
   batchId,
   archiveResults,
-  archiveInns,
-  selectedCompanyInn = null
+  archiveInns
 }: BatchResultsFeedProps) {
   const { batchItems, batchProgress } = useBatch();
 

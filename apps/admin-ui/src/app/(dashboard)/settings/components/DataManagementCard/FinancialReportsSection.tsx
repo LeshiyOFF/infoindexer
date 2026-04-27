@@ -8,7 +8,7 @@
 "use client";
 
 import { memo } from 'react';
-import { Download, Settings2, Trash2 } from 'lucide-react';
+import { Download, Settings2 } from 'lucide-react';
 import { LinearProgressIndicator, type ProgressData } from '@/components/ui/LinearProgressIndicator';
 import { CancelButton, type CancelButtonState } from '@/components/ui/CancelButton';
 import type { YearStatus } from '@/types/settings.types';

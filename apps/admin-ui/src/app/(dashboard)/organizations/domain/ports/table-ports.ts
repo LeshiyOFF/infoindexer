@@ -14,8 +14,6 @@
  * - DIP: Direction of dependency → INWARD (к Domain)
  */
 
-import type { CompanyMeta } from 'shared/client';
-
 // ============================================================
 // PORT: Primary (Driving) Side — что может делать пользователь
 // ============================================================

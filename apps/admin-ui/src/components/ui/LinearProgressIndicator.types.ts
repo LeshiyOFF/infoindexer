@@ -37,7 +37,6 @@ export interface ProgressData {
  */
 export interface LinearProgressIndicatorProps {
   readonly data: ProgressData;
-  readonly variant?: 'detailed' | 'compact';
   readonly showPercentage?: boolean;
   readonly className?: string;
 }

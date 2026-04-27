@@ -27,13 +27,6 @@ export interface UrlParams {
   hasName: boolean;
 }
 
-/**
- * Возвращает maxRevenue как number (обход литерального типа)
- */
-function toNumber(val: number): number {
-  return val;
-}
-
 /** Параметры по умолчанию */
 export const defaultUrlParams: UrlParams = {
   page: 1,

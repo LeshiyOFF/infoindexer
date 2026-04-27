@@ -5,7 +5,6 @@
  * Централизованный экспорт адаптеров и factory function.
  */
 
-import { getAuthHeaders } from '@/lib/api';
 import { HttpBatchHistoryAdapter } from './http-batch-history.adapter';
 import { HttpBatchArchiveAdapter } from './http-batch-archive.adapter';
 import { HttpBatchExportAdapter } from './http-batch-export.adapter';

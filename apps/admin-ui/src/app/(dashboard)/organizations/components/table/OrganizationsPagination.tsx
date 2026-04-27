@@ -13,17 +13,14 @@ import { memo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { IPaginationPort } from '../../domain/ports/table-ports';
 
-export interface OrganizationsPaginationProps extends IPaginationPort {
-  readonly total: number;
-}
+export type OrganizationsPaginationProps = IPaginationPort
 
 export const OrganizationsPagination = memo(function OrganizationsPagination({
   page,
   totalPages,
   goToPage,
   canGoNext,
-  canGoPrev,
-  total
+  canGoPrev
 }: OrganizationsPaginationProps) {
   const handlePrev = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();

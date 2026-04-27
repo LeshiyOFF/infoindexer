@@ -15,13 +15,11 @@ import { memo } from 'react';
 
 // Реэкспорт типов для обратной совместимости
 export type {
-  ProgressStatus,
   ProgressData,
   LinearProgressIndicatorProps
 } from './LinearProgressIndicator.types';
 
 import type {
-  ProgressStatus,
   ProgressData,
   LinearProgressIndicatorProps
 } from './LinearProgressIndicator.types';
@@ -102,7 +100,6 @@ function getDetails(data: ProgressData): string | null {
  */
 export const LinearProgressIndicator = memo(function LinearProgressIndicator({
   data,
-  variant = 'detailed',
   showPercentage = true,
   className = ''
 }: LinearProgressIndicatorProps) {
@@ -122,7 +119,7 @@ export const LinearProgressIndicator = memo(function LinearProgressIndicator({
   const showIndeterminate = isIndeterminate(status) || indeterminateFlag;
 
   // Shimmer для running/stopping
-  const showShimmer = shouldShowShimmer(status, displayPercentage);
+  const showShimmer = shouldShowShimmer(status);
   const barColor = getBarColorClass(status);
 
   // Текст деталей
