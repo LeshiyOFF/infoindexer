@@ -3,9 +3,6 @@
 
 FROM mcr.microsoft.com/playwright:v1.42.1-jammy AS base
 
-# Install only Chromium browser (smaller footprint)
-RUN playwright install --with-deps chromium
-
 WORKDIR /app
 
 # Copy package files for better layer caching
@@ -15,6 +12,7 @@ COPY apps/contacts-parser/package*.json ./apps/contacts-parser/
 
 # Install dependencies
 # PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: skip browser download during npm ci
+# (browsers already included in Playwright image)
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --legacy-peer-deps --ignore-scripts && \
