@@ -102,7 +102,7 @@ export const EgrulSection = memo(function EgrulSection({
               />
             )}
           </div>
-          <LinearProgressIndicator data={progressData} variant="detailed" />
+          <LinearProgressIndicator data={progressData}  />
           {hasError && egrulStatus.error && (
             <p className="text-xs text-red-500 mt-1">{egrulStatus.error}</p>
           )}

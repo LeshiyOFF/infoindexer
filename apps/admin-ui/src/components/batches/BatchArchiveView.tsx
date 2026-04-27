@@ -86,7 +86,7 @@ export const BatchArchiveView = memo(function BatchArchiveView({
       {/* Content */}
       <div className="flex flex-col lg:flex-row flex-1 gap-6 min-h-0 overflow-hidden pt-6">
         <div className="hidden lg:flex lg:w-1/3 flex-col">{<CompaniesPanel companies={meta.inns} selectedInn={selectedInn} onSelect={setSelectedInn} onClearSelection={() => setSelectedInn(null)} />}</div>
-        <BatchResultsFeed isArchive batchId={batchId} archiveResults={results?.results ?? null} archiveInns={meta.inns} selectedCompanyInn={selectedInn} />
+        <BatchResultsFeed isArchive batchId={batchId} archiveResults={results?.results ?? null} archiveInns={meta.inns} />
       </div>
     </div>
   );

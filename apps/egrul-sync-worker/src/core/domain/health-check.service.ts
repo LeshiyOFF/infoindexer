@@ -173,7 +173,7 @@ export class HealthCheckService {
    */
   private countActiveOperations(): number {
     try {
-      const { getActiveOperations } = require('../shutdown-handlers');
+      const { getActiveOperations } = require('../../shutdown-handlers');
       return getActiveOperations().size;
     } catch {
       return 0;

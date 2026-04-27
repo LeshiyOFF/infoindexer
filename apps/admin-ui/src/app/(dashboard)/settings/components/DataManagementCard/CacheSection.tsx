@@ -93,7 +93,7 @@ export const CacheSection = memo(function CacheSection({
               />
             )}
           </div>
-          <LinearProgressIndicator data={progressData} variant="detailed" />
+          <LinearProgressIndicator data={progressData} />
         </div>
       )}
 

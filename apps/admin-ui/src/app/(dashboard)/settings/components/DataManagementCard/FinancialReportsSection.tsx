@@ -143,7 +143,7 @@ export const FinancialReportsSection = memo(function FinancialReportsSection({
                     />
                   )}
                 </div>
-                <LinearProgressIndicator data={progressData} variant="detailed" />
+                <LinearProgressIndicator data={progressData}  />
               </div>
             );
           })}

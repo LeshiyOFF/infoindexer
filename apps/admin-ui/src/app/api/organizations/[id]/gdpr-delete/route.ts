@@ -27,6 +27,19 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
 
 /**
+ * Extract user ID from Authorization header
+ */
+function extractUserIdFromAuth(header: string): string {
+  const token = header.replace('Bearer ', '');
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub || 'admin';
+  } catch {
+    return 'admin';
+  }
+}
+
+/**
  * POST /api/organizations/{id}/gdpr-delete
  *
  * Confirm deletion by returning record counts.
@@ -102,17 +115,6 @@ export async function DELETE(
     // Get user ID from auth header for audit
     const authHeader = request.headers.get('authorization');
     const userId = authHeader ? extractUserIdFromAuth(authHeader) : 'anonymous';
-
-    function extractUserIdFromAuth(header: string): string {
-      // Extract user ID from Bearer token
-      const token = header.replace('Bearer ', '');
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        return payload.sub || 'admin';
-      } catch {
-        return 'admin';
-      }
-    }
 
     // Create request DTO
     const deleteRequest = GdprDeleteRequest.create(inn, userId);

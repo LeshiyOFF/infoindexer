@@ -87,7 +87,7 @@ export const SanctionsSection = memo(function SanctionsSection({
               />
             )}
           </div>
-          <LinearProgressIndicator data={progressData} variant="detailed" />
+          <LinearProgressIndicator data={progressData}  />
         </div>
       )}
 

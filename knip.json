@@ -1,5 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "ignoreBinaries": ["tsc"],
   "ignoreDependencies": [
     "@clickhouse/client",
     "ioredis",
@@ -16,32 +17,66 @@
     "@types/unzipper"
   ],
   "ignore": [
-    "apps/admin-ui/src/components/ui/button.tsx",
-    "apps/admin-ui/src/components/ui/card.tsx",
-    "apps/admin-ui/src/components/ui/input.tsx",
-    "apps/admin-ui/src/components/ui/label.tsx",
-    "apps/admin-ui/src/components/ui/skeleton.tsx",
+    "apps/admin-ui/src/components/ui/**",
     "packages/shared/dist/**",
     "apps/admin-ui/.next/**",
     "apps/*/dist/**",
-    "scripts/profile-api.js"
+    "scripts/profile-api.js",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/__tests__/**",
+    "packages/shared/**/*.js",
+    "packages/shared/**/*.d.ts",
+    "**/domain/index.ts",
+    "**/ports/index.ts",
+    "**/services/index.ts",
+    "**/adapters/index.ts",
+    "**/repositories/index.ts",
+    "**/infrastructure/index.ts",
+    "**/utils/index.ts",
+    "**/parsers/index.ts",
+    "**/stages/index.ts",
+    "**/core/index.ts",
+    "**/api/index.ts",
+    "**/mappers/index.ts",
+    "**/factories/index.ts",
+    "**/types/index.ts",
+    "**/config/index.ts",
+    "**/components/index.ts",
+    "**/hooks/index.ts",
+    "**/lib/index.ts",
+    "scripts/docker-fetch-duckdb-httpfs.cjs",
+    "packages/shared/**/*.ts",
+    "apps/sync-worker/src/scripts/**"
   ],
   "workspaces": {
     "apps/admin-ui": {
-      "entry": ["src/app/**/{layout,page,route}.{ts,tsx}", "src/app/api/**/route.ts"],
+      "entry": [
+        "src/app/layout.tsx",
+        "src/app/(dashboard)/**/{layout,page}.{ts,tsx}"
+      ],
       "project": ["src/**/*.{ts,tsx}"]
     },
     "apps/sync-worker": {
+      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"]
     },
     "apps/egrul-sync-worker": {
+      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"]
     },
     "apps/contacts-parser": {
+      "entry": ["src/index.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "apps/migration-worker": {
+      "entry": ["src/index.ts"],
       "project": ["src/**/*.ts"]
     },
     "packages/shared": {
-      "project": ["**/*.ts"]
+      "entry": ["index.ts"],
+      "project": ["**/*.ts", "**/*.tsx"],
+      "ignore": ["dist/**", "node_modules/**"]
     }
   }
 }

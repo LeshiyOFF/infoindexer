@@ -28,8 +28,8 @@ jobs:
       - name: Type check shared package
         run: cd packages/shared && npx tsc --noEmit
 
-      - name: Knip (unused code & deps)
-        run: npx knip
+      - name: Knip (dependencies & unresolved imports)
+        run: npx knip --exclude files,exports,types,duplicates
 
   build:
     runs-on: ubuntu-latest

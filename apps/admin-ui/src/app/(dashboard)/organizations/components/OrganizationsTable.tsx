@@ -81,7 +81,6 @@ export const OrganizationsTable = memo(function OrganizationsTable({
         goToPage={goToPage}
         canGoNext={canGoNext}
         canGoPrev={canGoPrev}
-        total={pagination.total}
       />
     </div>
   );
