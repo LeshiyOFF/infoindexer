@@ -8,11 +8,13 @@ networks:
 services:
   sync-worker:
     image: ghcr.io/leshiyoff/infoindexer:latest
+    command: []
     environment:
       - NODE_ENV=production
 
   egrul-sync-worker:
     image: ghcr.io/leshiyoff/infoindexer:egrul-latest
+    command: []
     environment:
       - NODE_ENV=production
       - SOCKS_PROXY_URL=${SOCKS_PROXY_URL:-}
@@ -20,6 +22,7 @@ services:
 
   admin-ui:
     image: ghcr.io/leshiyoff/infoindexer:admin-ui-latest
+    command: []
     environment:
       - NODE_ENV=production
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
@@ -28,11 +31,13 @@ services:
 
   contacts-parser:
     image: ghcr.io/leshiyoff/infoindexer:contacts-latest
+    command: []
     environment:
       - NODE_ENV=production
 
   migration-worker:
     image: ghcr.io/leshiyoff/infoindexer:migration-latest
+    command: []
     environment:
       - NODE_ENV=production
       - MIGRATIONS_BASE_DIR=/app/packages/shared/infrastructure/migrations/files
