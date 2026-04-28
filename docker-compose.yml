@@ -33,6 +33,12 @@ services:
     ports:
       - "8123:8123"
       - "8443:8443"
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
 
   redis:
     image: redis:7.4-alpine
@@ -58,7 +64,7 @@ services:
       - infoindexer_net
     depends_on:
       clickhouse:
-        condition: service_started
+        condition: service_healthy
     restart: "no"
 
   migration-worker:
