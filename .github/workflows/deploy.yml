@@ -169,11 +169,20 @@ jobs:
             git checkout -- .
             git clean -fd
 
-            # Debug: check for override files and show lines 130-135
-            echo "Checking compose files..."
-            ls -la docker-compose*.yml 2>/dev/null || true
-            echo "Validating compose merge..."
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml config 2>&1 | head -50 || echo "Merge failed"
+            # Debug: check files
+            echo "=== File diagnostics ==="
+            ls -la docker-compose*.yml
+            wc -l docker-compose*.yml
+            echo "=== Last 20 lines of docker-compose.yml ==="
+            tail -20 docker-compose.yml
+            echo "=== Git status ==="
+            git status
+            echo "=== Git diff docker-compose.yml ==="
+            git diff HEAD docker-compose.yml | head -50 || echo "No diff"
+            echo "=== Force checkout file ==="
+            git checkout -f origin/master -- docker-compose.yml
+            echo "=== New size ==="
+            ls -la docker-compose.yml
 
             # Pull latest images from GHCR
             echo "Pulling latest images..."
