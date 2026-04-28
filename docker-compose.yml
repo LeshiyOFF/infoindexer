@@ -22,12 +22,12 @@ services:
     volumes:
       - clickhouse_data:/var/lib/clickhouse
       # ClickHouse config.d (system settings) - loaded in order 01-06
+      # Note: 07-ssl.xml excluded - certificates not installed (add in prod override when needed)
       - ./docker/clickhouse-config.d/02-query-limits.xml:/etc/clickhouse-server/config.d/02-query-limits.xml:ro
       - ./docker/clickhouse-config.d/03-join-settings.xml:/etc/clickhouse-server/config.d/03-join-settings.xml:ro
       - ./docker/clickhouse-config.d/04-low-memory-merge-tree.xml:/etc/clickhouse-server/config.d/04-low-memory-merge-tree.xml:ro
       - ./docker/clickhouse-config.d/audit-log.xml:/etc/clickhouse-server/config.d/05-audit-log.xml:ro
       - ./docker/clickhouse-config.d/merge-tree-broken-parts.xml:/etc/clickhouse-server/config.d/06-broken-parts.xml:ro
-      - ./docker/clickhouse-config.d/ssl.xml:/etc/clickhouse-server/config.d/07-ssl.xml:ro
       # ClickHouse users.d (user profiles, quotas) - loaded after config.d
       - ./docker/clickhouse-config.d/01-base-profiles.xml:/etc/clickhouse-server/users.d/01-profiles.xml:ro
       - ./docker/clickhouse-config.d/05-quotas.xml:/etc/clickhouse-server/users.d/02-quotas.xml:ro
@@ -35,7 +35,7 @@ services:
       - infoindexer_net
     ports:
       - "8123:8123"
-      - "8443:8443"
+      # Note: 8443 port excluded - SSL not configured
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
       interval: 5s

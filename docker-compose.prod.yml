@@ -7,20 +7,6 @@ networks:
     driver: bridge
 
 services:
-  clickhouse:
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-      # Config.d: system settings (excluding SSL which requires certificates)
-      - ./docker/clickhouse-config.d/02-query-limits.xml:/etc/clickhouse-server/config.d/02-query-limits.xml:ro
-      - ./docker/clickhouse-config.d/03-join-settings.xml:/etc/clickhouse-server/config.d/03-join-settings.xml:ro
-      - ./docker/clickhouse-config.d/04-low-memory-merge-tree.xml:/etc/clickhouse-server/config.d/04-low-memory-merge-tree.xml:ro
-      - ./docker/clickhouse-config.d/audit-log.xml:/etc/clickhouse-server/config.d/05-audit-log.xml:ro
-      - ./docker/clickhouse-config.d/merge-tree-broken-parts.xml:/etc/clickhouse-server/config.d/06-broken-parts.xml:ro
-      # Users.d: user profiles and quotas
-      - ./docker/clickhouse-config.d/01-base-profiles.xml:/etc/clickhouse-server/users.d/01-profiles.xml:ro
-      - ./docker/clickhouse-config.d/05-quotas.xml:/etc/clickhouse-server/users.d/02-quotas.xml:ro
-    # Note: 07-ssl.xml excluded - certificates not installed
-
   clickhouse-init:
     image: ghcr.io/leshiyoff/infoindexer:clickhouse-init-latest
 
