@@ -162,36 +162,16 @@ jobs:
             cd /root/infoindexer
 
             # Pull latest code from git
-            echo "Updating code..."
             git config core.sshCommand "ssh -i /root/.ssh/deploy_github -o StrictHostKeyChecking=no"
             git fetch origin
             git reset --hard origin/master
             git checkout -- .
             git clean -fd
 
-            # Force update files from origin
-            echo "=== Git info ==="
-            echo "Origin/master SHA: $(git rev-parse origin/master)"
-            echo "HEAD SHA: $(git rev-parse HEAD)"
-            echo "=== Checking prod file ==="
-            echo "Prod file size and lines:"
-            ls -la docker-compose.prod.yml
-            wc -l docker-compose.prod.yml
-            echo "Prod file content:"
-            cat docker-compose.prod.yml
-            echo "=== Force updating docker-compose.yml ==="
-            rm -f docker-compose.yml
-            git show origin/master:docker-compose.yml > docker-compose.yml
-            echo "=== File info ==="
-            ls -la docker-compose.yml
-            wc -l docker-compose.yml
-
             # Pull latest images from GHCR
-            echo "Pulling latest images..."
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
 
             # Restart services
-            echo "Restarting services..."
             docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
             # Cleanup old images

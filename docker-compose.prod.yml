@@ -1,4 +1,5 @@
 # Production override - uses pre-built images from GHCR
+# Principle: Minimal override - only image replacements
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 networks:
@@ -8,56 +9,18 @@ networks:
 services:
   clickhouse-init:
     image: ghcr.io/leshiyoff/infoindexer:clickhouse-init-latest
-    environment:
-      - CLICKHOUSE_HOST=clickhouse
-      - CLICKHOUSE_PORT=9000
-      - CLICKHOUSE_DB=infoindexer
-      - CLICKHOUSE_USER=default
-      - CLICKHOUSE_PASSWORD=
-      - CLICKHOUSE_HTTP_PORT=8123
-      - MAX_RETRIES=30
-      - RETRY_INTERVAL=2
-    networks:
-      - infoindexer_net
-    depends_on:
-      clickhouse:
-        condition: service_healthy
-    restart: "no"
 
   sync-worker:
     image: ghcr.io/leshiyoff/infoindexer:latest
-    command: ["node", "apps/sync-worker/dist/index.js"]
-    environment:
-      - NODE_ENV=production
 
   egrul-sync-worker:
     image: ghcr.io/leshiyoff/infoindexer:egrul-latest
-    command: ["node", "apps/egrul-sync-worker/dist/src/index.js"]
-    environment:
-      - NODE_ENV=production
-      - SOCKS_PROXY_URL=${SOCKS_PROXY_URL:-}
-      - BATCH_SIZE=${BATCH_SIZE:-10000}
 
   admin-ui:
     image: ghcr.io/leshiyoff/infoindexer:admin-ui-latest
-    command: ["node", "apps/admin-ui/server.js"]
-    environment:
-      - NODE_ENV=production
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
-    ports:
-      - "3140:3000"
 
   contacts-parser:
     image: ghcr.io/leshiyoff/infoindexer:contacts-latest
-    command: ["node", "apps/contacts-parser/dist/index.js"]
-    environment:
-      - NODE_ENV=production
 
   migration-worker:
     image: ghcr.io/leshiyoff/infoindexer:migration-latest
-    command: ["node", "apps/migration-worker/dist/index.js"]
-    environment:
-      - NODE_ENV=production
-      - MIGRATIONS_BASE_DIR=/app/packages/shared/infrastructure/migrations/files
-      - MIGRATION_MODE=once
-      - MIGRATION_AUTO_CLEANUP=${MIGRATION_AUTO_CLEANUP:-false}

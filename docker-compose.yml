@@ -2,65 +2,18 @@ networks:
   infoindexer_net:
     driver: bridge
 
-# Anchors for DRY compose
-x-common-env: &common-env
-  CLICKHOUSE_HOST: clickhouse
-  CLICKHOUSE_USER: default
-  CLICKHOUSE_PASSWORD: ""
-  CLICKHOUSE_SECURE: ""
-  CLICKHOUSE_DB: infoindexer
-  REDIS_HOST: redis
-  NODE_ENV: production
-
-x-requires-init: &requires-init
-  depends_on:
-    clickhouse:
-      condition: service_healthy
-    redis:
-      condition: service_healthy
-    clickhouse-init:
-      condition: service_completed_successfully
-
-x-common: &common
-  build:
-    context: .
-    dockerfile: Dockerfile
-  networks:
-    - infoindexer_net
-  depends_on:
-    clickhouse:
-      condition: service_healthy
-    redis:
-      condition: service_healthy
-  environment:
-    - CLICKHOUSE_HOST=clickhouse
-    - CLICKHOUSE_DB=infoindexer
-    - CLICKHOUSE_USER=default
-    - CLICKHOUSE_PASSWORD=
-    - CLICKHOUSE_SECURE=${CLICKHOUSE_SECURE:-}
-    - CLICKHOUSE_ADMIN_PASSWORD=${CLICKHOUSE_ADMIN_PASSWORD:-}
-    - CLICKHOUSE_WORKER_PASSWORD=${CLICKHOUSE_WORKER_PASSWORD:-}
-    - CLICKHOUSE_API_PASSWORD=${CLICKHOUSE_API_PASSWORD:-}
-    - REDIS_HOST=redis
-    - NODE_ENV=production
-  restart: unless-stopped
-
 services:
   clickhouse:
     image: clickhouse/clickhouse-server:24.3
     deploy:
-      # Memory limits for production: 8GB server, 6GB limit + 4GB swap
-      # Low-memory configuration: See docker/clickhouse-config.d/low-memory-merge-tree.xml
-      # Source: Altinity KB - Configure ClickHouse for low memory environments
       resources:
         limits:
           memory: 6G
         reservations:
           memory: 3G
+    env_file:
+      - ./docker/compose/base.env
     environment:
-      - CLICKHOUSE_DB=infoindexer
-      - CLICKHOUSE_USER=default
-      - CLICKHOUSE_PASSWORD=
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
       - CLICKHOUSE_ADMIN_PASSWORD=${CLICKHOUSE_ADMIN_PASSWORD:-admin123}
       - CLICKHOUSE_WORKER_PASSWORD=${CLICKHOUSE_WORKER_PASSWORD:-worker123}
@@ -74,7 +27,7 @@ services:
       - ./docker/clickhouse-config.d/profiles.xml:/etc/clickhouse-server/config.d/profiles.xml:ro
       - ./docker/clickhouse-config.d/audit-log.xml:/etc/clickhouse-server/config.d/audit-log.xml:ro
       - ./docker/clickhouse-config.d/resource-guards.xml:/etc/clickhouse-server/config.d/resource-guards.xml:ro
-      - ./docker/clickhouse-config.d/profiles-users.xml:/etc/clickhouse-server/users.d/profiles-users.xml:ro
+      - ./docker/clickhouse-config.d/profiles-users.xml:/etc/clickhouse-server/config.d/profiles-users.xml:ro
       - ./docker/clickhouse-config.d/users.d/zzz-default-profile.xml:/etc/clickhouse-server/users.d/zzz-default-profile.xml:ro
       - clickhouse_certs:/etc/clickhouse-server/certs
     networks:
@@ -106,12 +59,9 @@ services:
     build:
       context: ./docker/clickhouse-init
       dockerfile: Dockerfile
-    environment:
-      <<: *common-env
-      CLICKHOUSE_PORT: 9000
-      CLICKHOUSE_HTTP_PORT: 8123
-      MAX_RETRIES: 30
-      RETRY_INTERVAL: 2
+    env_file:
+      - ./docker/compose/base.env
+      - ./docker/compose/clickhouse-init.env
     networks:
       - infoindexer_net
     depends_on:
@@ -120,18 +70,26 @@ services:
     restart: "no"
 
   migration-worker:
-    networks:
-      - infoindexer_net
-    <<: *requires-init
     build:
       context: .
       dockerfile: apps/migration-worker/Dockerfile
     command: node apps/migration-worker/dist/index.js
+    env_file:
+      - ./docker/compose/base.env
+      - ./docker/compose/migration.env
     environment:
-      <<: *common-env
-      MIGRATIONS_BASE_DIR=/app/packages/shared/infrastructure/migrations/files
-      MIGRATION_MODE=once
-      MIGRATION_AUTO_CLEANUP=${MIGRATION_AUTO_CLEANUP:-false}
+      - MIGRATIONS_BASE_DIR=/app/packages/shared/infrastructure/migrations/files
+      - MIGRATION_MODE=once
+      - MIGRATION_AUTO_CLEANUP=${MIGRATION_AUTO_CLEANUP:-false}
+    networks:
+      - infoindexer_net
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse-init:
+        condition: service_completed_successfully
     restart: "no"
     healthcheck:
       test: ["CMD-SHELL", "test -f /tmp/migrations-completed && grep -q '\"success\":true' /tmp/migrations-completed || exit 1"]
@@ -141,47 +99,85 @@ services:
       start_period: 10s
 
   sync-worker:
-    <<: *common
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: node apps/sync-worker/dist/index.js
+    env_file:
+      - ./docker/compose/base.env
+      - ./docker/compose/sync.env
+    networks:
+      - infoindexer_net
     depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
       migration-worker:
         condition: service_completed_successfully
+    restart: unless-stopped
 
   egrul-sync-worker:
-    <<: *common
     build:
       context: .
       dockerfile: apps/egrul-sync-worker/Dockerfile
     command: node apps/egrul-sync-worker/dist/src/index.js
+    env_file:
+      - ./docker/compose/base.env
+      - ./docker/compose/egrul.env
+    environment:
+      - SOCKS_PROXY_URL=${SOCKS_PROXY_URL:-}
+      - BATCH_SIZE=${BATCH_SIZE:-10000}
+    networks:
+      - infoindexer_net
     depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
       migration-worker:
         condition: service_completed_successfully
-    environment:
-      <<: *common-env
-      SOCKS_PROXY_URL: ${SOCKS_PROXY_URL:-}
-      BATCH_SIZE: ${BATCH_SIZE:-10000}
+    restart: unless-stopped
 
   admin-ui:
-    <<: *common
-    ports:
-      - "3140:3000"
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: npm start --workspace=apps/admin-ui
+    env_file:
+      - ./docker/compose/base.env
+      - ./docker/compose/admin.env
+    environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+    networks:
+      - infoindexer_net
     depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
       migration-worker:
         condition: service_completed_successfully
-    environment:
-      <<: *common-env
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+    ports:
+      - "3140:3000"
+    restart: unless-stopped
 
   contacts-parser:
     build:
       context: .
       dockerfile: Dockerfile.playwright
+    env_file:
+      - ./docker/compose/base.env
+      - ./docker/compose/contacts.env
     networks:
       - infoindexer_net
-    <<: *requires-init
-    environment:
-      <<: *common-env
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse-init:
+        condition: service_completed_successfully
     restart: unless-stopped
 
 volumes:
