@@ -173,14 +173,18 @@ jobs:
             echo "=== Git info ==="
             echo "Origin/master SHA: $(git rev-parse origin/master)"
             echo "HEAD SHA: $(git rev-parse HEAD)"
+            echo "=== Checking prod file ==="
+            echo "Prod file size and lines:"
+            ls -la docker-compose.prod.yml
+            wc -l docker-compose.prod.yml
+            echo "Prod file content:"
+            cat docker-compose.prod.yml
             echo "=== Force updating docker-compose.yml ==="
             rm -f docker-compose.yml
             git show origin/master:docker-compose.yml > docker-compose.yml
             echo "=== File info ==="
             ls -la docker-compose.yml
             wc -l docker-compose.yml
-            echo "=== Checking memory limits ==="
-            grep -A2 "memory:" docker-compose.yml || echo "NO MEMORY LIMITS FOUND!"
 
             # Pull latest images from GHCR
             echo "Pulling latest images..."
