@@ -161,6 +161,11 @@ jobs:
           script: |
             cd /root/infoindexer
 
+            # Pull latest code from git
+            echo "Updating code..."
+            git fetch origin
+            git reset --hard origin/master
+
             # Pull latest images from GHCR
             echo "Pulling latest images..."
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
