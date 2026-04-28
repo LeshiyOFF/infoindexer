@@ -169,6 +169,14 @@ jobs:
             git checkout -- .
             git clean -fd
 
+            # Debug: check for override files and show lines 130-135
+            echo "Checking compose files..."
+            ls -la docker-compose*.yml 2>/dev/null || true
+            echo "Lines 130-135 of docker-compose.yml:"
+            sed -n '130,135p' docker-compose.yml
+            echo "Lines 130-135 of docker-compose.prod.yml:"
+            sed -n '130,135p' docker-compose.prod.yml || echo "File too short"
+
             # Pull latest images from GHCR
             echo "Pulling latest images..."
             docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
