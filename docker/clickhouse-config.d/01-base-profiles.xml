@@ -1,0 +1,62 @@
+<!--
+  ClickHouse Base Profiles Configuration
+
+  Architecture: Single Responsibility - defines user profiles only
+  Priority: 01 (loaded first)
+  Version: 2.1 (ClickHouse 24.3 compatible)
+
+  Profiles:
+  - default: Base profile
+  - readonly: Read-only access for API users
+  - workers: Background job workers with extended limits
+  - egrul_worker: EGRUL sync operations (high memory)
+  - batch_operations: Heavy batch processing
+
+  Note: JOIN settings are in 03-join-settings.xml
+  Note: Query limits are in 02-query-limits.xml
+
+  Source: Config Builder (packages/shared/config)
+-->
+<clickhouse>
+  <profiles>
+    <!-- Default profile -->
+    <default>
+      <!-- Memory settings -->
+      <max_memory_usage>10000000000</max_memory_usage>
+
+      <!-- Concurrency -->
+      <max_threads>4</max_threads>
+      <max_insert_threads>2</max_insert_threads>
+    </default>
+
+    <!-- Read-only profile for API users -->
+    <readonly>
+      <readonly>1</readonly>
+      <max_memory_usage>2000000000</max_memory_usage>
+      <max_result_rows>100000</max_result_rows>
+      <max_result_bytes>1000000000</max_result_bytes>
+    </readonly>
+
+    <!-- Worker profile for background jobs -->
+    <workers>
+      <readonly>0</readonly>
+      <max_memory_usage>10000000000</max_memory_usage>
+      <max_result_rows>10000000</max_result_rows>
+      <max_result_bytes>10000000000</max_result_bytes>
+      <max_threads>4</max_threads>
+    </workers>
+
+    <!-- EGRUL Worker profile - high memory requirements -->
+    <egrul_worker>
+      <max_memory_usage>7000000000</max_memory_usage>
+      <max_result_rows>10000000</max_result_rows>
+      <max_result_bytes>5000000000</max_result_bytes>
+    </egrul_worker>
+
+    <!-- Batch operations profile -->
+    <batch_operations>
+      <max_memory_usage>9000000000</max_memory_usage>
+      <max_threads>8</max_threads>
+    </batch_operations>
+  </profiles>
+</clickhouse>

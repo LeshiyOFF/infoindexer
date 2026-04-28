@@ -12,7 +12,6 @@ import type { ClickHouseBatchAdapter } from './core/repositories/adapters/clickh
 import type { IdentityMappingService } from './core/repositories/identity-mapping.service';
 import type { DenormalizedRelationsRepository } from './core/repositories/denormalized-relations.repository';
 import type { DenormalizationService } from './core/services/denormalization.service';
-import type { CompanyMergerService } from './core/repositories/company-merger.service';
 import type { EntityParserService } from './core/entity-parser.service';
 import type { SanctionParserService } from './core/parsers/sanction-parser.service';
 import type { ProgressReporter } from './core/infrastructure/progress-reporter';
@@ -32,7 +31,6 @@ export interface AppState {
   identityMapping: IdentityMappingService;
   denormalizedRelationsRepo: DenormalizedRelationsRepository;
   denormalization: DenormalizationService;
-  merger: CompanyMergerService;
   parser: EntityParserService;
   sanctionParser: SanctionParserService;
   progressReporter: ProgressReporter;

@@ -1,0 +1,36 @@
+<!--
+  ClickHouse Quotas Configuration
+
+  Architecture: Single Responsibility - Quota limits only
+  Priority: 05 (loaded after all profiles)
+  Version: 1.0
+
+  Quotas protect against:
+  - Excessive query frequency
+  - Error storms
+  - Resource exhaustion
+
+  Source: Config Builder (packages/shared/config)
+  Reference: https://clickhouse.com/docs/en/operations/access-rights#quotas-management
+-->
+<clickhouse>
+  <quotas>
+    <!-- Default quota for all users -->
+    <default>
+      <max_queries>1000</max_queries>
+      <max_errors>100</max_errors>
+    </default>
+
+    <!-- API quota with stricter limits -->
+    <api_queries>
+      <interval>
+        <duration>3600</duration>
+        <queries>10000</queries>
+        <errors>100</errors>
+        <result_rows>10000000</result_rows>
+        <read_rows>1000000000</read_rows>
+        <execution_time>6000</execution_time>
+      </interval>
+    </api_queries>
+  </quotas>
+</clickhouse>

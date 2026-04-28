@@ -23,7 +23,6 @@ import type { ISyncStateStoragePort } from './ports/i-sync-state-storage.port';
 import type { ClickHouseRepository } from './repositories/clickhouse.repository';
 import type { IdentityMappingService } from './repositories/identity-mapping.service';
 import type { DenormalizationService } from './services/denormalization.service';
-import type { CompanyMergerService } from './repositories/company-merger.service';
 import type { ExternalEnrichmentService } from './services/external-enrichment.service';
 import { DEFAULT_BATCH_SIZE } from '../config/constants';
 import type {
@@ -75,7 +74,6 @@ export class EgrulSyncService {
     progressReporter: ProgressReporter,
     private readonly identityMapping: IdentityMappingService,
     private readonly denormalization: DenormalizationService,
-    private readonly merger: CompanyMergerService,
     enrichment?: ExternalEnrichmentService,
     private readonly resumeStorage?: IResumeStateStorage
   ) {
@@ -87,7 +85,6 @@ export class EgrulSyncService {
     this.orchestrator = createSyncOrchestrator({
       identityMapping,
       denormalization,
-      merger,
       repository,
       syncStateStorage,
       progressReporter,

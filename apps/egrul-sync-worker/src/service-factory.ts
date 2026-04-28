@@ -20,7 +20,6 @@ import { BatchConfig } from './core/domain/value-objects/batch-config.vo';
 import { IdentityMappingService } from './core/repositories/identity-mapping.service';
 import { DenormalizedRelationsRepository } from './core/repositories/denormalized-relations.repository';
 import { DenormalizationService } from './core/services/denormalization.service';
-import { CompanyMergerService } from './core/repositories/company-merger.service';
 import { EntityParserService } from './core/entity-parser.service';
 import { SanctionParserService } from './core/parsers/sanction-parser.service';
 import { ProgressReporterFactory } from './core/infrastructure/progress-reporter';
@@ -130,7 +129,6 @@ export async function initializeServices(
 
   const denormalizedRelationsRepo = new DenormalizedRelationsRepository(clickhouseClient);
   const denormalization = new DenormalizationService(denormalizedRelationsRepo);
-  const merger = new CompanyMergerService(clickhouseClient);
   const parser = new EntityParserService();
   const sanctionParser = new SanctionParserService();
   const progressReporter = ProgressReporterFactory.create(redisClient);
@@ -179,7 +177,6 @@ export async function initializeServices(
     progressReporter,
     identityMapping,
     denormalization,
-    merger,
     enrichment,
     resumeStorage
   );
@@ -214,7 +211,6 @@ export async function initializeServices(
     identityMapping,
     denormalizedRelationsRepo,
     denormalization,
-    merger,
     parser,
     sanctionParser,
     progressReporter,

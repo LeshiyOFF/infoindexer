@@ -1,0 +1,53 @@
+<!--
+  ClickHouse JOIN Settings Configuration
+
+  Architecture: Single Responsibility - JOIN algorithm settings only
+  Priority: 03 (loaded after query limits)
+  Version: 3.0 (ClickHouse 24.3 compatible)
+
+  Migration Notes:
+  - REMOVED: max_bytes_before_external_join (deprecated in 23.8+)
+  - REPLACED WITH: join_algorithm + max_bytes_in_join
+  - REMOVED: Quotas (moved to 05-quotas.xml for SRP compliance)
+
+  JOIN Algorithms:
+  - hash: Default, entire right table in RAM
+  - partial_merge: Spill-to-disk for large JOINs
+  - grace_hash: Hash + spill-to-disk hybrid
+  - full_sorting_merge: Full merge sort on disk
+
+  Source: Config Builder (packages/shared/config)
+  Reference: https://clickhouse.com/docs/en/sql-reference/statements/select/join
+-->
+<clickhouse>
+  <profiles>
+    <!-- JOIN settings for default profile -->
+    <default>
+      <!-- Use partial_merge for spill-to-disk JOIN (replaces max_bytes_before_external_join) -->
+      <join_algorithm>partial_merge</join_algorithm>
+
+      <!-- Memory limit for JOIN hash table -->
+      <max_bytes_in_join>2000000000</max_bytes_in_join>
+
+      <!-- Behavior when limit is reached -->
+      <join_overflow_mode>break</join_overflow_mode>
+
+      <!-- Spill-to-disk for SORT -->
+      <max_bytes_before_external_sort>2000000000</max_bytes_before_external_sort>
+
+      <!-- Spill-to-disk for GROUP BY -->
+      <max_bytes_before_external_group_by>1000000000</max_bytes_before_external_group_by>
+    </default>
+
+    <!-- Grace hash for batch operations -->
+    <batch_operations>
+      <join_algorithm>grace_hash</join_algorithm>
+      <max_bytes_in_join>5000000000</max_bytes_in_join>
+    </batch_operations>
+
+    <!-- EGRUL worker uses grace_hash for large datasets -->
+    <egrul_worker>
+      <join_algorithm>grace_hash</join_algorithm>
+    </egrul_worker>
+  </profiles>
+</clickhouse>

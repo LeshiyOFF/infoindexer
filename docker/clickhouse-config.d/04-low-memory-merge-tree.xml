@@ -1,0 +1,33 @@
+<!-- Low Memory Merge Tree Configuration -->
+<!-- Purpose: Optimize ClickHouse for 8GB RAM server (Altinity verified) -->
+<!-- Architecture: Config layer (separate from code, extendable) -->
+<!-- Priority: 04 (loaded after JOIN settings) -->
+<!-- Version: 1.1 (preserved from original) -->
+<!-- Source: https://kb.altinity.com/altinity-kb-setup-and-maintenance/configure_clickhouse_for_low_mem_envs/ -->
+<clickhouse>
+  <!-- Memory: Reduce mark cache from 5GB to 256MB -->
+  <mark_cache_size>268435456</mark_cache_size>
+
+  <!-- Memory: Limit ClickHouse to 75% of RAM (6GB from 8GB) -->
+  <max_server_memory_usage_to_ram_ratio>0.75</max_server_memory_usage_to_ram_ratio>
+
+  <!-- Merge: Optimize for low memory environments -->
+  <merge_tree>
+    <!-- Reduce block size for merge operations (default 8192 -> 1024) -->
+    <merge_max_block_size>1024</merge_max_block_size>
+
+    <!-- Limit max part size for merge to 1GB (prevents OOM) -->
+    <max_bytes_to_merge_at_max_space_in_pool>1073741824</max_bytes_to_merge_at_max_space_in_pool>
+
+    <!-- Allow smaller merges when pool is busy (prevents queue buildup) -->
+    <number_of_free_entries_in_pool_to_lower_max_size_of_merge>2</number_of_free_entries_in_pool_to_lower_max_size_of_merge>
+
+    <!-- Enable vertical merge algorithm threshold (128MB) -->
+    <min_bytes_for_wide_part>134217728</min_bytes_for_wide_part>
+    <vertical_merge_algorithm_min_bytes_to_activate>134217728</vertical_merge_algorithm_min_bytes_to_activate>
+  </merge_tree>
+
+  <!-- Concurrency: Reduce background pool for low memory -->
+  <background_pool_size>2</background_pool_size>
+  <background_merges_mutations_concurrency_ratio>2</background_merges_mutations_concurrency_ratio>
+</clickhouse>

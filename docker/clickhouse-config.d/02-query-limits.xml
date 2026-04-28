@@ -1,0 +1,41 @@
+<!--
+  ClickHouse Query Limits Configuration
+
+  Architecture: Single Responsibility - query complexity guards only
+  Priority: 02 (loaded after base profiles)
+  Version: 2.2 (ClickHouse 24.3 compatible)
+
+  Settings:
+  - max_rows_to_read: Maximum rows to read from table
+  - max_bytes_to_read: Maximum bytes to read from table
+  - max_execution_time: Maximum query execution time (seconds)
+
+  Source: Config Builder (packages/shared/config)
+-->
+<clickhouse>
+  <profiles>
+    <!-- Apply query limits to default profile -->
+    <default>
+      <!-- Query complexity guards -->
+      <max_rows_to_read>5000000</max_rows_to_read>
+      <max_bytes_to_read>5000000000</max_bytes_to_read>
+      <max_execution_time>300</max_execution_time>
+    </default>
+
+    <!-- Extended limits and execution time for batch operations -->
+    <batch_operations>
+      <max_rows_to_read>100000000</max_rows_to_read>
+      <max_execution_time>3600</max_execution_time>
+    </batch_operations>
+
+    <!-- Extended execution time for workers -->
+    <workers>
+      <max_execution_time>3600</max_execution_time>
+    </workers>
+
+    <!-- Extended execution time for EGRUL worker -->
+    <egrul_worker>
+      <max_execution_time>3600</max_execution_time>
+    </egrul_worker>
+  </profiles>
+</clickhouse>
