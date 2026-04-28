@@ -159,26 +159,118 @@ jobs:
           port: 22
           script_stop: true
           script: |
-            cd /root/infoindexer
+            #!/bin/bash
+            set -euo pipefail
 
-            # Pull latest code from git
-            git config core.sshCommand "ssh -i /root/.ssh/deploy_github -o StrictHostKeyChecking=no"
-            git fetch origin
-            git reset --hard origin/master
-            git checkout -- .
-            git clean -fd
+            # === Configuration ===
+            DEPLOY_DIR="/root/infoindexer"
+            COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
+            PROJECT_NAME="infoindexer"
+            CLICKHOUSE_TIMEOUT=60
+            REDIS_TIMEOUT=30
 
-            # Pull latest images from GHCR
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+            # === Helper Functions ===
 
-            # Restart services
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+            pull_latest_code() {
+              echo "=== Pulling latest code ==="
+              git config core.sshCommand "ssh -i /root/.ssh/deploy_github -o StrictHostKeyChecking=no"
+              git fetch origin
+              git reset --hard origin/master
+              git clean -fd
+            }
 
-            # Cleanup old images
-            docker image prune -af --filter "until=24h"
+            pull_docker_images() {
+              echo "=== Pulling Docker images ==="
+              docker compose $COMPOSE_FILES pull
+            }
 
-            # Show status
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+            ensure_network_exists() {
+              echo "=== Ensuring network exists ==="
+              if ! docker network inspect "${PROJECT_NAME}_infoindexer_net" &>/dev/null; then
+                docker network create "${PROJECT_NAME}_infoindexer_net"
+              fi
+            }
+
+            graceful_shutdown() {
+              echo "=== Graceful shutdown ==="
+              docker compose $COMPOSE_FILES down --remove-orphans
+            }
+
+            start_core_services() {
+              echo "=== Starting core services ==="
+              docker compose $COMPOSE_FILES up -d clickhouse redis
+            }
+
+            wait_for_clickhouse() {
+              echo "=== Waiting for ClickHouse (timeout: ${CLICKHOUSE_TIMEOUT}s) ==="
+              local container_id
+              container_id=$(docker compose $COMPOSE_FILES -q clickhouse 2>/dev/null | head -1)
+
+              timeout "$CLICKHOUSE_TIMEOUT"s bash -c "
+                until docker exec '$container_id' clickhouse-client --query 'SELECT 1' &>/dev/null; do
+                  sleep 1
+                done
+              " || {
+                echo "❌ ClickHouse healthcheck failed"
+                docker logs "$container_id" --tail=50
+                exit 1
+              }
+
+              echo "✅ ClickHouse is ready"
+            }
+
+            wait_for_redis() {
+              echo "=== Waiting for Redis (timeout: ${REDIS_TIMEOUT}s) ==="
+              local container_id
+              container_id=$(docker compose $COMPOSE_FILES -q redis 2>/dev/null | head -1)
+
+              timeout "$REDIS_TIMEOUT"s bash -c "
+                until docker exec '$container_id' redis-cli ping &>/dev/null; do
+                  sleep 1
+                done
+              " || {
+                echo "❌ Redis healthcheck failed"
+                docker logs "$container_id" --tail=50
+                exit 1
+              }
+
+              echo "✅ Redis is ready"
+            }
+
+            start_dependent_services() {
+              echo "=== Starting dependent services ==="
+              docker compose $COMPOSE_FILES up -d
+            }
+
+            verify_deployment() {
+              echo "=== Verifying deployment ==="
+              docker compose $COMPOSE_FILES ps
+            }
+
+            cleanup_old_images() {
+              echo "=== Cleanup old images ==="
+              docker image prune -af --filter "until=24h"
+            }
+
+            # === Main Orchestration ===
+            main() {
+              cd "$DEPLOY_DIR"
+
+              pull_latest_code
+              pull_docker_images
+              ensure_network_exists
+              graceful_shutdown
+              start_core_services
+              wait_for_clickhouse
+              wait_for_redis
+              start_dependent_services
+              verify_deployment
+              cleanup_old_images
+
+              echo "✅ Deployment completed successfully"
+            }
+
+            main
 
       - name: Health check
         uses: appleboy/ssh-action@v1.0.3
@@ -187,21 +279,46 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
-          script_stop: false
+          script_stop: true
           script: |
-            sleep 10
+            #!/bin/bash
+            set -euo pipefail
+
+            DEPLOY_DIR="/root/infoindexer"
+            COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
+            cd "$DEPLOY_DIR"
 
             echo "=== Service Status ==="
-            cd /root/infoindexer
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+            docker compose $COMPOSE_FILES ps
 
             echo "=== Health Checks ==="
 
+            # Get container IDs dynamically
+            CLICKHOUSE_ID=$(docker compose $COMPOSE_FILES -q clickhouse 2>/dev/null | head -1)
+            REDIS_ID=$(docker compose $COMPOSE_FILES -q redis 2>/dev/null | head -1)
+
+            # Check ClickHouse
+            if docker exec "$CLICKHOUSE_ID" clickhouse-client --query 'SELECT 1' &>/dev/null; then
+              echo "✅ ClickHouse: OK"
+            else
+              echo "❌ ClickHouse: not ready"
+              exit 1
+            fi
+
             # Check Redis
-            echo "Redis: $(docker exec infoindexer-redis-1 redis-cli ping 2>/dev/null || echo 'not ready')"
+            if docker exec "$REDIS_ID" redis-cli ping &>/dev/null; then
+              echo "✅ Redis: OK"
+            else
+              echo "❌ Redis: not ready"
+              exit 1
+            fi
 
             # Check Admin UI
-            curl -f http://localhost:3140/ && echo "Admin UI: OK" || echo "Admin UI: not ready yet"
+            if curl -f http://localhost:3140/ &>/dev/null; then
+              echo "✅ Admin UI: OK"
+            else
+              echo "⚠️  Admin UI: not ready yet"
+            fi
 
       - name: Notify on failure
         if: failure()

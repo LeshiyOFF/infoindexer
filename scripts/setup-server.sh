@@ -75,12 +75,54 @@ fi
 echo "[6/6] Creating deployment script..."
 cat > /usr/local/bin/infoindexer-deploy << 'DEPLOY_SCRIPT'
 #!/bin/bash
-set -e
-cd /root/infoindexer
-git pull origin master
-docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+set -euo pipefail
+
+DEPLOY_DIR="/root/infoindexer"
+COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
+PROJECT_NAME="infoindexer"
+
+cd "$DEPLOY_DIR"
+
+# Pull latest code
+git config core.sshCommand "ssh -i /root/.ssh/deploy_github -o StrictHostKeyChecking=no"
+git fetch origin
+git reset --hard origin/master
+git clean -fd
+
+# Pull latest images
+docker compose $COMPOSE_FILES pull
+
+# Ensure network exists
+if ! docker network inspect "${PROJECT_NAME}_infoindexer_net" &>/dev/null; then
+  docker network create "${PROJECT_NAME}_infoindexer_net"
+fi
+
+# Sequential Recreate: shutdown all
+docker compose $COMPOSE_FILES down --remove-orphans
+
+# Start core services
+docker compose $COMPOSE_FILES up -d clickhouse redis
+
+# Wait for core services health
+echo "Waiting for ClickHouse..."
+timeout 60s bash -c 'until docker compose $COMPOSE_FILES exec -T clickhouse clickhouse-client --query "SELECT 1" &>/dev/null; do sleep 1; done' || {
+  echo "ClickHouse healthcheck failed"
+  exit 1
+}
+
+echo "Waiting for Redis..."
+timeout 30s bash -c 'until docker compose $COMPOSE_FILES exec -T redis redis-cli ping &>/dev/null; do sleep 1; done' || {
+  echo "Redis healthcheck failed"
+  exit 1
+}
+
+# Start all services
+docker compose $COMPOSE_FILES up -d
+
+# Cleanup old images
 docker image prune -af --filter "until=24h"
+
+echo "Deployment completed successfully"
 DEPLOY_SCRIPT
 
 chmod +x /usr/local/bin/infoindexer-deploy

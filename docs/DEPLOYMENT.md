@@ -69,8 +69,18 @@ ssh root@38.180.146.98
 ```bash
 ssh root@38.180.146.98
 cd /root/infoindexer
-git pull origin master
+
+# Sequential Recreate Strategy
+git config core.sshCommand "ssh -i /root/.ssh/deploy_github -o StrictHostKeyChecking=no"
+git fetch origin
+git reset --hard origin/master
+git clean -fd
+
 docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down --remove-orphans
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d clickhouse redis
+
+# Wait for core services (optional: use infoindexer-deploy script instead)
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
