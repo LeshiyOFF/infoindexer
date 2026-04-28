@@ -17,6 +17,13 @@ jobs:
           script: |
             cd /root/infoindexer
 
+            echo "=== Pulling latest code ==="
+            git config core.sshCommand "ssh -i /root/.ssh/deploy_github -o StrictHostKeyChecking=no"
+            git fetch origin
+            git reset --hard origin/master
+            git checkout -- .
+            git clean -fd
+
             echo "=== Stopping all services and removing volumes ==="
             docker compose -f docker-compose.yml -f docker-compose.prod.yml down -v
 
