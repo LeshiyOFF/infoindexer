@@ -1,0 +1,39 @@
+name: Fix ClickHouse - Reset Data
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-clickhouse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fix ClickHouse
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          script: |
+            cd /root/infoindexer
+
+            echo "=== Stopping all services and removing volumes ==="
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml down -v
+
+            echo "=== Volumes removed ==="
+            docker volume ls | grep infoindexer
+
+            echo "=== Starting services with fresh ClickHouse ==="
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+            echo "=== Waiting 30 seconds for ClickHouse to start ==="
+            sleep 30
+
+            echo "=== Service Status ==="
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+
+            echo "=== ClickHouse Logs ==="
+            docker logs infoindexer-clickhouse-1 --tail=20
+
+            echo "=== Health Check ==="
+            docker exec infoindexer-clickhouse-1 clickhouse-client --query "SELECT 1" || echo "ClickHouse not ready yet"
