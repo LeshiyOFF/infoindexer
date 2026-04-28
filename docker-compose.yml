@@ -23,10 +23,10 @@ services:
       - clickhouse_data:/var/lib/clickhouse
       - ./docker/clickhouse-config.d/merge-tree-broken-parts.xml:/etc/clickhouse-server/config.d/merge-tree-broken-parts.xml:ro
       - ./docker/clickhouse-config.d/low-memory-merge-tree.xml:/etc/clickhouse-server/config.d/low-memory-merge-tree.xml:ro
-      - ./docker/clickhouse-config.d/profiles.xml:/etc/clickhouse-server/config.d/profiles.xml:ro
       - ./docker/clickhouse-config.d/audit-log.xml:/etc/clickhouse-server/config.d/audit-log.xml:ro
-      - ./docker/clickhouse-config.d/resource-guards.xml:/etc/clickhouse-server/config.d/resource-guards.xml:ro
-      - ./docker/clickhouse-config.d/profiles-users.xml:/etc/clickhouse-server/config.d/profiles-users.xml:ro
+      - ./docker/clickhouse-config.d/profiles.xml:/etc/clickhouse-server/users.d/profiles.xml:ro
+      - ./docker/clickhouse-config.d/resource-guards.xml:/etc/clickhouse-server/users.d/resource-guards.xml:ro
+      - ./docker/clickhouse-config.d/profiles-users.xml:/etc/clickhouse-server/users.d/profiles-users.xml:ro
       - ./docker/clickhouse-config.d/users.d/zzz-default-profile.xml:/etc/clickhouse-server/users.d/zzz-default-profile.xml:ro
     networks:
       - infoindexer_net
