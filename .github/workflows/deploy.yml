@@ -163,6 +163,7 @@ jobs:
 
             # Pull latest code from git
             echo "Updating code..."
+            git config core.sshCommand "ssh -i /root/.ssh/deploy_github -o StrictHostKeyChecking=no"
             git fetch origin
             git reset --hard origin/master
 
