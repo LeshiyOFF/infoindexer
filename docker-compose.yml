@@ -36,7 +36,7 @@ services:
       - "8123:8123"
       - "8443:8443"
     healthcheck:
-      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:8123/ping"]
       interval: 10s
       timeout: 5s
       retries: 5
