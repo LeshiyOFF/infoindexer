@@ -3,7 +3,7 @@
 
   Architecture: Single Responsibility - Quota limits only
   Priority: 05 (loaded after all profiles)
-  Version: 1.0
+  Version: 1.1 (Fixed quota structure)
 
   Quotas protect against:
   - Excessive query frequency
@@ -17,8 +17,11 @@
   <quotas>
     <!-- Default quota for all users -->
     <default>
-      <max_queries>1000</max_queries>
-      <max_errors>100</max_errors>
+      <interval>
+        <duration>3600</duration>
+        <queries>1000</queries>
+        <errors>100</errors>
+      </interval>
     </default>
 
     <!-- API quota with stricter limits -->
