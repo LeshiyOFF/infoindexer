@@ -35,6 +35,12 @@ services:
     ports:
       - "8123:8123"
       - "8443:8443"
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--query", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
 
   redis:
     image: redis:7.4-alpine
