@@ -166,6 +166,8 @@ jobs:
             git config core.sshCommand "ssh -i /root/.ssh/deploy_github -o StrictHostKeyChecking=no"
             git fetch origin
             git reset --hard origin/master
+            git checkout -- .
+            git clean -fd
 
             # Pull latest images from GHCR
             echo "Pulling latest images..."
