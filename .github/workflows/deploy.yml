@@ -203,16 +203,14 @@ jobs:
 
             wait_for_clickhouse() {
               echo "=== Waiting for ClickHouse (timeout: ${CLICKHOUSE_TIMEOUT}s) ==="
-              local container_id
-              container_id=$(docker compose $COMPOSE_FILES -q clickhouse 2>/dev/null | head -1)
 
               timeout "$CLICKHOUSE_TIMEOUT"s bash -c "
-                until docker exec '$container_id' clickhouse-client --query 'SELECT 1' &>/dev/null; do
+                until docker compose $COMPOSE_FILES exec -T clickhouse clickhouse-client --query 'SELECT 1' &>/dev/null; do
                   sleep 1
                 done
               " || {
                 echo "❌ ClickHouse healthcheck failed"
-                docker logs "$container_id" --tail=50
+                docker compose $COMPOSE_FILES logs --tail=50 clickhouse
                 exit 1
               }
 
@@ -221,16 +219,14 @@ jobs:
 
             wait_for_redis() {
               echo "=== Waiting for Redis (timeout: ${REDIS_TIMEOUT}s) ==="
-              local container_id
-              container_id=$(docker compose $COMPOSE_FILES -q redis 2>/dev/null | head -1)
 
               timeout "$REDIS_TIMEOUT"s bash -c "
-                until docker exec '$container_id' redis-cli ping &>/dev/null; do
+                until docker compose $COMPOSE_FILES exec -T redis redis-cli ping &>/dev/null; do
                   sleep 1
                 done
               " || {
                 echo "❌ Redis healthcheck failed"
-                docker logs "$container_id" --tail=50
+                docker compose $COMPOSE_FILES logs --tail=50 redis
                 exit 1
               }
 
@@ -279,7 +275,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
-          script_stop: true
+          script_stop: false
           script: |
             #!/bin/bash
             set -euo pipefail
@@ -293,12 +289,8 @@ jobs:
 
             echo "=== Health Checks ==="
 
-            # Get container IDs dynamically
-            CLICKHOUSE_ID=$(docker compose $COMPOSE_FILES -q clickhouse 2>/dev/null | head -1)
-            REDIS_ID=$(docker compose $COMPOSE_FILES -q redis 2>/dev/null | head -1)
-
             # Check ClickHouse
-            if docker exec "$CLICKHOUSE_ID" clickhouse-client --query 'SELECT 1' &>/dev/null; then
+            if docker compose $COMPOSE_FILES exec -T clickhouse clickhouse-client --query 'SELECT 1' &>/dev/null; then
               echo "✅ ClickHouse: OK"
             else
               echo "❌ ClickHouse: not ready"
@@ -306,18 +298,18 @@ jobs:
             fi
 
             # Check Redis
-            if docker exec "$REDIS_ID" redis-cli ping &>/dev/null; then
+            if docker compose $COMPOSE_FILES exec -T redis redis-cli ping &>/dev/null; then
               echo "✅ Redis: OK"
             else
               echo "❌ Redis: not ready"
               exit 1
             fi
 
-            # Check Admin UI
+            # Check Admin UI (may still be starting, don't fail)
             if curl -f http://localhost:3140/ &>/dev/null; then
               echo "✅ Admin UI: OK"
             else
-              echo "⚠️  Admin UI: not ready yet"
+              echo "⚠️  Admin UI: not ready yet (will start shortly)"
             fi
 
       - name: Notify on failure

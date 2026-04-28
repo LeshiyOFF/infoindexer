@@ -70,17 +70,22 @@ ssh root@38.180.146.98
 ssh root@38.180.146.98
 cd /root/infoindexer
 
-# Sequential Recreate Strategy
+# Pull latest code
 git config core.sshCommand "ssh -i /root/.ssh/deploy_github -o StrictHostKeyChecking=no"
 git fetch origin
 git reset --hard origin/master
 git clean -fd
 
+# Pull images and recreate services
 docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
 docker compose -f docker-compose.yml -f docker-compose.prod.yml down --remove-orphans
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d clickhouse redis
 
-# Wait for core services (optional: use infoindexer-deploy script instead)
+# Wait for core services (ClickHouse ~60s, Redis ~5s)
+timeout 60s bash -c 'until docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T clickhouse clickhouse-client --query "SELECT 1" &>/dev/null; do sleep 1; done'
+timeout 30s bash -c 'until docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T redis redis-cli ping &>/dev/null; do sleep 1; done'
+
+# Start remaining services
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 

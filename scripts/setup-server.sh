@@ -80,14 +80,16 @@ set -euo pipefail
 DEPLOY_DIR="/root/infoindexer"
 COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
 PROJECT_NAME="infoindexer"
-
-cd "$DEPLOY_DIR"
+CLICKHOUSE_TIMEOUT=60
+REDIS_TIMEOUT=30
 
 # Pull latest code
 git config core.sshCommand "ssh -i /root/.ssh/deploy_github -o StrictHostKeyChecking=no"
 git fetch origin
 git reset --hard origin/master
 git clean -fd
+
+cd "$DEPLOY_DIR"
 
 # Pull latest images
 docker compose $COMPOSE_FILES pull
@@ -105,14 +107,24 @@ docker compose $COMPOSE_FILES up -d clickhouse redis
 
 # Wait for core services health
 echo "Waiting for ClickHouse..."
-timeout 60s bash -c 'until docker compose $COMPOSE_FILES exec -T clickhouse clickhouse-client --query "SELECT 1" &>/dev/null; do sleep 1; done' || {
+timeout "$CLICKHOUSE_TIMEOUT"s bash -c "
+  until docker compose $COMPOSE_FILES exec -T clickhouse clickhouse-client --query 'SELECT 1' &>/dev/null; do
+    sleep 1
+  done
+" || {
   echo "ClickHouse healthcheck failed"
+  docker compose $COMPOSE_FILES logs --tail=50 clickhouse
   exit 1
 }
 
 echo "Waiting for Redis..."
-timeout 30s bash -c 'until docker compose $COMPOSE_FILES exec -T redis redis-cli ping &>/dev/null; do sleep 1; done' || {
+timeout "$REDIS_TIMEOUT"s bash -c "
+  until docker compose $COMPOSE_FILES exec -T redis redis-cli ping &>/dev/null; do
+    sleep 1
+  done
+" || {
   echo "Redis healthcheck failed"
+  docker compose $COMPOSE_FILES logs --tail=50 redis
   exit 1
 }
 
