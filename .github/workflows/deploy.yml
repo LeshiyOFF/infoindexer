@@ -169,20 +169,13 @@ jobs:
             git checkout -- .
             git clean -fd
 
-            # Debug: check files
-            echo "=== File diagnostics ==="
-            ls -la docker-compose*.yml
-            wc -l docker-compose*.yml
-            echo "=== Last 20 lines of docker-compose.yml ==="
-            tail -20 docker-compose.yml
-            echo "=== Git status ==="
-            git status
-            echo "=== Git diff docker-compose.yml ==="
-            git diff HEAD docker-compose.yml | head -50 || echo "No diff"
-            echo "=== Force checkout file ==="
-            git checkout -f origin/master -- docker-compose.yml
+            # Force update files from origin
+            echo "=== Force updating docker-compose.yml ==="
+            rm -f docker-compose.yml
+            git show origin/master:docker-compose.yml > docker-compose.yml
             echo "=== New size ==="
             ls -la docker-compose.yml
+            wc -l docker-compose.yml
 
             # Pull latest images from GHCR
             echo "Pulling latest images..."
