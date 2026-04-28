@@ -7,7 +7,7 @@ set -e
 echo "=== INFOINDEXER Server Setup ==="
 
 # 1. Create deploy user
-echo "[1/6] Creating deploy user..."
+echo "[1/7] Creating deploy user..."
 if ! id -u deploy > /dev/null 2>&1; then
     useradd -m -s /bin/bash deploy
     usermod -aG docker deploy
@@ -17,7 +17,7 @@ else
 fi
 
 # 2. Generate SSH keys for deploy user
-echo "[2/6] Generating SSH keys..."
+echo "[2/7] Generating SSH keys..."
 mkdir -p /home/deploy/.ssh
 chmod 700 /home/deploy/.ssh
 
@@ -39,7 +39,7 @@ else
 fi
 
 # 3. Setup sudoers for deploy user
-echo "[3/6] Configuring sudoers..."
+echo "[3/7] Configuring sudoers..."
 if ! grep -q "deploy ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/docker-compose" /etc/sudoers; then
     echo "deploy ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/docker-compose, /usr/local/bin/docker-compose" >> /etc/sudoers.d/deploy
     chmod 440 /etc/sudoers.d/deploy
@@ -48,8 +48,23 @@ else
     echo "✓ Sudoers already configured"
 fi
 
-# 4. Clone repository
-echo "[4/6] Setting up repository..."
+# 4. Configure firewall
+echo "[4/7] Configuring firewall..."
+if command -v ufw &>/dev/null; then
+    # Allow Admin UI port
+    ufw allow 3140/tcp comment 'InfoIndexer Admin UI' &>/dev/null || true
+
+    # Allow ClickHouse port (optional - for external access)
+    # ufw allow 8123/tcp comment 'InfoIndexer ClickHouse' &>/dev/null || true
+
+    echo "✓ Firewall configured (port 3140 opened)"
+else
+    echo "⚠ ufw not found - skipping firewall configuration"
+    echo "  Manually open port 3140/tcp if needed"
+fi
+
+# 5. Clone repository
+echo "[5/7] Setting up repository..."
 if [ ! -d /root/infoindexer ]; then
     if [ -z "$REPO_URL" ]; then
         REPO_URL="https://github.com/LeshiyOFF/infoindexer.git"
@@ -60,8 +75,8 @@ else
     echo "✓ Repository already exists"
 fi
 
-# 5. Create .env from example if not exists
-echo "[5/6] Setting up environment..."
+# 6. Create .env from example if not exists
+echo "[6/7] Setting up environment..."
 cd /root/infoindexer
 if [ ! -f .env ]; then
     cp .env.example .env
@@ -71,8 +86,8 @@ else
     echo "✓ .env already exists"
 fi
 
-# 6. Setup deployment script
-echo "[6/6] Creating deployment script..."
+# 7. Setup deployment script
+echo "[7/7] Creating deployment script..."
 cat > /usr/local/bin/infoindexer-deploy << 'DEPLOY_SCRIPT'
 #!/bin/bash
 set -euo pipefail
