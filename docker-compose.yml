@@ -49,14 +49,14 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:24.3
     deploy:
-      # Memory limits for production: 10GB limit, 6GB guaranteed
-      # Formula: 6GB guaranteed gives ClickHouse enough for EGRUL sync queries
-      # See: docs/docker-setup.md for calculations
+      # Memory limits for production: 8GB server, 6GB limit + 4GB swap
+      # Low-memory configuration: See docker/clickhouse-config.d/low-memory-merge-tree.xml
+      # Source: Altinity KB - Configure ClickHouse for low memory environments
       resources:
         limits:
-          memory: 5G
+          memory: 6G
         reservations:
-          memory: 2G
+          memory: 3G
     environment:
       - CLICKHOUSE_DB=infoindexer
       - CLICKHOUSE_USER=default
