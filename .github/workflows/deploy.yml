@@ -170,12 +170,17 @@ jobs:
             git clean -fd
 
             # Force update files from origin
+            echo "=== Git info ==="
+            echo "Origin/master SHA: $(git rev-parse origin/master)"
+            echo "HEAD SHA: $(git rev-parse HEAD)"
             echo "=== Force updating docker-compose.yml ==="
             rm -f docker-compose.yml
             git show origin/master:docker-compose.yml > docker-compose.yml
-            echo "=== New size ==="
+            echo "=== File info ==="
             ls -la docker-compose.yml
             wc -l docker-compose.yml
+            echo "=== Checking memory limits ==="
+            grep -A2 "memory:" docker-compose.yml || echo "NO MEMORY LIMITS FOUND!"
 
             # Pull latest images from GHCR
             echo "Pulling latest images..."
