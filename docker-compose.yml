@@ -35,12 +35,6 @@ services:
     ports:
       - "8123:8123"
       - "8443:8443"
-    healthcheck:
-      test: ["CMD", "bash", "-c", "cat < /dev/tcp/localhost/8123"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
 
   redis:
     image: redis:7.4-alpine
