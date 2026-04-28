@@ -29,7 +29,7 @@ DROP TABLE IF EXISTS companies_meta;
 -- Drop связанные таблицы для чистого slate
 DROP TABLE IF EXISTS identity_mapping;
 DROP TABLE IF EXISTS company_sanctions;
-DROP TABLE IF EXISTS resume_states;
+-- resume_states preserved — infrastructure table for HTTP Range resume, not user data
 
 -- Reset sync state (сохраняем таблицу, но очищаем данные)
 TRUNCATE TABLE IF EXISTS egrul_sync_state;
