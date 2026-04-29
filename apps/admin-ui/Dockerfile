@@ -36,17 +36,19 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Stage 3: Production Runner
-FROM node:20-alpine AS runner
-WORKDIR /app
+# WORKDIR points to app directory in monorepo
+WORKDIR /app/apps/admin-ui
 
 # Add non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy standalone output which includes server.js and node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/static ./apps/admin-ui/.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/public ./apps/admin-ui/public
+# Copy standalone output to /app (preserves monorepo structure)
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone /app/
+
+# Copy static files (OFFICIAL Next.js method: cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/)
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/public /app/apps/admin-ui/public/
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/static /app/apps/admin-ui/.next/static/
 
 USER nextjs
 
@@ -56,4 +58,5 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 
+# server.js is now at WORKDIR root
 CMD ["node", "server.js"]
