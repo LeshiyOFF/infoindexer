@@ -31,17 +31,39 @@
 -- PHASE 1: Migrate existing data (one-time)
 -- ═══════════════════════════════════════════════════════════════════
 
+-- === PRE-FLIGHT SANITY CHECKS (optional, run manually before migration) ===
+-- 1. Дубли по (inn, updated_at) — оценка риска недетерминизма:
+--    SELECT count() FROM (
+--      SELECT inn, updated_at FROM egrul_companies_raw
+--      GROUP BY inn, updated_at HAVING count() > 1
+--    );
+--
+-- 2. Counts должны совпадать после миграции:
+--    SELECT uniqExact(inn) FROM egrul_companies_raw;  -- ожидаемый count(*) в companies_production
+--
+-- 3. Dry-run (опционально): INSERT INTO ... SELECT ... LIMIT 100 на тестовой таблице
+
 -- Migrate companies from raw to production
 INSERT INTO companies_production (inn, name, status, address, updated_at)
 SELECT
-  argMax(name, updated_at) as name,
-  argMax(status, updated_at) as status,
-  argMax(address, updated_at) as address,
-  max(updated_at) as updated_at,
-  inn
-FROM egrul_companies_raw
-GROUP BY inn
-SETTINGS max_threads = 1;
+  inn,
+  latest.1 AS name,
+  latest.2 AS status,
+  latest.3 AS address,
+  latest.4 AS updated_at
+FROM (
+  SELECT
+    inn,
+    argMax(
+      tuple(name, status, address, updated_at),
+      updated_at
+    ) AS latest
+  FROM egrul_companies_raw
+  GROUP BY inn
+  SETTINGS max_threads = 1  -- Детерминизм: argMax при tie возвращает первую встреченную.
+                            -- Без max_threads результат зависит от порядка обработки потоками.
+                            -- Для разовой миграции воспроизводимость > параллелизм.
+);
 
 -- IMPORTANT: Directors and founders migrate from staging (if data exists)
 -- Migration 017 dropped MVs but didn't touch denormalized tables
