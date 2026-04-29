@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, type ReactNode } from 'react';
 import {
   Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area
 } from 'recharts';
@@ -65,7 +65,7 @@ const DynamicsChart = memo(function DynamicsChart({ data }: DynamicsChartProps) 
             <Tooltip
               formatter={(v: string | number | undefined) => [formatNumber(v ?? 0, false) + ' ₽']}
               contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', padding: '12px 16px', fontSize: '13px' }}
-              labelFormatter={(label) => `Отчётный год: ${label}`}
+              labelFormatter={(label: ReactNode) => `Отчётный год: ${label}`}
             />
             <Bar dataKey="revenue" name="Выручка" fill="#374151" radius={[6, 6, 0, 0]} maxBarSize={48} />
             <Line type="monotone" dataKey="netProfit" name="Чистая прибыль" stroke="#4B5563" strokeWidth={3} dot={{ r: 5, fill: '#4B5563', strokeWidth: 2, stroke: '#fff' }} strokeDasharray="" />
