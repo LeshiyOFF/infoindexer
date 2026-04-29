@@ -34,7 +34,7 @@
     "node-vault": "^0.10.2"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
+    "typescript": "~5.7.0",
     "@types/node": "^20.0.0",
     "vitest": "^1.4.0"
   }

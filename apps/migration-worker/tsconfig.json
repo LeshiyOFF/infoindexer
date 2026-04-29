@@ -2,13 +2,17 @@
   "compilerOptions": {
     "target": "es2022",
     "module": "commonjs",
-    "declaration": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "rootDir": "./src",
     "outDir": "./dist",
-    "rootDir": "./src"
+    "declaration": true,
+    "paths": {
+      "shared": ["../../packages/shared/dist"]
+    }
   },
   "include": ["src/**/*"]
 }

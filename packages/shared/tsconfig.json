@@ -6,12 +6,10 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "node",
+    "resolveJsonModule": true,
     "composite": true,
-    "baseUrl": ".",
-    "paths": {
-      "*": ["node_modules/*"]
-    }
+    "rootDir": ".",
+    "outDir": "./dist"
   },
   "include": ["**/*.ts"],
   "exclude": [

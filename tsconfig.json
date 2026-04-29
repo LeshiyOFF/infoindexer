@@ -7,8 +7,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "composite": true,
-    "baseUrl": "."
+    "rootDir": ".",
+    "outDir": "./dist"
   },
   "references": [
     { "path": "./packages/shared" }
