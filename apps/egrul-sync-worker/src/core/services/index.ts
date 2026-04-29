@@ -7,3 +7,7 @@ export * from './sync-error-handler.service';
 export * from './denormalization.service';
 export * from './staging-transform.service';
 export * from './staging-sync.service';
+export * from './egrul-transform.service';
+export * from './transform-aggregator.service';
+export * from './transform-data-fetcher.service';
+export * from './transform-state-manager.service';

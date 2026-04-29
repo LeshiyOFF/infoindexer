@@ -15,5 +15,6 @@ export * from './health-check.service';
 export * from './value-objects';
 export * from './entities';
 export * from './ports';
+export * from './dto';
 export * from './types/health.types';
 export * from './types/mv-insert.types';

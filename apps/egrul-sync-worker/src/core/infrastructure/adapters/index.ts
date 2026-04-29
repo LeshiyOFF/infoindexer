@@ -6,6 +6,10 @@
  * Adapters implement ports defined in domain layer.
  */
 
-// Staging adapters (new)
+// Staging & Production adapters
 export * from './clickhouse-staging.adapter';
+export * from './clickhouse-production.adapter';
 export * from './clickhouse-identity-resolver.adapter';
+
+// Monitoring adapters
+export * from './memory-monitor-adapter.service';

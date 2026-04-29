@@ -25,6 +25,7 @@ export * from './adapters/null-metrics.adapter';
 export * from './adapters/circuit-breaker.adapter';
 export * from './adapters/null-circuit-breaker.adapter';
 export * from './adapters/mv-insert.adapter';
+export * from './clickhouse-query.helper';
 export * from './handlers/circuit-breaker-metrics.handler';
 export * from './clickhouse-metrics-names';
 export * from './clickhouse-metrics.service';

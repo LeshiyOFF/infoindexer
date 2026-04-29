@@ -6,37 +6,39 @@
  * Follows SRP: coordinates sync flow.
  * Follows DIP: depends on ports, not concrete adapters.
  *
- * Flow: Parse → Staging → Transform → Production → MV
+ * Flow: Parse → Staging → Transform Service (background) → Production
  *
- * Each batch:
- * 1. Store raw FTM entities in staging tables
- * 2. Transform to production format (ID resolution)
- * 3. Insert to production tables (MV auto-updates)
+ * v2.0: Removed IMVInsertPort dependency (staging+transform pattern).
  */
 import type { IStagingStoragePort } from '../domain/ports/i-staging-storage.port';
-import type { StagingTransformService } from './staging-transform.service';
-import type { IMVInsertPort } from '../ports/i-mv-insert.port';
-import type { StagingCompanyRow, StagingDirectorshipRow, StagingOwnershipRow } from '../domain/entities';
 import { StagingTransformResult } from '../domain/value-objects/staging-transform-result.vo';
+import type { StagingCompanyRow, StagingDirectorshipRow, StagingOwnershipRow } from '../domain/entities';
+import type { ITransformService } from '../domain/ports/i-transform-service.port';
 
+/**
+ * Staging Sync Service
+ *
+ * @remarks
+ * Coordinates EGRUL data flow through staging to production.
+ * Transform Service handles aggregation in background.
+ */
 export class StagingSyncService {
   constructor(
     private readonly stagingStorage: IStagingStoragePort,
-    private readonly transformService: StagingTransformService,
-    private readonly mvInsert: IMVInsertPort
+    private readonly transformService: ITransformService
   ) {}
 
   /**
-   * Processes a batch of EGRUL entities through staging → transform → production
+   * Processes a batch of EGRUL entities through staging
    *
    * @param companies - Company entities to store
-   * @param directorships - Directorship relationships to transform
-   * @param ownerships - Ownership relationships to transform
-   * @returns Transformation result with metrics
+   * @param directorships - Directorship relationships
+   * @param ownerships - Ownership relationships
+   * @returns Processing result with metrics
    *
    * @remarks
-   * Companies go directly to production (no transformation needed).
-   * Directorships and ownerships are transformed via identity_mapping.
+   * All data goes to staging tables.
+   * Transform Service (polling worker) handles staging → production.
    */
   async processBatch(
     companies: readonly StagingCompanyRow[],
@@ -52,20 +54,22 @@ export class StagingSyncService {
       this.insertStagingRelationships(directorships, ownerships)
     ]);
 
-    const result = await this.transformService.transformAll(directorships, ownerships);
+    // Trigger transform if threshold reached
+    const transformResults = await this.transformService.transformIfNeeded();
 
-    if (result.totalProcessed > 0) {
-      const [directors, founders] = await Promise.all([
-        this.transformService.transformDirectorships(directorships),
-        this.transformService.transformOwnerships(ownerships)
-      ]);
+    const totalProcessed = companies.length + directorships.length + ownerships.length;
+    const directorsTransformed = transformResults
+      .filter(r => r.tableName === 'egrul_staging_directorships')
+      .reduce((sum, r) => sum + r.rowsProcessed, 0);
+    const foundersTransformed = transformResults
+      .filter(r => r.tableName === 'egrul_staging_ownerships')
+      .reduce((sum, r) => sum + r.rowsProcessed, 0);
 
-      if (directors.length > 0 || founders.length > 0) {
-        await this.mvInsert.insertAll(directors, founders);
-      }
-    }
-
-    return result;
+    return StagingTransformResult.success(
+      directorsTransformed,
+      foundersTransformed,
+      0
+    );
   }
 
   /**
@@ -78,6 +82,11 @@ export class StagingSyncService {
     await this.stagingStorage.truncateAll();
   }
 
+  /**
+   * Insert companies to staging
+   *
+   * @param records - Company records
+   */
   private async insertCompanies(records: readonly StagingCompanyRow[]): Promise<void> {
     if (records.length === 0) {
       return;
@@ -86,6 +95,12 @@ export class StagingSyncService {
     await this.stagingStorage.insertCompanies(records);
   }
 
+  /**
+   * Insert relationships to staging
+   *
+   * @param directorships - Directorship records
+   * @param ownerships - Ownership records
+   */
   private async insertStagingRelationships(
     directorships: readonly StagingDirectorshipRow[],
     ownerships: readonly StagingOwnershipRow[]

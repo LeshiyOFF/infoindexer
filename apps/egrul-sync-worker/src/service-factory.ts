@@ -26,9 +26,13 @@ import { ProgressReporterFactory } from './core/infrastructure/progress-reporter
 import { ExternalEnrichmentService } from './core/services/external-enrichment.service';
 import { StagingSyncService } from './core/services/staging-sync.service';
 import { StagingTransformService } from './core/services/staging-transform.service';
+import { EgrulTransformService } from './core/services/egrul-transform.service';
 import { ClickHouseStagingAdapter } from './core/infrastructure/adapters/clickhouse-staging.adapter';
+import { ClickHouseProductionAdapter } from './core/infrastructure/adapters/clickhouse-production.adapter';
+import { MemoryMonitorAdapter } from './core/infrastructure/adapters/memory-monitor-adapter.service';
 import { ClickHouseIdentityResolverAdapter } from './core/infrastructure/adapters/clickhouse-identity-resolver.adapter';
 import { MVInsertAdapter } from './core/infrastructure/adapters/mv-insert.adapter';
+import { StagingConfig } from './core/domain/value-objects/staging-config.vo';
 import { DaDataAdapter } from './core/adapters/dadata-adapter';
 import { FuzzyMatcherService } from './core/services/fuzzy-matcher.service';
 import { EnrichmentBatchProcessor } from './core/services/enrichment-batch-processor.service';
@@ -136,9 +140,18 @@ export async function initializeServices(
   // Staging + Transform layer
   const stagingStorage = new ClickHouseStagingAdapter(clickhouseClient);
   const identityResolver = new ClickHouseIdentityResolverAdapter(clickhouseClient);
-  const transformService = new StagingTransformService(identityResolver);
-  const mvInsert = new MVInsertAdapter(clickhouseClient);
-  const stagingSync = new StagingSyncService(stagingStorage, transformService, mvInsert);
+  const oldTransformService = new StagingTransformService(identityResolver);
+  const productionStorage = new ClickHouseProductionAdapter(clickhouseClient);
+  const memoryMonitor = new MemoryMonitorAdapter(clickhouseClient);
+  const config = StagingConfig.forProduction();
+  const transformService = new EgrulTransformService(
+    clickhouseClient,
+    stagingStorage,
+    productionStorage,
+    memoryMonitor,
+    config
+  );
+  const stagingSync = new StagingSyncService(stagingStorage, transformService);
 
   // External Enrichment (optional)
   let enrichment: import('./core/services/external-enrichment.service').ExternalEnrichmentService | undefined;

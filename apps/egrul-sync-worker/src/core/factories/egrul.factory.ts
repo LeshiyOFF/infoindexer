@@ -7,7 +7,7 @@
  *
  * Следует SRP: ответственность только за создание объектов.
  *
- * v1.5: Added createProductionStorage for Iteration 1.
+ * v2.0: Added TransformService, MemoryMonitorAdapter, TransformPollingWorker.
  */
 
 import { clickhouseClient } from 'shared';
@@ -16,15 +16,22 @@ import { ClickHouseMigrationAdapter } from '../adapters';
 import { MigrationService } from '../domain';
 import { ClickHouseStagingAdapter } from '../infrastructure/adapters/clickhouse-staging.adapter';
 import { ClickHouseProductionAdapter } from '../infrastructure/adapters/clickhouse-production.adapter';
+import { MemoryMonitorAdapter } from '../infrastructure/adapters/memory-monitor-adapter.service';
+import { EgrulTransformService } from '../services/egrul-transform.service';
+import { TransformPollingWorker } from '../workers/transform-polling.worker';
+import { StagingSyncService } from '../services/staging-sync.service';
+import { StagingConfig } from '../domain/value-objects/staging-config.vo';
 import type { IStagingStoragePort } from '../domain/ports/i-staging-storage.port';
 import type { IProductionStorage } from '../domain/ports/i-production-storage.port';
+import type { IMemoryMonitor } from '../domain/ports/i-memory-monitor.port';
+import type { ITransformService } from '../domain/ports/i-transform-service.port';
 import path from 'path';
 
 /**
  * Factory для создания сервисов EGRUL Worker
  *
  * @remarks
- * Создаёт миграционные сервисы с правильными зависимостями.
+ * Создаёт все сервисы с правильными зависимостями.
  * Обеспечивает единое место конфигурации инфраструктуры.
  */
 export class EgrulWorkerFactory {
@@ -32,17 +39,21 @@ export class EgrulWorkerFactory {
   private migrationService: MigrationService | null = null;
   private stagingStorage: IStagingStoragePort | null = null;
   private productionStorage: IProductionStorage | null = null;
+  private memoryMonitor: IMemoryMonitor | null = null;
+  private transformService: ITransformService | null = null;
+  private stagingConfig: StagingConfig;
 
   private readonly migrationsDir = path.join(
     __dirname,
     '../infrastructure/migrations'
   );
 
+  constructor(config?: Partial<{ stagingConfig: StagingConfig }>) {
+    this.stagingConfig = config?.stagingConfig || StagingConfig.forProduction();
+  }
+
   /**
    * Создаёт или возвращает Migration runner
-   *
-   * @remarks
-   * Адаптер для выполнения миграций ClickHouse.
    */
   createMigrationRunner(): IMigrationRunner {
     if (!this.migrationRunner) {
@@ -53,9 +64,6 @@ export class EgrulWorkerFactory {
 
   /**
    * Создаёт или возвращает Migration service
-   *
-   * @remarks
-   * Domain сервис для автоматического применения миграций при старте.
    */
   createMigrationService(): MigrationService {
     if (!this.migrationService) {
@@ -67,9 +75,6 @@ export class EgrulWorkerFactory {
 
   /**
    * Создаёт или возвращает staging storage adapter
-   *
-   * @remarks
-   * Adapter for staging table operations.
    */
   createStagingStorage(): IStagingStoragePort {
     if (!this.stagingStorage) {
@@ -80,10 +85,6 @@ export class EgrulWorkerFactory {
 
   /**
    * Создаёт или возвращает production storage adapter
-   *
-   * @remarks
-   * Adapter for production table operations.
-   * Added in v1.5 for Iteration 1.
    */
   createProductionStorage(): IProductionStorage {
     if (!this.productionStorage) {
@@ -93,13 +94,68 @@ export class EgrulWorkerFactory {
   }
 
   /**
-   * Закрывает все ресурсы
+   * Создаёт или возвращает memory monitor adapter
    *
    * @remarks
-   * В текущей реализации миграционные сервисы не требуют закрытия.
-   * Метод добавлен для совместимости с паттерном Factory.
+   * Added for Transform Service memory checking.
+   */
+  createMemoryMonitor(): IMemoryMonitor {
+    if (!this.memoryMonitor) {
+      this.memoryMonitor = new MemoryMonitorAdapter(clickhouseClient);
+    }
+    return this.memoryMonitor;
+  }
+
+  /**
+   * Создаёт или возвращает Transform Service
+   *
+   * @remarks
+   * Core service for staging → production transformation.
+   */
+  createTransformService(): ITransformService {
+    if (!this.transformService) {
+      const stagingStorage = this.createStagingStorage();
+      const productionStorage = this.createProductionStorage();
+      const memoryMonitor = this.createMemoryMonitor();
+
+      this.transformService = new EgrulTransformService(
+        clickhouseClient,
+        stagingStorage,
+        productionStorage,
+        memoryMonitor,
+        this.stagingConfig
+      );
+    }
+    return this.transformService;
+  }
+
+  /**
+   * Создаёт Transform Polling Worker
+   *
+   * @remarks
+   * Background worker for automatic transform triggering.
+   */
+  createTransformPollingWorker(): TransformPollingWorker {
+    const transformService = this.createTransformService();
+    return new TransformPollingWorker(transformService, this.stagingConfig);
+  }
+
+  /**
+   * Создаёт Staging Sync Service
+   *
+   * @remarks
+   * Orchestrates sync flow through staging.
+   */
+  createStagingSyncService(): StagingSyncService {
+    const stagingStorage = this.createStagingStorage();
+    const transformService = this.createTransformService();
+    return new StagingSyncService(stagingStorage, transformService);
+  }
+
+  /**
+   * Закрывает все ресурсы
    */
   async shutdown(): Promise<void> {
-    // Ничего не закрываем — ClickHouseClient управляется извне
+    // ClickHouseClient управляется извне
   }
 }
