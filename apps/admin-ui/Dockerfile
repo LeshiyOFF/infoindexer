@@ -36,19 +36,24 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Stage 3: Production Runner
-# WORKDIR points to app directory in monorepo
-WORKDIR /app/apps/admin-ui
+FROM node:20-alpine AS runner
 
 # Add non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy standalone output to /app (preserves monorepo structure)
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone /app/
+# WORKDIR points to app directory in monorepo
+WORKDIR /app/apps/admin-ui
 
-# Copy static files (OFFICIAL Next.js method: cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/)
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/public /app/apps/admin-ui/public/
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/static /app/apps/admin-ui/.next/static/
+# Copy standalone contents (using ./ to copy contents, not the directory itself)
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone/apps/admin-ui/. ./
+
+# Copy node_modules from standalone (workspace dependencies)
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone/node_modules /app/apps/admin-ui/node_modules/
+
+# Copy static files (OFFICIAL Next.js method)
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/public ./public/
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/static ./.next/static/
 
 USER nextjs
 
