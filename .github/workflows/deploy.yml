@@ -265,6 +265,21 @@ jobs:
               echo "✅ Redis is ready"
             }
 
+            run_migrations() {
+              echo "=== Running database migrations ==="
+
+              # Run migration-worker explicitly (not via up -d)
+              # --rm: remove container after completion
+              # Exit on failure to stop deployment
+              if ! docker compose $COMPOSE_FILES run --rm migration-worker; then
+                echo "❌ Migrations failed - aborting deployment"
+                docker compose $COMPOSE_FILES logs --tail=50 migration-worker
+                exit 1
+              fi
+
+              echo "✅ Migrations applied successfully"
+            }
+
             start_dependent_services() {
               echo "=== Starting dependent services ==="
               docker compose $COMPOSE_FILES up -d
@@ -292,6 +307,7 @@ jobs:
               start_core_services
               wait_for_clickhouse
               wait_for_redis
+              run_migrations
               start_dependent_services
               verify_deployment
               cleanup_old_images
