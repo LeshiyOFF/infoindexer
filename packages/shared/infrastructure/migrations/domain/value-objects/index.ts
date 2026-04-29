@@ -14,6 +14,11 @@ export {
   createMigrationDescriptor
 } from './migration-descriptor.vo';
 
+export {
+  MigrationMetadata,
+  MetadataFormat
+} from './migration-metadata.vo';
+
 // MigrationResult импортируется из ports/i-migration-runner.port.ts
 export {
   createSuccessResult,

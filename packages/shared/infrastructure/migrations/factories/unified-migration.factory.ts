@@ -2,19 +2,25 @@
  * Unified Migration Factory
  *
  * @remarks
+ * v2.1: Обновлён для архитектуры Discoverer + Applier
  * Factory для создания компонентов миграций.
  * Следует SRP: ответственен только за создание.
  * Следует DIP: возвращает абстракции (порты).
  */
-
 import type { ClickHouseClient } from '@clickhouse/client';
 import type Redis from 'ioredis';
 import type { IMigrationOrchestrator } from '../ports';
 import { UnifiedMigrationAdapter } from '../adapters';
-import { UnifiedMigrationService } from '../domain/services';
+import {
+  UnifiedMigrationService,
+  MigrationDiscovererService,
+  MigrationApplierService
+} from '../domain/services';
+import { MigrationMetadataParser } from '../domain/services/parsers';
 import { ClickHouseMigrationAdapter } from '../adapters';
 import { createMigrationLock } from '../../migration-lock.adapter';
 import { createCircuitBreakerForClickHouse } from '../../circuit-breaker/factories/circuit-breaker.factory';
+import { MigrationParserFactory } from '../infrastructure/factories';
 
 /**
  * Параметры для создания миграционного сервиса
@@ -37,8 +43,11 @@ export interface UnifiedMigrationFactoryParams {
  * @returns IMigrationOrchestrator
  *
  * @remarks
- * Factory method для создания полного стека миграций:
+ * Factory method для создания полного стека миграций (v2.1):
  * - ClickHouseMigrationAdapter (выполнение SQL)
+ * - MigrationMetadataParser (парсинг metadata)
+ * - MigrationDiscovererService (обнаружение)
+ * - MigrationApplierService (применение)
  * - UnifiedMigrationService (координация)
  * - MigrationLock (distributed lock)
  * - CircuitBreaker (fault tolerance)
@@ -47,22 +56,38 @@ export interface UnifiedMigrationFactoryParams {
 export function createUnifiedMigrationOrchestrator(
   params: UnifiedMigrationFactoryParams
 ): IMigrationOrchestrator {
-  // Создаём адаптер для выполнения миграций
+  // Infrastructure Layer
   const migrationRunner = new ClickHouseMigrationAdapter(params.clickhouseClient);
 
-  // Создаём сервис для координации миграций
-  const migrationService = new UnifiedMigrationService({
-    migrationRunner,
-    migrationsBaseDir: params.migrationsBaseDir
+  // Domain Layer - Parser
+  const parserFactory = new MigrationParserFactory();
+  const metadataParser = new MigrationMetadataParser({
+    strategies: parserFactory.createAll()
   });
 
-  // Создаём distributed lock
-  const lock = createMigrationLock(params.redisClient);
+  // Domain Layer - Discoverer
+  const discoverer = new MigrationDiscovererService(
+    metadataParser,
+    params.migrationsBaseDir
+  );
 
-  // Создаём circuit breaker
+  // Domain Layer - Applier
+  const applier = new MigrationApplierService(
+    migrationRunner,
+    params.migrationsBaseDir
+  );
+
+  // Domain Layer - Orchestrator
+  const migrationService = new UnifiedMigrationService({
+    discoverer,
+    applier
+  });
+
+  // Infrastructure Layer - Cross-cutting concerns
+  const lock = createMigrationLock(params.redisClient);
   const breaker = createCircuitBreakerForClickHouse('migration');
 
-  // Создаём адаптер оркестрации
+  // Infrastructure Layer - Orchestrator Adapter
   return new UnifiedMigrationAdapter(migrationService, lock, breaker, migrationRunner);
 }
 
@@ -74,7 +99,6 @@ export function createUnifiedMigrationOrchestrator(
  *
  * @remarks
  * Factory method для создания адаптера выполнения миграций.
- * Используется для тестирования или специфичных случаев.
  */
 export function createClickHouseMigrationAdapter(
   clickhouseClient: ClickHouseClient
@@ -83,23 +107,37 @@ export function createClickHouseMigrationAdapter(
 }
 
 /**
- * Создаёт Unified Migration Service
+ * Создаёт Unified Migration Service (v2.1)
  *
  * @param params - Параметры для создания
  * @returns UnifiedMigrationService
  *
  * @remarks
  * Factory method для создания сервиса координации миграций.
- * Используется для тестирования или специфичных случаев.
  */
 export function createUnifiedMigrationService(
   params: Omit<UnifiedMigrationFactoryParams, 'redisClient'>
 ): { service: UnifiedMigrationService; runner: ClickHouseMigrationAdapter } {
   const runner = new ClickHouseMigrationAdapter(params.clickhouseClient);
 
+  const parserFactory = new MigrationParserFactory();
+  const metadataParser = new MigrationMetadataParser({
+    strategies: parserFactory.createAll()
+  });
+
+  const discoverer = new MigrationDiscovererService(
+    metadataParser,
+    params.migrationsBaseDir
+  );
+
+  const applier = new MigrationApplierService(
+    runner,
+    params.migrationsBaseDir
+  );
+
   const service = new UnifiedMigrationService({
-    migrationRunner: runner,
-    migrationsBaseDir: params.migrationsBaseDir
+    discoverer,
+    applier
   });
 
   return { service, runner };

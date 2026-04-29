@@ -54,7 +54,6 @@ SELECT DISTINCT
   director_id as director_name,
   now64() as updated_at
 FROM egrul_staging_directorships
-WHERE organization_id IN (SELECT organization_id FROM egrul_staging_directorships LIMIT 1)
 SETTINGS max_threads = 1;
 
 -- Migrate founders from staging (if data exists)
@@ -64,7 +63,6 @@ SELECT DISTINCT
   owner_id as founder_name,
   now64() as updated_at
 FROM egrul_staging_ownerships
-WHERE asset_id IN (SELECT asset_id FROM egrul_staging_ownerships LIMIT 1)
 SETTINGS max_threads = 1;
 
 -- FALLBACK: Migrate from denormalized if staging is empty but denormalized has data
