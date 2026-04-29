@@ -15,6 +15,13 @@ const nextConfig = {
   },
   transpilePackages: ['shared'],
   webpack: (config, { isServer }) => {
+    // Fix @/* resolution in Docker monorepo builds
+    // Explicit webpack alias required since tsconfig paths aren't respected in Docker
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.join(__dirname, 'src')
+    };
+
     // Исключаем Node.js модули из клиентского бандла
     if (!isServer) {
       config.resolve.fallback = {
