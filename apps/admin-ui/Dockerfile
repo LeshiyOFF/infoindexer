@@ -42,16 +42,14 @@ FROM node:20-alpine AS runner
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# WORKDIR points to app directory in monorepo
+# WORKDIR = app directory in monorepo
 WORKDIR /app/apps/admin-ui
 
-# Copy standalone contents (using ./ to copy contents, not the directory itself)
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone/apps/admin-ui/. ./
+# Copy standalone app directory (standard COPY pattern, no workarounds)
+# standalone/apps/admin-ui contains: server.js, .next/, node_modules/, package.json
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone/apps/admin-ui ./
 
-# Copy node_modules from standalone (workspace dependencies)
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone/node_modules /app/apps/admin-ui/node_modules/
-
-# Copy static files (OFFICIAL Next.js method)
+# Copy static files (official Next.js method: cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/)
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/public ./public/
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/static ./.next/static/
 
@@ -63,5 +61,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 
-# server.js is now at WORKDIR root
 CMD ["node", "server.js"]
