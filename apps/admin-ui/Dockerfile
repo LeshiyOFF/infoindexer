@@ -36,29 +36,29 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Stage 3: Production Runner
+# Based on official Turborepo example: https://github.com/vercel/turborepo/blob/main/examples/with-docker/apps/web/Dockerfile
 FROM node:20-alpine AS runner
 
 # Add non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# WORKDIR = app directory in monorepo
-WORKDIR /app/apps/admin-ui
-
-# Copy standalone app directory (standard COPY pattern, no workarounds)
-# standalone/apps/admin-ui contains: server.js, .next/, node_modules/, package.json
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone/apps/admin-ui ./
-
-# Copy static files (official Next.js method: cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/)
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/public ./public/
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/static ./.next/static/
-
 USER nextjs
 
-EXPOSE 3000
+WORKDIR /app
+
+# Copy standalone (preserves monorepo structure with node_modules at root)
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone ./
+
+# Copy static files (official Next.js method)
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/public ./apps/admin-ui/public/
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/static ./apps/admin-ui/.next/static/
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 
-CMD ["node", "server.js"]
+EXPOSE 3000
+
+# Official Turborepo pattern: full path in CMD
+CMD ["node", "apps/admin-ui/server.js"]
