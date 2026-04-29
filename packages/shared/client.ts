@@ -57,3 +57,19 @@ export * from './repositories';
 
 // Services (pure functions только)
 export * from './financial-reports';
+
+// Organization Service
+export { OrganizationService } from './services/organization.service';
+
+// Domain - GDPR
+export { GdprDeleteRequest, innValidator } from './domain/gdpr';
+
+// Domain - Rate Limit
+export type { RateLimitType, RateLimitResult } from './domain/rate-limit';
+
+// Domain - Entities
+export type { SanctionDTO } from './domain/entities';
+
+// Infrastructure Ports (для server-side API routes)
+export type { IRateLimitPort } from './infrastructure/ports/i-rate-limit.port';
+export type { IGdprDeletion } from './infrastructure/ports/i-gdpr-deletion.port';

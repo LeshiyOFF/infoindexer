@@ -13,8 +13,7 @@
  * Iteration 14: Rate Limiting
  */
 
-import type { RateLimitType, RateLimitResult } from 'shared/domain/rate-limit';
-import type { IRateLimitPort } from 'shared/infrastructure/ports/i-rate-limit.port';
+import type { RateLimitType, RateLimitResult, IRateLimitPort } from 'shared/client';
 import type { RateLimitHeaders, RateLimitWrapperResult } from './rate-limit-types';
 
 /**

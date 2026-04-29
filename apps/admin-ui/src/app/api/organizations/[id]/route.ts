@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { OrganizationService } from 'shared/services/organization.service';
+import { OrganizationService } from 'shared/client';
 import { clickhouseClient } from 'shared';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 

@@ -19,9 +19,8 @@
 
 import { NextResponse } from 'next/server';
 import { clickhouseClient, createGdprDeletionService } from 'shared';
-import { GdprDeleteRequest, innValidator } from 'shared/domain/gdpr';
+import { GdprDeleteRequest, innValidator, type IGdprDeletion } from 'shared/client';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
-import type { IGdprDeletion } from 'shared/infrastructure/ports/i-gdpr-deletion.port';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;

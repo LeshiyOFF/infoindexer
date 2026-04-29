@@ -7,7 +7,7 @@
 import { NextResponse } from 'next/server';
 import { clickhouseClient } from 'shared';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
-import type { SanctionDTO } from 'shared/domain/entities';
+import type { SanctionDTO } from 'shared/client';
 
 export const dynamic = 'force-dynamic';
 

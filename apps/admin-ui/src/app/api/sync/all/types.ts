@@ -4,7 +4,7 @@
  * Типы для API полной синхронизации.
  */
 
-import type { SyncStage, SyncStatus } from 'shared/api';
+import type { SyncStage, SyncStatus } from 'shared/client';
 
 /**
  * Статус полной синхронизации

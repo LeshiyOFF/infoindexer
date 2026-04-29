@@ -8,7 +8,7 @@
 
 import { memo, useMemo } from 'react';
 import { ShieldAlert, ExternalLink, AlertCircle } from 'lucide-react';
-import type { SanctionDTO } from 'shared/domain/entities';
+import type { SanctionDTO } from 'shared/client';
 
 /**
  * Форматирует дату в формат DD.MM.YYYY

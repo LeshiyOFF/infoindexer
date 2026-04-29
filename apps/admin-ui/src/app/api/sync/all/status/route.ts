@@ -7,7 +7,7 @@
 import { NextResponse } from 'next/server';
 import { redisClient } from 'shared';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
-import { SyncStage, type SyncStatus } from 'shared/api';
+import { SyncStage, type SyncStatus } from 'shared/client';
 import type { SyncAllStatusData } from '../types';
 import { syncAllSuccess, syncAllError } from '../types';
 

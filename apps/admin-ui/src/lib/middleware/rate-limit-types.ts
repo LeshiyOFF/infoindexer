@@ -11,7 +11,7 @@
  * Iteration 14: Rate Limiting
  */
 
-import type { RateLimitResult } from 'shared/domain/rate-limit';
+import type { RateLimitResult } from 'shared/client';
 
 /**
  * HTTP Response Headers для Rate Limit

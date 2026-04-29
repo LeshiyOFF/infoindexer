@@ -18,7 +18,7 @@
 
 import { NextResponse } from 'next/server';
 import { createRateLimitService, RATE_LIMITS } from 'shared';
-import type { RateLimitType } from 'shared/domain/rate-limit';
+import type { RateLimitType } from 'shared/client';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 import { createRateLimitWrapper } from '@/lib/middleware/rate-limit-wrapper';
 
