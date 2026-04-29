@@ -5,6 +5,7 @@ networks:
 services:
   clickhouse:
     image: clickhouse/clickhouse-server:24.3
+    stop_grace_period: 30s
     deploy:
       resources:
         limits:

@@ -166,7 +166,7 @@ jobs:
             DEPLOY_DIR="/root/infoindexer"
             COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
             PROJECT_NAME="infoindexer"
-            CLICKHOUSE_TIMEOUT=60
+            CLICKHOUSE_TIMEOUT=120
             REDIS_TIMEOUT=30
 
             # === Helper Functions ===
@@ -206,9 +206,26 @@ jobs:
               fi
             }
 
+            wait_for_clickhouse_idle() {
+              echo "=== Checking ClickHouse is idle ==="
+              local retries=10
+              while ((retries-- > 0)); do
+                local running_queries=$(docker compose $COMPOSE_FILES exec -T clickhouse \
+                  clickhouse-client --query "SELECT count() FROM system.processes" 2>/dev/null || echo "1")
+                if [[ "$running_queries" -eq 0 ]]; then
+                  echo "✅ ClickHouse is idle"
+                  return 0
+                fi
+                echo "Waiting for $running_queries queries to finish..."
+                sleep 2
+              done
+              echo "⚠️ ClickHouse has active queries, proceeding with shutdown"
+            }
+
             graceful_shutdown() {
               echo "=== Graceful shutdown ==="
-              docker compose $COMPOSE_FILES down --remove-orphans
+              wait_for_clickhouse_idle
+              docker compose $COMPOSE_FILES down --remove-orphans --timeout 30
             }
 
             start_core_services() {
