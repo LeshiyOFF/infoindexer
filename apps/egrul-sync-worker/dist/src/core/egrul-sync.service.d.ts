@@ -8,7 +8,6 @@ import type { ISyncStateStoragePort } from './ports/i-sync-state-storage.port';
 import type { ClickHouseRepository } from './repositories/clickhouse.repository';
 import type { IdentityMappingService } from './repositories/identity-mapping.service';
 import type { DenormalizationService } from './services/denormalization.service';
-import type { CompanyMergerService } from './repositories/company-merger.service';
 import type { ExternalEnrichmentService } from './services/external-enrichment.service';
 /**
  * Опции для запуска синхронизации
@@ -34,7 +33,6 @@ export declare class EgrulSyncService {
     private readonly parser;
     private readonly identityMapping;
     private readonly denormalization;
-    private readonly merger;
     private readonly resumeStorage?;
     private readonly flusher;
     private readonly tracker;
@@ -42,7 +40,7 @@ export declare class EgrulSyncService {
     private readonly orchestrator;
     private readonly stagingSync;
     private currentDumpUrl;
-    constructor(httpClient: FTMHttpClient, repository: ClickHouseRepository, parser: EntityParserService, stagingStorage: IStagingStoragePort, stagingSync: StagingSyncService, syncStateStorage: ISyncStateStoragePort, progressReporter: ProgressReporter, identityMapping: IdentityMappingService, denormalization: DenormalizationService, merger: CompanyMergerService, enrichment?: ExternalEnrichmentService, resumeStorage?: IResumeStateStorage | undefined);
+    constructor(httpClient: FTMHttpClient, repository: ClickHouseRepository, parser: EntityParserService, stagingStorage: IStagingStoragePort, stagingSync: StagingSyncService, syncStateStorage: ISyncStateStoragePort, progressReporter: ProgressReporter, identityMapping: IdentityMappingService, denormalization: DenormalizationService, enrichment?: ExternalEnrichmentService, resumeStorage?: IResumeStateStorage | undefined);
     /**
      * Выполняет полную синхронизацию EGRUL данных
      *

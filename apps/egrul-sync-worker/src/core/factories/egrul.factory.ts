@@ -6,12 +6,18 @@
  * Централизует создание всех сервисов и их зависимостей.
  *
  * Следует SRP: ответственность только за создание объектов.
+ *
+ * v1.5: Added createProductionStorage for Iteration 1.
  */
 
 import { clickhouseClient } from 'shared';
 import type { IMigrationRunner } from '../ports';
 import { ClickHouseMigrationAdapter } from '../adapters';
 import { MigrationService } from '../domain';
+import { ClickHouseStagingAdapter } from '../infrastructure/adapters/clickhouse-staging.adapter';
+import { ClickHouseProductionAdapter } from '../infrastructure/adapters/clickhouse-production.adapter';
+import type { IStagingStoragePort } from '../domain/ports/i-staging-storage.port';
+import type { IProductionStorage } from '../domain/ports/i-production-storage.port';
 import path from 'path';
 
 /**
@@ -24,6 +30,8 @@ import path from 'path';
 export class EgrulWorkerFactory {
   private migrationRunner: IMigrationRunner | null = null;
   private migrationService: MigrationService | null = null;
+  private stagingStorage: IStagingStoragePort | null = null;
+  private productionStorage: IProductionStorage | null = null;
 
   private readonly migrationsDir = path.join(
     __dirname,
@@ -55,6 +63,33 @@ export class EgrulWorkerFactory {
       this.migrationService = new MigrationService(runner, this.migrationsDir);
     }
     return this.migrationService;
+  }
+
+  /**
+   * Создаёт или возвращает staging storage adapter
+   *
+   * @remarks
+   * Adapter for staging table operations.
+   */
+  createStagingStorage(): IStagingStoragePort {
+    if (!this.stagingStorage) {
+      this.stagingStorage = new ClickHouseStagingAdapter(clickhouseClient);
+    }
+    return this.stagingStorage;
+  }
+
+  /**
+   * Создаёт или возвращает production storage adapter
+   *
+   * @remarks
+   * Adapter for production table operations.
+   * Added in v1.5 for Iteration 1.
+   */
+  createProductionStorage(): IProductionStorage {
+    if (!this.productionStorage) {
+      this.productionStorage = new ClickHouseProductionAdapter(clickhouseClient);
+    }
+    return this.productionStorage;
   }
 
   /**

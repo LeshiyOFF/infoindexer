@@ -3,7 +3,7 @@
  * Handler: Merger Stage
  *
  * @remarks
- * @deprecated Materialized Views handle aggregation automatically.
+ * Materialized Views handle aggregation automatically.
  *
  * MV Pattern eliminates need for separate merge stage:
  * - companies_mv: argMaxState(name, status, address) on INSERT
@@ -16,22 +16,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MergerHandler = void 0;
 /**
- * Handler: Merger Stage (Deprecated)
+ * Handler: Merger Stage
  *
- * @deprecated No-op. MVs auto-update on INSERT.
+ * @remarks No-op handler - MVs auto-update on INSERT.
+ * Preserved for pipeline compatibility (stage = 'merger').
  */
 class MergerHandler {
-    merger;
     progressReporter;
     stageName = 'merger';
-    constructor(merger, progressReporter) {
-        this.merger = merger;
+    constructor(progressReporter) {
         this.progressReporter = progressReporter;
     }
     async execute(_context) {
         await this.progressReporter.report(this.progressReporter.createState('running', 55, 'MV auto-update enabled (no merge needed)'));
-        // No-op: MVs handle aggregation automatically
-        await this.merger.merge(); // Logs deprecation notice
+        // MVs handle aggregation automatically on each INSERT
+        // Read from v_companies_meta VIEW for aggregated data
     }
 }
 exports.MergerHandler = MergerHandler;

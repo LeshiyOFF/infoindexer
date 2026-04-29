@@ -21,38 +21,41 @@ function createEmptyBatchState() {
  *
  * @remarks
  * Following Staging + Transform Pattern:
- * - INSERT to egrul_companies_raw → companies_mv auto-updates
- * - INSERT to egrul_staging_* tables → for later transformation
- * - INSERT to egrul_directors_denormalized → directors_mv auto-updates
- * - INSERT to egrul_founders_denormalized → founders_mv auto-updates
+ * - All INSERT to egrul_staging_* tables (no MV triggers)
+ * - Transform Service handles staging → production
+ * - Prevents OOM by avoiding AggregatingMergeTree on each insert
+ *
+ * v1.5: Companies now use insertCompaniesForTransform instead of direct insert.
  */
 class BatchFlusher {
-    repository;
     stagingStorage;
-    constructor(repository, stagingStorage) {
-        this.repository = repository;
+    constructor(stagingStorage) {
         this.stagingStorage = stagingStorage;
     }
     /**
      * Сбрасывает батчи если они достигли размера
      *
      * @remarks
-     * Production inserts go directly to MV-backed tables.
-     * Staging inserts go to staging tables for transformation.
+     * All inserts go to staging tables (no MV triggers).
+     * Transform Service (Iteration 2) will process staging → production.
      */
     async flushBatchesIfNeeded(state, batchSize) {
+        // Companies → staging (via mapping from EgrulCompanyRow to StagingCompanyRow)
         if (state.companies.length >= batchSize) {
-            await this.repository.insertBatch('egrul_companies_raw', state.companies);
+            await this.stagingStorage.insertCompaniesForTransform(state.companies);
             state.companies = [];
         }
+        // Staging companies → staging (already in correct format)
         if (state.stagingCompanies.length >= batchSize) {
             await this.stagingStorage.insertCompanies(state.stagingCompanies);
             state.stagingCompanies = [];
         }
+        // Directorships → staging
         if (state.directorships.length >= batchSize) {
             await this.stagingStorage.insertDirectorships(state.directorships);
             state.directorships = [];
         }
+        // Ownerships → staging
         if (state.ownerships.length >= batchSize) {
             await this.stagingStorage.insertOwnerships(state.ownerships);
             state.ownerships = [];
@@ -66,7 +69,7 @@ class BatchFlusher {
      */
     async flushAllBatches(state) {
         if (state.companies.length > 0) {
-            await this.repository.insertBatch('egrul_companies_raw', state.companies);
+            await this.stagingStorage.insertCompaniesForTransform(state.companies);
         }
         if (state.stagingCompanies.length > 0) {
             await this.stagingStorage.insertCompanies(state.stagingCompanies);

@@ -5,12 +5,11 @@
  * Following SRP: responsible only for batch flushing operations.
  * Following DIP: depends on IStagingStoragePort (abstraction).
  *
- * MV Pattern: Each INSERT triggers auto-aggregation in respective MV.
- * Staging Pattern: Raw data goes to staging, transform service handles conversion.
- *
+ * Staging Pattern: All data goes to staging for transform service.
  * Memory benefit: 5.6GB → ~200MB (28x reduction).
+ *
+ * v1.5: Uses staging instead of direct MV-triggered inserts.
  */
-import type { ClickHouseRepository } from '../repositories/clickhouse.repository';
 import type {
   EgrulCompanyRow,
   StagingCompanyRow,
@@ -24,11 +23,10 @@ import type { IStagingStoragePort } from '../domain/ports/i-staging-storage.port
  *
  * @remarks
  * Refactored for Staging + Transform approach.
- * Companies go directly to production.
- * Relationships go to staging for transformation.
+ * All data goes to staging for transform service processing.
  */
 export interface BatchState {
-  // Production: companies with INN (direct insert)
+  // Raw data from parser
   companies: EgrulCompanyRow[];
 
   // Staging: raw FTM entities (requires transformation)
@@ -57,40 +55,42 @@ export function createEmptyBatchState(): BatchState {
  *
  * @remarks
  * Following Staging + Transform Pattern:
- * - INSERT to egrul_companies_raw → companies_mv auto-updates
- * - INSERT to egrul_staging_* tables → for later transformation
- * - INSERT to egrul_directors_denormalized → directors_mv auto-updates
- * - INSERT to egrul_founders_denormalized → founders_mv auto-updates
+ * - All INSERT to egrul_staging_* tables (no MV triggers)
+ * - Transform Service handles staging → production
+ * - Prevents OOM by avoiding AggregatingMergeTree on each insert
+ *
+ * v1.5: Companies now use insertCompaniesForTransform instead of direct insert.
  */
 export class BatchFlusher {
-  constructor(
-    private readonly repository: ClickHouseRepository,
-    private readonly stagingStorage: IStagingStoragePort
-  ) {}
+  constructor(private readonly stagingStorage: IStagingStoragePort) {}
 
   /**
    * Сбрасывает батчи если они достигли размера
    *
    * @remarks
-   * Production inserts go directly to MV-backed tables.
-   * Staging inserts go to staging tables for transformation.
+   * All inserts go to staging tables (no MV triggers).
+   * Transform Service (Iteration 2) will process staging → production.
    */
   async flushBatchesIfNeeded(state: BatchState, batchSize: number): Promise<void> {
+    // Companies → staging (via mapping from EgrulCompanyRow to StagingCompanyRow)
     if (state.companies.length >= batchSize) {
-      await this.repository.insertBatch('egrul_companies_raw', state.companies);
+      await this.stagingStorage.insertCompaniesForTransform(state.companies);
       state.companies = [];
     }
 
+    // Staging companies → staging (already in correct format)
     if (state.stagingCompanies.length >= batchSize) {
       await this.stagingStorage.insertCompanies(state.stagingCompanies);
       state.stagingCompanies = [];
     }
 
+    // Directorships → staging
     if (state.directorships.length >= batchSize) {
       await this.stagingStorage.insertDirectorships(state.directorships);
       state.directorships = [];
     }
 
+    // Ownerships → staging
     if (state.ownerships.length >= batchSize) {
       await this.stagingStorage.insertOwnerships(state.ownerships);
       state.ownerships = [];
@@ -105,7 +105,7 @@ export class BatchFlusher {
    */
   async flushAllBatches(state: BatchState): Promise<void> {
     if (state.companies.length > 0) {
-      await this.repository.insertBatch('egrul_companies_raw', state.companies);
+      await this.stagingStorage.insertCompaniesForTransform(state.companies);
     }
 
     if (state.stagingCompanies.length > 0) {

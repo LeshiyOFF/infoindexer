@@ -39,7 +39,6 @@ class EgrulSyncService {
     parser;
     identityMapping;
     denormalization;
-    merger;
     resumeStorage;
     flusher;
     tracker;
@@ -47,22 +46,20 @@ class EgrulSyncService {
     orchestrator;
     stagingSync;
     currentDumpUrl = null;
-    constructor(httpClient, repository, parser, stagingStorage, stagingSync, syncStateStorage, progressReporter, identityMapping, denormalization, merger, enrichment, resumeStorage) {
+    constructor(httpClient, repository, parser, stagingStorage, stagingSync, syncStateStorage, progressReporter, identityMapping, denormalization, enrichment, resumeStorage) {
         this.httpClient = httpClient;
         this.repository = repository;
         this.parser = parser;
         this.identityMapping = identityMapping;
         this.denormalization = denormalization;
-        this.merger = merger;
         this.resumeStorage = resumeStorage;
-        this.flusher = new batch_flusher_service_1.BatchFlusher(repository, stagingStorage);
+        this.flusher = new batch_flusher_service_1.BatchFlusher(stagingStorage);
         this.stagingSync = stagingSync;
         this.tracker = new stream_tracker_service_1.StreamTracker(progressReporter);
         this.errorHandler = new sync_error_handler_service_1.SyncErrorHandler(progressReporter);
         this.orchestrator = (0, sync_orchestrator_factory_1.createSyncOrchestrator)({
             identityMapping,
             denormalization,
-            merger,
             repository,
             syncStateStorage,
             progressReporter,

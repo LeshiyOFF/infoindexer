@@ -12,7 +12,6 @@ const batch_config_vo_1 = require("./core/domain/value-objects/batch-config.vo")
 const identity_mapping_service_1 = require("./core/repositories/identity-mapping.service");
 const denormalized_relations_repository_1 = require("./core/repositories/denormalized-relations.repository");
 const denormalization_service_1 = require("./core/services/denormalization.service");
-const company_merger_service_1 = require("./core/repositories/company-merger.service");
 const entity_parser_service_1 = require("./core/entity-parser.service");
 const sanction_parser_service_1 = require("./core/parsers/sanction-parser.service");
 const progress_reporter_1 = require("./core/infrastructure/progress-reporter");
@@ -81,7 +80,6 @@ async function initializeServices(clickhouseClient, proxyAgent) {
     const identityMapping = new identity_mapping_service_1.IdentityMappingService(clickhouseClient, batchProcessor, batchConfig, incrementalBuilder, circuitBreakerManager);
     const denormalizedRelationsRepo = new denormalized_relations_repository_1.DenormalizedRelationsRepository(clickhouseClient);
     const denormalization = new denormalization_service_1.DenormalizationService(denormalizedRelationsRepo);
-    const merger = new company_merger_service_1.CompanyMergerService(clickhouseClient);
     const parser = new entity_parser_service_1.EntityParserService();
     const sanctionParser = new sanction_parser_service_1.SanctionParserService();
     const progressReporter = progress_reporter_1.ProgressReporterFactory.create(shared_1.redisClient);
@@ -110,7 +108,7 @@ async function initializeServices(clickhouseClient, proxyAgent) {
     }
     console.log('HTTP Range resume support enabled');
     // Sync services
-    const egrulSyncService = new egrul_sync_service_1.EgrulSyncService(httpClient, repository, parser, stagingStorage, stagingSync, syncStateStorage, progressReporter, identityMapping, denormalization, merger, enrichment, resumeStorage);
+    const egrulSyncService = new egrul_sync_service_1.EgrulSyncService(httpClient, repository, parser, stagingStorage, stagingSync, syncStateStorage, progressReporter, identityMapping, denormalization, enrichment, resumeStorage);
     const sanctionsOnlyService = new sanctions_only_service_1.SanctionsOnlyService(repository, sanctionParser, httpClient);
     // Graceful Shutdown
     const gracefulShutdownService = new graceful_shutdown_service_1.GracefulShutdownService(async () => {
@@ -132,7 +130,6 @@ async function initializeServices(clickhouseClient, proxyAgent) {
         identityMapping,
         denormalizedRelationsRepo,
         denormalization,
-        merger,
         parser,
         sanctionParser,
         progressReporter,

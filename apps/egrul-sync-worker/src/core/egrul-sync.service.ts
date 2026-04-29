@@ -77,7 +77,7 @@ export class EgrulSyncService {
     enrichment?: ExternalEnrichmentService,
     private readonly resumeStorage?: IResumeStateStorage
   ) {
-    this.flusher = new BatchFlusher(repository, stagingStorage);
+    this.flusher = new BatchFlusher(stagingStorage);
     this.stagingSync = stagingSync;
     this.tracker = new StreamTracker(progressReporter);
     this.errorHandler = new SyncErrorHandler(progressReporter);
