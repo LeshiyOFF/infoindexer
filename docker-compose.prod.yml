@@ -18,6 +18,7 @@ services:
 
   admin-ui:
     image: ghcr.io/leshiyoff/infoindexer:admin-ui-latest
+    command: null  # Use CMD from Dockerfile
 
   contacts-parser:
     image: ghcr.io/leshiyoff/infoindexer:contacts-latest
