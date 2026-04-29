@@ -25,12 +25,13 @@ COPY apps/admin-ui ./apps/admin-ui
 COPY tsconfig.json ./
 COPY package*.json ./
 
-# Build shared package from root (PATH remains correct for workspaces)
+# Build shared package from root
 RUN npm run build --workspace=shared
 
-# Build admin-ui with standalone output from root
+# Build admin-ui from its directory for correct @/* path resolution
+WORKDIR /app/apps/admin-ui
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build --workspace=admin-ui
+RUN npm run build
 
 # Stage 3: Production Runner
 # Based on official Turborepo example: https://github.com/vercel/turborepo/blob/main/examples/with-docker/apps/web/Dockerfile
