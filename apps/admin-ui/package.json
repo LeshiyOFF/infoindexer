@@ -9,6 +9,9 @@
     "lint": "next lint",
     "test": "vitest run"
   },
+  "imports": {
+    "@/*": "./src/*"
+  },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
     "@clickhouse/client": "^1.18.1",
