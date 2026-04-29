@@ -2,6 +2,7 @@ import { memo, useMemo, type ReactNode } from 'react';
 import {
   Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area
 } from 'recharts';
+import type { ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import { FinancialReport } from 'shared/client';
 import { toRubles, formatNumber } from '@/lib/currency';
 
@@ -31,6 +32,20 @@ export const FinancialCharts = memo(function FinancialCharts({ data }: Financial
     </>
   );
 });
+
+/**
+ * Extract numeric value from recharts ValueType
+ * ValueType = number | string | ReadonlyArray<number | string>
+ */
+function extractNumberValue(value: ValueType | undefined): number {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') return Number(value);
+  if (Array.isArray(value) && value.length > 0) {
+    const first = value[0];
+    return typeof first === 'number' ? first : Number(first);
+  }
+  return 0;
+}
 
 interface DynamicsChartProps {
   readonly data: readonly {
@@ -63,7 +78,7 @@ const DynamicsChart = memo(function DynamicsChart({ data }: DynamicsChartProps) 
               width={55}
             />
             <Tooltip
-              formatter={(v: string | number | undefined) => [formatNumber(v ?? 0, false) + ' ₽']}
+              formatter={(value: ValueType | undefined) => [formatNumber(extractNumberValue(value), false) + ' ₽']}
               contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', padding: '12px 16px', fontSize: '13px' }}
               labelFormatter={(label: ReactNode) => `Отчётный год: ${label}`}
             />
@@ -103,7 +118,7 @@ const AssetsChart = memo(function AssetsChart({ data }: AssetsChartProps) {
               dx={-5}
               width={55}
             />
-            <Tooltip formatter={(v: string | number | undefined) => [formatNumber(v ?? 0, false) + ' ₽']} contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', padding: '12px 16px' }} />
+            <Tooltip formatter={(value: ValueType | undefined) => [formatNumber(extractNumberValue(value), false) + ' ₽']} contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', padding: '12px 16px' }} />
             <Area type="monotone" dataKey="assets" name="Активы" stroke="#6B7280" fill="url(#colorAssets)" strokeWidth={2} />
             <Line type="monotone" dataKey="liabilities" name="Заёмный капитал" stroke="#4B5563" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} />
             <defs>
