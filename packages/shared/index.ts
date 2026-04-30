@@ -103,7 +103,7 @@ export * from './infrastructure/migrations';
 export { ClickHouseConfigAdapter, createClickHouseConfig } from './infrastructure/clickhouse-config.adapter';
 export { createClickHouseConfigAsync } from './infrastructure/clickhouse-config-async.factory';
 export { CLICKHOUSE_DEFAULTS } from './infrastructure/clickhouse.constants';
-export type { IClickHouseConfig, ClickHouseSettings, TLSSettings } from './infrastructure/ports/i-clickhouse-config.port';
+export type { IClickHouseConfig, ClickHouseSettings } from './infrastructure/ports/i-clickhouse-config.port';
 
 // ClickHouse Client (Iteration 10: Added factory function)
 export { clickhouseClient, createClickHouseClient } from './clickhouse';
