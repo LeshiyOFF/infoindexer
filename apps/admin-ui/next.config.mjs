@@ -8,14 +8,13 @@ const __dirname = path.dirname(__filename);
 const nextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../../'),
-  transpilePackages: [],
+  transpilePackages: ['shared'],
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: false,
   },
-  transpilePackages: ['shared'],
   webpack: (config, { isServer }) => {
     // Fix @/* resolution in Docker monorepo builds
     // Explicit webpack alias required since tsconfig paths aren't respected in Docker

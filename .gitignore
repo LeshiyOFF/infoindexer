@@ -41,6 +41,9 @@ tmp/
 tmp/
 .spine-snapshot.json
 
+# Shared package dist (will be built by CI/Docker)
+packages/shared/dist/
+
 # TLS Certificates (Iteration 9: TLS/SSL)
 # Contains secrets - never commit to git
 docker/certs/*.pem
