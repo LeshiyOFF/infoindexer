@@ -50,6 +50,8 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:admin-ui-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-admin-ui.outputs.version }}
           labels: ${{ steps.meta-admin-ui.outputs.labels }}
+          pull: true
+          no-cache: true
 
       # Build egrul-sync-worker
       - name: Extract metadata for egrul-worker
@@ -71,6 +73,8 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:egrul-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-egrul.outputs.version }}
           labels: ${{ steps.meta-egrul.outputs.labels }}
+          pull: true
+          no-cache: true
 
       # Build migration-worker
       - name: Extract metadata for migration-worker
@@ -92,6 +96,8 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:migration-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-migration.outputs.version }}
           labels: ${{ steps.meta-migration.outputs.labels }}
+          pull: true
+          no-cache: true
 
       # Build contacts-parser (Playwright)
       - name: Extract metadata for contacts-parser
@@ -113,3 +119,5 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:contacts-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-contacts.outputs.version }}
           labels: ${{ steps.meta-contacts.outputs.labels }}
+          pull: true
+          no-cache: true

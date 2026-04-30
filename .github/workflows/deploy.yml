@@ -60,6 +60,8 @@ jobs:
           file: ./apps/admin-ui/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:admin-ui-latest
+          pull: true
+          no-cache: true
 
       # Build and push contacts-parser
       - name: Extract metadata for contacts-parser
@@ -80,6 +82,8 @@ jobs:
           file: ./Dockerfile.playwright
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:contacts-latest
+          pull: true
+          no-cache: true
 
       # Build and push clickhouse-init
       - name: Build and push clickhouse-init
@@ -89,6 +93,8 @@ jobs:
           file: ./docker/clickhouse-init/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:clickhouse-init-latest
+          pull: true
+          no-cache: true
 
       # Build and push sync-worker
       - name: Extract metadata for sync-worker
@@ -107,6 +113,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          pull: true
+          no-cache: true
 
       # Build and push egrul-sync-worker
       - name: Extract metadata for egrul-worker
@@ -127,6 +135,8 @@ jobs:
           file: ./apps/egrul-sync-worker/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:egrul-latest
+          pull: true
+          no-cache: true
 
       # Build and push migration-worker
       - name: Extract metadata for migration-worker
@@ -147,6 +157,8 @@ jobs:
           file: ./apps/migration-worker/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:migration-latest
+          pull: true
+          no-cache: true
 
       # Deploy to server
       - name: Deploy to server

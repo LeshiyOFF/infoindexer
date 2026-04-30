@@ -1,4 +1,0 @@
-/**
- * Спецификация для ConsoleMetricsAdapter
- */
-export {};

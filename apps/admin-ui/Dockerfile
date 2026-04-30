@@ -26,7 +26,7 @@ COPY tsconfig.json ./
 COPY package*.json ./
 
 # Build shared package from root
-RUN npm run build --workspace=shared
+RUN npm run build --workspace=packages/shared
 
 # Build admin-ui from its directory for correct @/* path resolution
 WORKDIR /app/apps/admin-ui
