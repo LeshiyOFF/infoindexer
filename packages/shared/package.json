@@ -1,6 +1,7 @@
 {
   "name": "shared",
   "version": "1.0.0",
+  "sideEffects": ["redis.ts"],
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
