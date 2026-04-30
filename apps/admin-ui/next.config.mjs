@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 const nextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../../'),
+  transpilePackages: [],
   eslint: {
     ignoreDuringBuilds: true,
   },
