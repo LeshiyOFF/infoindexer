@@ -26,8 +26,8 @@ export async function GET(request: Request) {
 
     const [totalRecords, companiesGirBo, companiesEgrul] = await Promise.all([
       runQuery('SELECT count() as c FROM financial_reports'),
-      runQuery('SELECT uniq(inn) as c FROM financial_reports'),
-      runQuery('SELECT uniq(inn) as c FROM companies_meta')
+      runQuery('SELECT uniqExact(`inn`) as c FROM financial_reports'),
+      runQuery('SELECT count() as c FROM companies_production')
     ]);
 
     const info = await redisClient.info('memory');
