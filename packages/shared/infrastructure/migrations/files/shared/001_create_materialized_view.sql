@@ -47,10 +47,11 @@ SETTINGS index_granularity = 8192;
 -- companies_meta подмешивается через View (LEFT JOIN на лету)
 -- ═══════════════════════════════════════════════════════════════════
 
+-- POPULATE убрано: при первичной установке таблица financial_reports ещё не создана
+-- MV будет заполнен новыми данными по мере их поступления
 CREATE MATERIALIZED VIEW IF NOT EXISTS financial_reports_summary_mv
 ENGINE = AggregatingMergeTree()
 ORDER BY inn
-POPULATE
 AS SELECT
   fr.inn,
   -- Financial reports aggregates (состояния для AggregatingMergeTree)
