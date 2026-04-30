@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Rate Limit Result DTO
  *
@@ -11,6 +12,8 @@
  *
  * Iteration 14: Rate Limiting
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RateLimitResult = void 0;
 /**
  * Rate Limit Check Result
  *
@@ -18,7 +21,7 @@
  * Readonly DTO для передачи результата проверки.
  * Используется в Port и API Layer.
  */
-export class RateLimitResult {
+class RateLimitResult {
     _allowed;
     _limit;
     _remaining;
@@ -94,3 +97,4 @@ export class RateLimitResult {
         return result;
     }
 }
+exports.RateLimitResult = RateLimitResult;

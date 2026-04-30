@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SearchParamsBuilder = void 0;
 /**
  * Builder для параметров ClickHouse запроса
  */
-export class SearchParamsBuilder {
+class SearchParamsBuilder {
     params = {};
     withLimit(value) {
         this.params.limit = value;
@@ -53,3 +56,4 @@ export class SearchParamsBuilder {
         return this.params;
     }
 }
+exports.SearchParamsBuilder = SearchParamsBuilder;

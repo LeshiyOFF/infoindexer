@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Rate Limit Type
  *
@@ -11,4 +12,4 @@
  *
  * Iteration 14: Rate Limiting
  */
-export {};
+Object.defineProperty(exports, "__esModule", { value: true });

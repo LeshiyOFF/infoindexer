@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Distributed Lock Port
  *
@@ -5,4 +6,4 @@
  * Предотвращает параллельное выполнение миграций
  * в multi-instance окружении.
  */
-export {};
+Object.defineProperty(exports, "__esModule", { value: true });

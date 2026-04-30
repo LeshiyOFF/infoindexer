@@ -12,3 +12,9 @@ export { apiSuccess, apiError, apiPaginated, ApiErrorCode, SyncStage, createSync
 export type { ApiError, Pagination, SyncStatus, SyncStatusData, SyncStatusResponse, StageProgress, StageResult, SyncConfig, GetSanctionsByInnRequest, GetSanctionsByInnResponse, GetSanctionsBatchRequest, GetSanctionsBatchResponse, GetSanctionsListRequest, GetSanctionsListResponse, SanctionStatsDTO, GetSanctionStatsResponse, DeleteSanctionsRequest, DeleteSanctionsResponse, CheckSanctionsRequest, CheckSanctionsResponse } from './api';
 export * from './repositories';
 export * from './financial-reports';
+export { OrganizationService } from './services/organization.service';
+export { GdprDeleteRequest, innValidator } from './domain/gdpr';
+export type { RateLimitType, RateLimitResult } from './domain/rate-limit';
+export type { SanctionDTO } from './domain/entities';
+export type { IRateLimitPort } from './infrastructure/ports/i-rate-limit.port';
+export type { IGdprDeletion } from './infrastructure/ports/i-gdpr-deletion.port';

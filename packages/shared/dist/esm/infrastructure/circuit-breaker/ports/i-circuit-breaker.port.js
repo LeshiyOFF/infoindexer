@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Circuit Breaker Port
  *
@@ -8,4 +9,4 @@
  *
  * @see https://martinfowler.com/bliki/CircuitBreaker.html
  */
-export {};
+Object.defineProperty(exports, "__esModule", { value: true });

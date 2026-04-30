@@ -1,3 +1,4 @@
+"use strict";
 /**
  * GDPR Delete Result DTO
  *
@@ -11,6 +12,9 @@
  *
  * Iteration 13: GDPR Right-to-Delete
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GdprDeleteResult = void 0;
+exports.createDeletionCounts = createDeletionCounts;
 /**
  * GDPR Delete Result
  *
@@ -18,7 +22,7 @@
  * Represents the result of a GDPR deletion operation.
  * Can be used for both confirmation (counts only) and execution.
  */
-export class GdprDeleteResult {
+class GdprDeleteResult {
     success;
     inn;
     counts;
@@ -87,10 +91,11 @@ export class GdprDeleteResult {
         };
     }
 }
+exports.GdprDeleteResult = GdprDeleteResult;
 /**
  * Create deletion counts from individual table counts
  */
-export function createDeletionCounts(financialReports, financialSummary, companiesMeta, companySanctions) {
+function createDeletionCounts(financialReports, financialSummary, companiesMeta, companySanctions) {
     return {
         financial_reports: financialReports,
         financial_reports_summary: financialSummary,

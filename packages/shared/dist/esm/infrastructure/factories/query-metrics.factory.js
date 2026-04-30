@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createQueryMetricsService = createQueryMetricsService;
 /**
  * Query Metrics Factory
  *
@@ -6,12 +9,12 @@
  * Следует SRP: только создание объектов.
  * Следует OCP: можно добавить новые типы без изменения кода.
  */
-import { ConsoleQueryMetricsCollector } from '../adapters/console-query-metrics.adapter';
+const console_query_metrics_adapter_1 = require("../adapters/console-query-metrics.adapter");
 /**
  * Создать коллектор метрик с console выводом
  *
  * @returns Экземпляр ConsoleQueryMetricsCollector
  */
-export function createQueryMetricsService() {
-    return new ConsoleQueryMetricsCollector();
+function createQueryMetricsService() {
+    return new console_query_metrics_adapter_1.ConsoleQueryMetricsCollector();
 }

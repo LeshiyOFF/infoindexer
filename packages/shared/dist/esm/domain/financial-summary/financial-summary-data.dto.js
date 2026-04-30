@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Financial Summary Data Transfer Objects
  *
@@ -14,4 +15,4 @@
  * - FinancialSummary содержит только финансовые агрегаты
  * - Company metadata (director, name, status) запрашиваются отдельно
  */
-export {};
+Object.defineProperty(exports, "__esModule", { value: true });

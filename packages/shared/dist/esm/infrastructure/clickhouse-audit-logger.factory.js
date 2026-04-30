@@ -1,3 +1,4 @@
+"use strict";
 /**
  * ClickHouse Audit Logger Factory
  *
@@ -7,7 +8,9 @@
  *
  * Iteration 12: Audit Logging
  */
-import { ClickHouseAuditLoggerAdapter } from './clickhouse-audit-logger.adapter';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createClickHouseAuditLogger = createClickHouseAuditLogger;
+const clickhouse_audit_logger_adapter_1 = require("./clickhouse-audit-logger.adapter");
 /**
  * Factory function for creating ClickHouse audit logger
  *
@@ -25,8 +28,8 @@ import { ClickHouseAuditLoggerAdapter } from './clickhouse-audit-logger.adapter'
  * });
  * ```
  */
-export async function createClickHouseAuditLogger(client, config) {
-    const logger = new ClickHouseAuditLoggerAdapter(client, config);
+async function createClickHouseAuditLogger(client, config) {
+    const logger = new clickhouse_audit_logger_adapter_1.ClickHouseAuditLoggerAdapter(client, config);
     await logger.initialize();
     return logger;
 }

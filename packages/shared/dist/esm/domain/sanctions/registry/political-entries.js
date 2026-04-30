@@ -1,58 +1,61 @@
-import { SanctionTopic } from '../sanction-topic.enum';
-import { SanctionLevel } from '../sanction-level.enum';
-import { SanctionCategory, createSanctionTopicInfo } from '../sanction-topic-info.model';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.politicalEntries = void 0;
+const sanction_topic_enum_1 = require("../sanction-topic.enum");
+const sanction_level_enum_1 = require("../sanction-level.enum");
+const sanction_topic_info_model_1 = require("../sanction-topic-info.model");
 /**
  * Entries для категории POLITICAL
  * Политические связи и публичные должностные лица
  */
-export const politicalEntries = Object.freeze([
-    createSanctionTopicInfo({
-        topic: SanctionTopic.ROLE_PEP,
+exports.politicalEntries = Object.freeze([
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.ROLE_PEP,
         label: 'Публичное должностное лицо (PEP)',
-        level: SanctionLevel.MEDIUM,
+        level: sanction_level_enum_1.SanctionLevel.MEDIUM,
         description: 'Является или являлась публичным должностным лицом согласно FATF',
-        category: SanctionCategory.POLITICAL
+        category: sanction_topic_info_model_1.SanctionCategory.POLITICAL
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.ROLE_RCA,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.ROLE_RCA,
         label: 'Близкое лицо PEP',
-        level: SanctionLevel.MEDIUM,
+        level: sanction_level_enum_1.SanctionLevel.MEDIUM,
         description: 'Близкий родственник или ассоциированное лицо PEP',
-        category: SanctionCategory.POLITICAL
+        category: sanction_topic_info_model_1.SanctionCategory.POLITICAL
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.ROLE_GOV,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.ROLE_GOV,
         label: 'Государственный служащий',
-        level: SanctionLevel.LOW,
+        level: sanction_level_enum_1.SanctionLevel.LOW,
         description: 'Государственный служащий или чиновник',
-        category: SanctionCategory.POLITICAL
+        category: sanction_topic_info_model_1.SanctionCategory.POLITICAL
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.ROLE_POLITICIAN,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.ROLE_POLITICIAN,
         label: 'Политик',
-        level: SanctionLevel.LOW,
+        level: sanction_level_enum_1.SanctionLevel.LOW,
         description: 'Политический деятель',
-        category: SanctionCategory.POLITICAL
+        category: sanction_topic_info_model_1.SanctionCategory.POLITICAL
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.ROLE_DIPLOMAT,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.ROLE_DIPLOMAT,
         label: 'Дипломат',
-        level: SanctionLevel.LOW,
+        level: sanction_level_enum_1.SanctionLevel.LOW,
         description: 'Дипломатический представитель',
-        category: SanctionCategory.POLITICAL
+        category: sanction_topic_info_model_1.SanctionCategory.POLITICAL
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.ROLE_MILITARY,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.ROLE_MILITARY,
         label: 'Военное лицо',
-        level: SanctionLevel.MEDIUM,
+        level: sanction_level_enum_1.SanctionLevel.MEDIUM,
         description: 'Действующее или бывшее военное лицо',
-        category: SanctionCategory.POLITICAL
+        category: sanction_topic_info_model_1.SanctionCategory.POLITICAL
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.ROLE_OWNER_STATE,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.ROLE_OWNER_STATE,
         label: 'Госсобственность',
-        level: SanctionLevel.LOW,
+        level: sanction_level_enum_1.SanctionLevel.LOW,
         description: 'Находится в государственной собственности',
-        category: SanctionCategory.POLITICAL
+        category: sanction_topic_info_model_1.SanctionCategory.POLITICAL
     }),
 ]);

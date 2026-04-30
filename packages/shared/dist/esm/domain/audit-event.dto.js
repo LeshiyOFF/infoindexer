@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Audit Event Data Transfer Object
  *
@@ -24,14 +25,16 @@
  *
  * Iteration 12: Audit Logging
  */
-import { auditEventValidator } from './audit-event-validator';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuditEvent = exports.AuditActionType = exports.AuditEventType = void 0;
+const audit_event_validator_1 = require("./audit-event-validator");
 /**
  * Audit event types
  *
  * @remarks
  * Categorizes the severity and purpose of audit events.
  */
-export var AuditEventType;
+var AuditEventType;
 (function (AuditEventType) {
     /** Security-related event (authentication, authorization) */
     AuditEventType["SECURITY"] = "SECURITY";
@@ -43,7 +46,7 @@ export var AuditEventType;
     AuditEventType["SYSTEM"] = "SYSTEM";
     /** Error event (exceptions, failures) */
     AuditEventType["ERROR"] = "ERROR";
-})(AuditEventType || (AuditEventType = {}));
+})(AuditEventType || (exports.AuditEventType = AuditEventType = {}));
 /**
  * Audit action types
  *
@@ -51,7 +54,7 @@ export var AuditEventType;
  * Defines specific actions within audit events.
  * Maps to CRUD operations + system actions.
  */
-export var AuditActionType;
+var AuditActionType;
 (function (AuditActionType) {
     /** Read operation */
     AuditActionType["READ"] = "READ";
@@ -71,7 +74,7 @@ export var AuditActionType;
     AuditActionType["PERMISSION_CHANGE"] = "PERMISSION_CHANGE";
     /** Configuration change */
     AuditActionType["CONFIG_CHANGE"] = "CONFIG_CHANGE";
-})(AuditActionType || (AuditActionType = {}));
+})(AuditActionType || (exports.AuditActionType = AuditActionType = {}));
 /**
  * Audit Event DTO
  *
@@ -91,7 +94,7 @@ export var AuditActionType;
  * });
  * ```
  */
-export class AuditEvent {
+class AuditEvent {
     eventType;
     actionType;
     userId;
@@ -117,7 +120,7 @@ export class AuditEvent {
         this.resourceType = resourceType;
         this.resourceId = resourceId;
         this.metadata = metadata;
-        auditEventValidator.validate(eventType, actionType, userId, resourceType, resourceId, metadata);
+        audit_event_validator_1.auditEventValidator.validate(eventType, actionType, userId, resourceType, resourceId, metadata);
     }
     /**
      * Convert to plain object for storage
@@ -159,3 +162,4 @@ export class AuditEvent {
         return new AuditEvent(eventType, actionType, data.userId, data.resourceType, data.resourceId, data.metadata || {});
     }
 }
+exports.AuditEvent = AuditEvent;

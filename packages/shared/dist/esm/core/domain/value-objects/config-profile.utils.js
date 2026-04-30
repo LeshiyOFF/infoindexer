@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Config Profile Utilities
  *
@@ -5,22 +6,25 @@
  * Factory functions for ConfigProfile.
  * Separated from class to avoid circular dependency.
  */
-import { LOW, STANDARD, HIGH, ALL_PROFILES } from './config-profile.constants';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.selectConfigProfile = selectConfigProfile;
+exports.getAllConfigProfiles = getAllConfigProfiles;
+const config_profile_constants_1 = require("./config-profile.constants");
 /**
  * Select profile based on memory size (GB)
  */
-export function selectConfigProfile(memoryGB) {
+function selectConfigProfile(memoryGB) {
     if (memoryGB < 4) {
-        return LOW;
+        return config_profile_constants_1.LOW;
     }
     if (memoryGB < 16) {
-        return STANDARD;
+        return config_profile_constants_1.STANDARD;
     }
-    return HIGH;
+    return config_profile_constants_1.HIGH;
 }
 /**
  * Get all available profiles
  */
-export function getAllConfigProfiles() {
-    return ALL_PROFILES;
+function getAllConfigProfiles() {
+    return config_profile_constants_1.ALL_PROFILES;
 }

@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ResourceInfo = exports.ResourceSource = void 0;
 /**
  * Resource Information Value Object
  *
@@ -10,18 +13,18 @@
  * - CGROUP_V2: Docker cgroup v2
  * - OS: Bare metal / VM (os.totalmem())
  */
-import { MemorySize } from './memory-size.vo';
-export var ResourceSource;
+const memory_size_vo_1 = require("./memory-size.vo");
+var ResourceSource;
 (function (ResourceSource) {
     ResourceSource["CGROUP_V1"] = "cgroup-v1";
     ResourceSource["CGROUP_V2"] = "cgroup-v2";
     ResourceSource["OS"] = "os";
     ResourceSource["UNKNOWN"] = "unknown";
-})(ResourceSource || (ResourceSource = {}));
+})(ResourceSource || (exports.ResourceSource = ResourceSource = {}));
 /**
  * Resource Info Value Object
  */
-export class ResourceInfo {
+class ResourceInfo {
     data;
     constructor(data) {
         this.validate(data);
@@ -66,7 +69,7 @@ export class ResourceInfo {
     static fromBytes(bytes, source = ResourceSource.UNKNOWN) {
         const isContainerized = source === ResourceSource.CGROUP_V1 || source === ResourceSource.CGROUP_V2;
         return new ResourceInfo({
-            totalMemory: MemorySize.fromBytes(bytes),
+            totalMemory: memory_size_vo_1.MemorySize.fromBytes(bytes),
             source,
             isContainerized
         });
@@ -77,7 +80,7 @@ export class ResourceInfo {
     static fromGB(gb, source = ResourceSource.UNKNOWN) {
         const isContainerized = source === ResourceSource.CGROUP_V1 || source === ResourceSource.CGROUP_V2;
         return new ResourceInfo({
-            totalMemory: MemorySize.fromGB(gb),
+            totalMemory: memory_size_vo_1.MemorySize.fromGB(gb),
             source,
             isContainerized
         });
@@ -88,7 +91,7 @@ export class ResourceInfo {
     static fromCgroup(bytes, version) {
         const source = version === 1 ? ResourceSource.CGROUP_V1 : ResourceSource.CGROUP_V2;
         return new ResourceInfo({
-            totalMemory: MemorySize.fromBytes(bytes),
+            totalMemory: memory_size_vo_1.MemorySize.fromBytes(bytes),
             source,
             isContainerized: true
         });
@@ -98,7 +101,7 @@ export class ResourceInfo {
      */
     static fromOS(bytes) {
         return new ResourceInfo({
-            totalMemory: MemorySize.fromBytes(bytes),
+            totalMemory: memory_size_vo_1.MemorySize.fromBytes(bytes),
             source: ResourceSource.OS,
             isContainerized: false
         });
@@ -109,8 +112,8 @@ export class ResourceInfo {
     static withAvailable(totalBytes, availableBytes, source) {
         const isContainerized = source === ResourceSource.CGROUP_V1 || source === ResourceSource.CGROUP_V2;
         return new ResourceInfo({
-            totalMemory: MemorySize.fromBytes(totalBytes),
-            availableMemory: MemorySize.fromBytes(availableBytes),
+            totalMemory: memory_size_vo_1.MemorySize.fromBytes(totalBytes),
+            availableMemory: memory_size_vo_1.MemorySize.fromBytes(availableBytes),
             source,
             isContainerized
         });
@@ -162,3 +165,4 @@ export class ResourceInfo {
         }
     }
 }
+exports.ResourceInfo = ResourceInfo;

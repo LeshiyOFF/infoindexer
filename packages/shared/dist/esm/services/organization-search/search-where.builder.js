@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SearchWhereBuilder = void 0;
 /**
  * Builder для WHERE условий поиска организаций
  */
-export class SearchWhereBuilder {
+class SearchWhereBuilder {
     conditions = ['1=1'];
     addRegion() {
         this.conditions.push('region = {region: String}');
@@ -49,3 +52,4 @@ export class SearchWhereBuilder {
         return this.conditions.join(' AND ');
     }
 }
+exports.SearchWhereBuilder = SearchWhereBuilder;

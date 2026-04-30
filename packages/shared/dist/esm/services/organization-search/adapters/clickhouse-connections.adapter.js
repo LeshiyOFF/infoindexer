@@ -1,11 +1,14 @@
-import { ArrayUtil } from '../../../utils/array.util';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ClickHouseConnections = void 0;
+const array_util_1 = require("../../../utils/array.util");
 /**
  * Adapter для поиска связанных организаций через ClickHouse
  *
  * @remarks
  * Реализует Port IConnections для ClickHouse.
  */
-export class ClickHouseConnections {
+class ClickHouseConnections {
     client;
     constructor(client) {
         this.client = client;
@@ -27,7 +30,7 @@ export class ClickHouseConnections {
                 format: 'JSONEachRow'
             });
             const json = await result.json();
-            return ArrayUtil.ensureArray(json);
+            return array_util_1.ArrayUtil.ensureArray(json);
         }
         catch (error) {
             console.error('ClickHouseConnections error:', error);
@@ -63,3 +66,4 @@ export class ClickHouseConnections {
         return params;
     }
 }
+exports.ClickHouseConnections = ClickHouseConnections;

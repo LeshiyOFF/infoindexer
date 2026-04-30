@@ -6,6 +6,7 @@
  */
 export type { MigrationCategory, MigrationDescriptor } from './migration-descriptor.vo';
 export { createMigrationDescriptor } from './migration-descriptor.vo';
+export { MigrationMetadata, MetadataFormat } from './migration-metadata.vo';
 export { createSuccessResult, createFailureResult } from './migration-result.vo';
 export type { MigrationStats } from './migration-stats.vo';
 export { createInitialStats, updateStats, mergeStats } from './migration-stats.vo';

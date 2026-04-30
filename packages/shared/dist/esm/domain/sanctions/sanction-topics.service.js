@@ -1,6 +1,9 @@
-import { isValidSanctionTopic } from './sanction-topic.enum';
-import { SanctionLevel, maxSanctionLevel } from './sanction-level.enum';
-import { SanctionTopicsRegistry } from './sanction-topics-registry';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sanctionTopicsService = exports.SanctionTopicsService = void 0;
+const sanction_topic_enum_1 = require("./sanction-topic.enum");
+const sanction_level_enum_1 = require("./sanction-level.enum");
+const sanction_topics_registry_1 = require("./sanction-topics-registry");
 /**
  * Сервис для работы с санкционными topics
  *
@@ -15,10 +18,10 @@ import { SanctionTopicsRegistry } from './sanction-topics-registry';
  *
  * @implements Single Responsibility Principle
  */
-export class SanctionTopicsService {
+class SanctionTopicsService {
     topicInfo;
     constructor() {
-        this.topicInfo = SanctionTopicsRegistry.getMap();
+        this.topicInfo = sanction_topics_registry_1.SanctionTopicsRegistry.getMap();
     }
     /**
      * Классифицирует список topics в структурированную информацию
@@ -48,7 +51,7 @@ export class SanctionTopicsService {
         return {
             topics,
             level,
-            hasSanctions: level !== SanctionLevel.NONE,
+            hasSanctions: level !== sanction_level_enum_1.SanctionLevel.NONE,
             details: known,
             unknownTopics: unknown
         };
@@ -57,7 +60,7 @@ export class SanctionTopicsService {
      * Проверяет является ли topic санкционным
      */
     isSanctionTopic(topic) {
-        return isValidSanctionTopic(topic);
+        return (0, sanction_topic_enum_1.isValidSanctionTopic)(topic);
     }
     /**
      * Получает информацию по topic
@@ -75,7 +78,7 @@ export class SanctionTopicsService {
      * Проверяет является ли уровень высоким или средним
      */
     isSignificant(level) {
-        return level === SanctionLevel.HIGH || level === SanctionLevel.MEDIUM;
+        return level === sanction_level_enum_1.SanctionLevel.HIGH || level === sanction_level_enum_1.SanctionLevel.MEDIUM;
     }
     /**
      * Возвращает общее количество известных topics
@@ -89,7 +92,7 @@ export class SanctionTopicsService {
     emptyResult(unknownTopics = []) {
         return {
             topics: [],
-            level: SanctionLevel.NONE,
+            level: sanction_level_enum_1.SanctionLevel.NONE,
             hasSanctions: false,
             details: [],
             unknownTopics
@@ -101,13 +104,14 @@ export class SanctionTopicsService {
      */
     calculateLevel(details) {
         if (details.length === 0) {
-            return SanctionLevel.NONE;
+            return sanction_level_enum_1.SanctionLevel.NONE;
         }
-        return details.reduce((acc, info) => maxSanctionLevel(acc, info.level), SanctionLevel.NONE);
+        return details.reduce((acc, info) => (0, sanction_level_enum_1.maxSanctionLevel)(acc, info.level), sanction_level_enum_1.SanctionLevel.NONE);
     }
 }
+exports.SanctionTopicsService = SanctionTopicsService;
 /**
  * Singleton экземпляр сервиса для использования во всём приложении
  * Соответствует принципу Dependency Inversion - зависимость от абстракции
  */
-export const sanctionTopicsService = new SanctionTopicsService();
+exports.sanctionTopicsService = new SanctionTopicsService();

@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Rate Limit Factory
  *
@@ -12,8 +13,11 @@
  *
  * Iteration 14: Rate Limiting
  */
-import { RedisRateLimitAdapter } from './redis-rate-limit.adapter';
-import { redisClient } from '../../redis';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createRateLimitService = createRateLimitService;
+exports.createRateLimitServiceWithRedis = createRateLimitServiceWithRedis;
+const redis_rate_limit_adapter_1 = require("./redis-rate-limit.adapter");
+const redis_1 = require("../../redis");
 /**
  * Создать rate limit сервис
  *
@@ -30,9 +34,9 @@ import { redisClient } from '../../redis';
  * const result = await rateLimiter.check('127.0.0.1', 'search');
  * ```
  */
-export function createRateLimitService(options) {
-    const redis = options?.redis ?? redisClient;
-    return new RedisRateLimitAdapter(redis);
+function createRateLimitService(options) {
+    const redis = options?.redis ?? redis_1.redisClient;
+    return new redis_rate_limit_adapter_1.RedisRateLimitAdapter(redis);
 }
 /**
  * Создать rate limit сервис с custom Redis
@@ -43,6 +47,6 @@ export function createRateLimitService(options) {
  * @remarks
  * Перегрузка для удобства с explicit Redis клиентом.
  */
-export function createRateLimitServiceWithRedis(redis) {
-    return new RedisRateLimitAdapter(redis);
+function createRateLimitServiceWithRedis(redis) {
+    return new redis_rate_limit_adapter_1.RedisRateLimitAdapter(redis);
 }

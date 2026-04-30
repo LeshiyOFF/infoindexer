@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Financial Summary Value Object
  *
@@ -10,13 +11,15 @@
  * - Добавлены geo поля (hasGeo, lon, lat)
  * - Single Responsibility: только финансовые агрегаты
  */
-import { Result } from '../../result';
-import { Money } from './money.vo';
-import { FinancialSummaryValidationError, FinancialSummaryNotFoundError } from './financial-summary-error';
-import { InvalidInnError } from '../errors';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FinancialSummary = void 0;
+const result_1 = require("../../result");
+const money_vo_1 = require("./money.vo");
+const financial_summary_error_1 = require("./financial-summary-error");
+const errors_1 = require("../errors");
 const LEGAL_ENTITY_INN_LENGTH = 10;
 /** Financial Summary Value Object */
-export class FinancialSummary {
+class FinancialSummary {
     inn;
     ogrn;
     region;
@@ -49,7 +52,7 @@ export class FinancialSummary {
     static create(data) {
         const innResult = FinancialSummary.validateInn(data.inn);
         if (innResult.isErr()) {
-            return Result.error(new FinancialSummaryValidationError('inn', 'invalid_format', data.inn));
+            return result_1.Result.error(new financial_summary_error_1.FinancialSummaryValidationError('inn', 'invalid_format', data.inn));
         }
         return FinancialSummary.validateScalarFields(data, innResult.unwrap())
             .andThen((baseData) => FinancialSummary.validateMoneyFields(baseData, data))
@@ -59,22 +62,22 @@ export class FinancialSummary {
     static validateInn(inn) {
         const trimmed = inn?.trim() ?? '';
         if (!trimmed) {
-            return Result.error(new InvalidInnError('INN is required', { inn: '' }));
+            return result_1.Result.error(new errors_1.InvalidInnError('INN is required', { inn: '' }));
         }
         if (!/^\d{10}$/.test(trimmed)) {
-            return Result.error(new InvalidInnError(`INN must be ${LEGAL_ENTITY_INN_LENGTH} digits`, { inn: trimmed }));
+            return result_1.Result.error(new errors_1.InvalidInnError(`INN must be ${LEGAL_ENTITY_INN_LENGTH} digits`, { inn: trimmed }));
         }
-        return Result.ok(trimmed);
+        return result_1.Result.ok(trimmed);
     }
     /** Валидирует скалярные поля */
     static validateScalarFields(data, inn) {
         if (data.latestYear <= 0) {
-            return Result.error(new FinancialSummaryValidationError('latestYear', 'must_be_positive', data.latestYear));
+            return result_1.Result.error(new financial_summary_error_1.FinancialSummaryValidationError('latestYear', 'must_be_positive', data.latestYear));
         }
         if (data.recordsCount < 0) {
-            return Result.error(new FinancialSummaryValidationError('recordsCount', 'cannot_be_negative', data.recordsCount));
+            return result_1.Result.error(new financial_summary_error_1.FinancialSummaryValidationError('recordsCount', 'cannot_be_negative', data.recordsCount));
         }
-        return Result.ok({
+        return result_1.Result.ok({
             inn,
             ogrn: data.ogrn ?? null,
             region: data.region ?? null,
@@ -89,13 +92,13 @@ export class FinancialSummary {
     }
     /** Валидирует Money поля */
     static validateMoneyFields(baseData, originalData) {
-        return Money
+        return money_vo_1.Money
             .create(originalData.revenue)
-            .mapError((err) => FinancialSummaryValidationError.fromMoneyError(err, 'revenue'))
-            .andThen((revenue) => Money.create(originalData.netProfit)
-            .mapError((err) => FinancialSummaryValidationError.fromMoneyError(err, 'netProfit'))
-            .andThen((netProfit) => Money.create(originalData.charterCapital)
-            .mapError((err) => FinancialSummaryValidationError.fromMoneyError(err, 'charterCapital'))
+            .mapError((err) => financial_summary_error_1.FinancialSummaryValidationError.fromMoneyError(err, 'revenue'))
+            .andThen((revenue) => money_vo_1.Money.create(originalData.netProfit)
+            .mapError((err) => financial_summary_error_1.FinancialSummaryValidationError.fromMoneyError(err, 'netProfit'))
+            .andThen((netProfit) => money_vo_1.Money.create(originalData.charterCapital)
+            .mapError((err) => financial_summary_error_1.FinancialSummaryValidationError.fromMoneyError(err, 'charterCapital'))
             .map((charterCapital) => ({ ...baseData, revenue, netProfit, charterCapital }))));
     }
     /** Создаёт экземпляр из валидированных данных */
@@ -134,6 +137,7 @@ export class FinancialSummary {
         };
     }
     static notFound(inn) {
-        return new FinancialSummaryNotFoundError(inn, 'financial_reports_summary');
+        return new financial_summary_error_1.FinancialSummaryNotFoundError(inn, 'financial_reports_summary');
     }
 }
+exports.FinancialSummary = FinancialSummary;

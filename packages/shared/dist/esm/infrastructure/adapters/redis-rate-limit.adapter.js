@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Redis Rate Limit Adapter
  *
@@ -17,7 +18,9 @@
  *
  * Iteration 14: Rate Limiting
  */
-import { RateLimitConfig, RateLimitResult } from '../../domain/rate-limit';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RedisRateLimitAdapter = void 0;
+const rate_limit_1 = require("../../domain/rate-limit");
 /**
  * Redis Rate Limit Adapter
  *
@@ -25,7 +28,7 @@ import { RateLimitConfig, RateLimitResult } from '../../domain/rate-limit';
  * Реализует rate limiting через Redis INCR/EXPIRE.
  * Race-condition free благодаря атомарным операциям.
  */
-export class RedisRateLimitAdapter {
+class RedisRateLimitAdapter {
     static KEY_PREFIX = 'ratelimit';
     static KEY_SEPARATOR = ':';
     redis;
@@ -45,10 +48,10 @@ export class RedisRateLimitAdapter {
     async check(identifier, type, options) {
         // Bypass для testing/admin
         if (options?.bypass) {
-            const config = RateLimitConfig.get(type);
-            return RateLimitResult.allowed(config.requests, config.requests);
+            const config = rate_limit_1.RateLimitConfig.get(type);
+            return rate_limit_1.RateLimitResult.allowed(config.requests, config.requests);
         }
-        const config = RateLimitConfig.get(type);
+        const config = rate_limit_1.RateLimitConfig.get(type);
         const key = this.buildKey(type, identifier);
         try {
             // Атомарное увеличение счётчика
@@ -61,10 +64,10 @@ export class RedisRateLimitAdapter {
             if (current > config.requests) {
                 const ttl = await this.getTtl(key);
                 const resetAt = Date.now() + ttl * 1000;
-                return RateLimitResult.exceeded(config.requests, resetAt);
+                return rate_limit_1.RateLimitResult.exceeded(config.requests, resetAt);
             }
             const remaining = config.requests - current;
-            return RateLimitResult.allowed(config.requests, remaining);
+            return rate_limit_1.RateLimitResult.allowed(config.requests, remaining);
         }
         catch (error) {
             throw new Error(`Rate limit check failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -151,3 +154,4 @@ export class RedisRateLimitAdapter {
         }
     }
 }
+exports.RedisRateLimitAdapter = RedisRateLimitAdapter;

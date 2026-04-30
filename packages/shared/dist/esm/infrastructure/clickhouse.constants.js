@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CLICKHOUSE_DEFAULTS = void 0;
 /**
  * ClickHouse configuration constants
  *
@@ -12,7 +15,7 @@
  *
  * @see https://clickhouse.com/docs/en/operations/settings
  */
-export const CLICKHOUSE_DEFAULTS = {
+exports.CLICKHOUSE_DEFAULTS = {
     // ============================================
     // CONNECTION POOL SETTINGS
     // ============================================

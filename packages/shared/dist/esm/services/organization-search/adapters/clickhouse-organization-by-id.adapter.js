@@ -1,9 +1,12 @@
-import { FinancialSummary } from '../../../domain/financial-summary';
-import { ArrayUtil } from '../../../utils/array.util';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ClickHouseOrganizationById = void 0;
+const financial_summary_1 = require("../../../domain/financial-summary");
+const array_util_1 = require("../../../utils/array.util");
 /**
  * Adapter для получения организации по ID через ClickHouse
  */
-export class ClickHouseOrganizationById {
+class ClickHouseOrganizationById {
     client;
     connections;
     constructor(client, connections) {
@@ -45,7 +48,7 @@ export class ClickHouseOrganizationById {
         const revenue = Number(row.revenue ?? 0);
         const netProfit = Number(row.net_profit ?? 0);
         const charterCapital = Number(row.charter_capital ?? 0);
-        return FinancialSummary.create({
+        return financial_summary_1.FinancialSummary.create({
             inn: String(row.inn),
             ogrn: row.ogrn ? String(row.ogrn) : undefined,
             region: row.region ? String(row.region) : undefined,
@@ -68,7 +71,7 @@ export class ClickHouseOrganizationById {
             format: 'JSONEachRow'
         });
         const json = await result.json();
-        return ArrayUtil.ensureArray(json);
+        return array_util_1.ArrayUtil.ensureArray(json);
     }
     async fetchMetadata(id) {
         const result = await this.client.query({
@@ -77,7 +80,7 @@ export class ClickHouseOrganizationById {
             format: 'JSONEachRow'
         });
         const json = await result.json();
-        const records = ArrayUtil.ensureArray(json);
+        const records = array_util_1.ArrayUtil.ensureArray(json);
         return records.length > 0 ? records[0] : null;
     }
     async fetchSanctions(id) {
@@ -88,7 +91,7 @@ export class ClickHouseOrganizationById {
                 format: 'JSONEachRow'
             });
             const json = await result.json();
-            const rows = ArrayUtil.ensureArray(json);
+            const rows = array_util_1.ArrayUtil.ensureArray(json);
             return rows.map(r => ({
                 id: String(r.id),
                 inn: String(r.inn),
@@ -115,3 +118,4 @@ export class ClickHouseOrganizationById {
         });
     }
 }
+exports.ClickHouseOrganizationById = ClickHouseOrganizationById;

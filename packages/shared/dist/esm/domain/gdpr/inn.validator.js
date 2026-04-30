@@ -1,3 +1,4 @@
+"use strict";
 /**
  * INN Validator for GDPR Deletion
  *
@@ -17,7 +18,9 @@
  *
  * Iteration 13: GDPR Right-to-Delete
  */
-import { InvalidInnError } from '../errors/invalid-inn-error';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.innValidator = exports.InnValidator = void 0;
+const invalid_inn_error_1 = require("../errors/invalid-inn-error");
 /**
  * INN Validator
  *
@@ -25,7 +28,7 @@ import { InvalidInnError } from '../errors/invalid-inn-error';
  * Validates INN format according to FZ-152 requirements.
  * Uses regex pattern matching.
  */
-export class InnValidator {
+class InnValidator {
     static INN_10_PATTERN = /^\d{10}$/;
     static INN_12_PATTERN = /^\d{12}$/;
     static LEGAL_ENTITY_LENGTH = 10;
@@ -44,7 +47,7 @@ export class InnValidator {
         if (!inn || typeof inn !== 'string') {
             return {
                 isValid: false,
-                error: new InvalidInnError('INN is required and must be a string', { inn })
+                error: new invalid_inn_error_1.InvalidInnError('INN is required and must be a string', { inn })
             };
         }
         const trimmed = inn.trim();
@@ -54,7 +57,7 @@ export class InnValidator {
         if (!isValid10 && !isValid12) {
             return {
                 isValid: false,
-                error: new InvalidInnError(`INN must be exactly ${InnValidator.LEGAL_ENTITY_LENGTH} or ${InnValidator.INDIVIDUAL_LENGTH} digits`, { inn: trimmed })
+                error: new invalid_inn_error_1.InvalidInnError(`INN must be exactly ${InnValidator.LEGAL_ENTITY_LENGTH} or ${InnValidator.INDIVIDUAL_LENGTH} digits`, { inn: trimmed })
             };
         }
         return { isValid: true };
@@ -72,7 +75,8 @@ export class InnValidator {
         }
     }
 }
+exports.InnValidator = InnValidator;
 /**
  * Singleton instance
  */
-export const innValidator = new InnValidator();
+exports.innValidator = new InnValidator();

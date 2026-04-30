@@ -2,6 +2,7 @@
  * Unified Migration Factory
  *
  * @remarks
+ * v2.1: Обновлён для архитектуры Discoverer + Applier
  * Factory для создания компонентов миграций.
  * Следует SRP: ответственен только за создание.
  * Следует DIP: возвращает абстракции (порты).
@@ -29,8 +30,11 @@ export interface UnifiedMigrationFactoryParams {
  * @returns IMigrationOrchestrator
  *
  * @remarks
- * Factory method для создания полного стека миграций:
+ * Factory method для создания полного стека миграций (v2.1):
  * - ClickHouseMigrationAdapter (выполнение SQL)
+ * - MigrationMetadataParser (парсинг metadata)
+ * - MigrationDiscovererService (обнаружение)
+ * - MigrationApplierService (применение)
  * - UnifiedMigrationService (координация)
  * - MigrationLock (distributed lock)
  * - CircuitBreaker (fault tolerance)
@@ -45,18 +49,16 @@ export declare function createUnifiedMigrationOrchestrator(params: UnifiedMigrat
  *
  * @remarks
  * Factory method для создания адаптера выполнения миграций.
- * Используется для тестирования или специфичных случаев.
  */
 export declare function createClickHouseMigrationAdapter(clickhouseClient: ClickHouseClient): ClickHouseMigrationAdapter;
 /**
- * Создаёт Unified Migration Service
+ * Создаёт Unified Migration Service (v2.1)
  *
  * @param params - Параметры для создания
  * @returns UnifiedMigrationService
  *
  * @remarks
  * Factory method для создания сервиса координации миграций.
- * Используется для тестирования или специфичных случаев.
  */
 export declare function createUnifiedMigrationService(params: Omit<UnifiedMigrationFactoryParams, 'redisClient'>): {
     service: UnifiedMigrationService;

@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Audit Event Validator
  *
@@ -7,7 +8,9 @@
  *
  * Iteration 12: Audit Logging
  */
-import { AuditEventType, AuditActionType } from './audit-event.dto';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.auditEventValidator = exports.AuditEventValidator = void 0;
+const audit_event_dto_1 = require("./audit-event.dto");
 /**
  * Validation patterns
  */
@@ -29,7 +32,7 @@ const LIMITS = {
  * Validates all fields of an audit event.
  * Throws Error with descriptive message for invalid input.
  */
-export class AuditEventValidator {
+class AuditEventValidator {
     /**
      * Validate all audit event fields
      *
@@ -44,12 +47,12 @@ export class AuditEventValidator {
         this.validateMetadata(metadata);
     }
     validateEventType(eventType) {
-        if (!Object.values(AuditEventType).includes(eventType)) {
+        if (!Object.values(audit_event_dto_1.AuditEventType).includes(eventType)) {
             throw new Error(`Invalid eventType: ${eventType}`);
         }
     }
     validateActionType(actionType) {
-        if (!Object.values(AuditActionType).includes(actionType)) {
+        if (!Object.values(audit_event_dto_1.AuditActionType).includes(actionType)) {
             throw new Error(`Invalid actionType: ${actionType}`);
         }
     }
@@ -104,7 +107,8 @@ export class AuditEventValidator {
         }
     }
 }
+exports.AuditEventValidator = AuditEventValidator;
 /**
  * Singleton validator instance
  */
-export const auditEventValidator = new AuditEventValidator();
+exports.auditEventValidator = new AuditEventValidator();

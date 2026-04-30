@@ -1,3 +1,4 @@
+"use strict";
 /**
  * ClickHouse Config Validator Adapter
  *
@@ -16,6 +17,9 @@
  *
  * Iteration 10.2: Config Validation
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ClickHouseConfigValidatorAdapter = void 0;
+exports.createClickHouseConfigValidator = createClickHouseConfigValidator;
 /**
  * Default required users for InfoIndexer
  */
@@ -53,7 +57,7 @@ const DEFAULT_REQUIRED_QUOTAS = [
  * }
  * ```
  */
-export class ClickHouseConfigValidatorAdapter {
+class ClickHouseConfigValidatorAdapter {
     client;
     logger;
     constructor(client, logger) {
@@ -316,6 +320,7 @@ export class ClickHouseConfigValidatorAdapter {
         };
     }
 }
+exports.ClickHouseConfigValidatorAdapter = ClickHouseConfigValidatorAdapter;
 /**
  * Factory function to create config validator
  *
@@ -323,6 +328,6 @@ export class ClickHouseConfigValidatorAdapter {
  * @param logger - Logger instance
  * @returns Configured validator
  */
-export function createClickHouseConfigValidator(client, logger) {
+function createClickHouseConfigValidator(client, logger) {
     return new ClickHouseConfigValidatorAdapter(client, logger);
 }

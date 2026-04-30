@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Structured Logger Adapter
  *
@@ -17,12 +18,15 @@
  *
  * Iteration 10: RBAC + Config Validation
  */
-import { LogLevel } from './ports/i-logger.port';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StructuredLoggerAdapter = void 0;
+exports.createLogger = createLogger;
+const i_logger_port_1 = require("./ports/i-logger.port");
 /**
  * Default logger options
  */
 const DEFAULT_OPTIONS = {
-    minLevel: LogLevel.INFO,
+    minLevel: i_logger_port_1.LogLevel.INFO,
     timestamps: true,
     colors: false
 };
@@ -41,10 +45,10 @@ const COLORS = {
  * Log level names and colors
  */
 const LEVEL_CONFIG = {
-    [LogLevel.DEBUG]: { name: 'DEBUG', color: COLORS.blue },
-    [LogLevel.INFO]: { name: 'INFO', color: COLORS.green },
-    [LogLevel.WARN]: { name: 'WARN', color: COLORS.yellow },
-    [LogLevel.ERROR]: { name: 'ERROR', color: COLORS.red }
+    [i_logger_port_1.LogLevel.DEBUG]: { name: 'DEBUG', color: COLORS.blue },
+    [i_logger_port_1.LogLevel.INFO]: { name: 'INFO', color: COLORS.green },
+    [i_logger_port_1.LogLevel.WARN]: { name: 'WARN', color: COLORS.yellow },
+    [i_logger_port_1.LogLevel.ERROR]: { name: 'ERROR', color: COLORS.red }
 };
 /**
  * Structured Logger Implementation
@@ -60,7 +64,7 @@ const LEVEL_CONFIG = {
  * // Output: {"timestamp":"2026-04-21T10:00:00.000Z","level":"INFO","service":"my-service","message":"User logged in","context":{"userId":"123","ip":"10.0.0.1"}}
  * ```
  */
-export class StructuredLoggerAdapter {
+class StructuredLoggerAdapter {
     context;
     minLevel;
     timestamps;
@@ -73,16 +77,16 @@ export class StructuredLoggerAdapter {
         this.colors = opts.colors;
     }
     info(message, context) {
-        this.log(LogLevel.INFO, message, context);
+        this.log(i_logger_port_1.LogLevel.INFO, message, context);
     }
     warn(message, context) {
-        this.log(LogLevel.WARN, message, context);
+        this.log(i_logger_port_1.LogLevel.WARN, message, context);
     }
     error(message, context) {
-        this.log(LogLevel.ERROR, message, context);
+        this.log(i_logger_port_1.LogLevel.ERROR, message, context);
     }
     debug(message, context) {
-        this.log(LogLevel.DEBUG, message, context);
+        this.log(i_logger_port_1.LogLevel.DEBUG, message, context);
     }
     /**
      * Core logging method
@@ -97,7 +101,7 @@ export class StructuredLoggerAdapter {
         const entry = this.formatEntry(level, message, context);
         const output = JSON.stringify(entry);
         const config = LEVEL_CONFIG[level];
-        const stream = level >= LogLevel.ERROR ? console.error : console.log;
+        const stream = level >= i_logger_port_1.LogLevel.ERROR ? console.error : console.log;
         if (this.colors && process.stdout.isTTY) {
             const coloredLevel = `${config.color}${config.name}${COLORS.reset}`;
             const coloredOutput = output.replace(`"level":"${config.name}"`, `"level":"${coloredLevel}"`);
@@ -144,6 +148,7 @@ export class StructuredLoggerAdapter {
         return serialized;
     }
 }
+exports.StructuredLoggerAdapter = StructuredLoggerAdapter;
 /**
  * Logger factory
  *
@@ -160,6 +165,6 @@ export class StructuredLoggerAdapter {
  * logger.info('Starting sync');
  * ```
  */
-export function createLogger(context, options) {
+function createLogger(context, options) {
     return new StructuredLoggerAdapter(context, options);
 }

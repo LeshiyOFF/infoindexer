@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Circuit Breaker Adapter
  *
@@ -15,11 +16,13 @@
  * - Metrics recording → CircuitBreakerMetricsRecorder
  * - Execution → CircuitBreakerExecutor
  */
-import { CircuitState } from '../domain/types/circuit-breaker.types';
-import { CircuitStateStorage } from './circuit-state-storage.adapter';
-import { CircuitBreakerEventsEmitter } from '../handlers/circuit-breaker-events-emitter';
-import { CircuitBreakerMetricsRecorder } from '../handlers/circuit-breaker-metrics-recorder';
-import { CircuitBreakerExecutor } from '../handlers/circuit-breaker-executor';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CircuitBreakerAdapter = void 0;
+const circuit_breaker_types_1 = require("../domain/types/circuit-breaker.types");
+const circuit_state_storage_adapter_1 = require("./circuit-state-storage.adapter");
+const circuit_breaker_events_emitter_1 = require("../handlers/circuit-breaker-events-emitter");
+const circuit_breaker_metrics_recorder_1 = require("../handlers/circuit-breaker-metrics-recorder");
+const circuit_breaker_executor_1 = require("../handlers/circuit-breaker-executor");
 /**
  * Circuit Breaker Adapter
  *
@@ -30,7 +33,7 @@ import { CircuitBreakerExecutor } from '../handlers/circuit-breaker-executor';
  * - Metrics recording → CircuitBreakerMetricsRecorder
  * - Execution → CircuitBreakerExecutor
  */
-export class CircuitBreakerAdapter {
+class CircuitBreakerAdapter {
     breakerName;
     config;
     now;
@@ -42,10 +45,10 @@ export class CircuitBreakerAdapter {
         this.breakerName = breakerName;
         this.config = config;
         this.now = now;
-        this.state = new CircuitStateStorage(config, now);
-        this.eventsEmitter = new CircuitBreakerEventsEmitter(events);
-        this.metricsRecorder = new CircuitBreakerMetricsRecorder(enableMetrics);
-        this.executor = new CircuitBreakerExecutor(breakerName, this.state, this.eventsEmitter, this.metricsRecorder, now);
+        this.state = new circuit_state_storage_adapter_1.CircuitStateStorage(config, now);
+        this.eventsEmitter = new circuit_breaker_events_emitter_1.CircuitBreakerEventsEmitter(events);
+        this.metricsRecorder = new circuit_breaker_metrics_recorder_1.CircuitBreakerMetricsRecorder(enableMetrics);
+        this.executor = new circuit_breaker_executor_1.CircuitBreakerExecutor(breakerName, this.state, this.eventsEmitter, this.metricsRecorder, now);
     }
     async execute(fn) {
         return this.executor.execute(fn);
@@ -62,7 +65,7 @@ export class CircuitBreakerAdapter {
     reset() {
         const previousState = this.state.currentState;
         this.state.reset();
-        this.transitionTo(CircuitState.CLOSED, 'manual_reset');
+        this.transitionTo(circuit_breaker_types_1.CircuitState.CLOSED, 'manual_reset');
         this.eventsEmitter.emitReset(this.breakerName, previousState, this.now());
         this.metricsRecorder.recordReset(this.breakerName);
     }
@@ -71,7 +74,7 @@ export class CircuitBreakerAdapter {
         if (this.state.shouldAttemptTransition(currentTime)) {
             return true;
         }
-        return this.state.currentState !== CircuitState.OPEN;
+        return this.state.currentState !== circuit_breaker_types_1.CircuitState.OPEN;
     }
     transitionTo(newState, reason) {
         if (this.state.currentState === newState) {
@@ -83,3 +86,4 @@ export class CircuitBreakerAdapter {
         this.metricsRecorder.recordStateChange(this.breakerName, newState);
     }
 }
+exports.CircuitBreakerAdapter = CircuitBreakerAdapter;

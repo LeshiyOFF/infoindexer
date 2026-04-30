@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Geocoding Quality Enum
  *
@@ -7,6 +8,10 @@
  *
  * Source: RFSD Parquet files (VARCHAR field)
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GEOCODING_QUALITY_VALUES = void 0;
+exports.isValidGeocodingQuality = isValidGeocodingQuality;
+exports.normalizeGeocodingQuality = normalizeGeocodingQuality;
 /**
  * Valid geocoding quality values
  *
@@ -19,7 +24,7 @@
  * - postcode: Postal code level match
  * - country: Country level match
  */
-export const GEOCODING_QUALITY_VALUES = [
+exports.GEOCODING_QUALITY_VALUES = [
     'unknown',
     'house',
     'street',
@@ -31,10 +36,10 @@ export const GEOCODING_QUALITY_VALUES = [
 /**
  * Check if value is a valid geocoding quality
  */
-export function isValidGeocodingQuality(value) {
+function isValidGeocodingQuality(value) {
     if (value === null || value === undefined)
         return false;
-    return GEOCODING_QUALITY_VALUES.includes(value);
+    return exports.GEOCODING_QUALITY_VALUES.includes(value);
 }
 /**
  * Normalize geocoding quality value
@@ -43,7 +48,7 @@ export function isValidGeocodingQuality(value) {
  * - Returns 'unknown' for invalid values
  * - Returns null for null/undefined
  */
-export function normalizeGeocodingQuality(value) {
+function normalizeGeocodingQuality(value) {
     if (value === null || value === undefined)
         return null;
     if (isValidGeocodingQuality(value))

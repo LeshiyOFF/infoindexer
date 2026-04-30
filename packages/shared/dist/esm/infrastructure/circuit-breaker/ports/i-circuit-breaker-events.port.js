@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Circuit Breaker Events Port
  *
@@ -8,4 +9,4 @@
  * Follows ISP: Minimal interface, focused on events only.
  * Follows DIP: Domain depends on this port, Infrastructure implements it.
  */
-export {};
+Object.defineProperty(exports, "__esModule", { value: true });

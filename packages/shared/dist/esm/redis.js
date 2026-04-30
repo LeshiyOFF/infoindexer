@@ -1,4 +1,10 @@
-import Redis from 'ioredis';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.redisClient = exports.redisSub = exports.redisPub = void 0;
+const ioredis_1 = __importDefault(require("ioredis"));
 const REDIS_HOST = process.env.REDIS_HOST || 'redis';
 const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379');
 const redisOptions = {
@@ -8,6 +14,6 @@ const redisOptions = {
         return Math.min(times * 50, 2000);
     }
 };
-export const redisPub = new Redis(redisOptions);
-export const redisSub = new Redis(redisOptions);
-export const redisClient = new Redis(redisOptions);
+exports.redisPub = new ioredis_1.default(redisOptions);
+exports.redisSub = new ioredis_1.default(redisOptions);
+exports.redisClient = new ioredis_1.default(redisOptions);

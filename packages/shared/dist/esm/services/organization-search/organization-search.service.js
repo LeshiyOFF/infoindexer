@@ -1,6 +1,9 @@
-import { SearchParamsBuilder } from './search-params.builder';
-import { SearchWhereBuilder } from './search-where.builder';
-import { SortMapper } from './sort-mapper';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.OrganizationSearchService = void 0;
+const search_params_builder_1 = require("./search-params.builder");
+const search_where_builder_1 = require("./search-where.builder");
+const sort_mapper_1 = require("./sort-mapper");
 /**
  * Service для поиска организаций
  *
@@ -8,7 +11,7 @@ import { SortMapper } from './sort-mapper';
  * Реализует Port IOrganizationSearch.
  * Использует dependency inversion через Ports.
  */
-export class OrganizationSearchService {
+class OrganizationSearchService {
     summaryChecker;
     queryExecutor;
     constructor(summaryChecker, queryExecutor) {
@@ -26,7 +29,7 @@ export class OrganizationSearchService {
         const searchParams = this.extractSearchParams(params, hasOkvedColumn);
         const queryParams = this.buildQueryParams(params, searchParams);
         const whereClause = this.buildWhereClause(params, searchParams);
-        const sortColSummary = SortMapper.mapToSummaryColumn(searchParams.sortBy);
+        const sortColSummary = sort_mapper_1.SortMapper.mapToSummaryColumn(searchParams.sortBy);
         const [total, data] = await Promise.all([
             this.queryExecutor.executeCount(whereClause, queryParams),
             this.queryExecutor.executeSelect(whereClause, sortColSummary, searchParams.sortOrder, queryParams, searchParams.hasOkvedColumn)
@@ -42,8 +45,8 @@ export class OrganizationSearchService {
         return {
             offset,
             hasOkvedColumn,
-            sortBy: SortMapper.validateSortField(sortBy),
-            sortOrder: SortMapper.validateSortOrder(sortOrder)
+            sortBy: sort_mapper_1.SortMapper.validateSortField(sortBy),
+            sortOrder: sort_mapper_1.SortMapper.validateSortOrder(sortOrder)
         };
     }
     /**
@@ -51,7 +54,7 @@ export class OrganizationSearchService {
      */
     buildQueryParams(params, searchParams) {
         const { search = '', region, minRevenue, maxRevenue, minAge, maxAge, minCharterCapital, status, okved } = params;
-        const builder = new SearchParamsBuilder()
+        const builder = new search_params_builder_1.SearchParamsBuilder()
             .withLimit(params.limit ?? 50)
             .withOffset(searchParams.offset)
             .withSearch(search);
@@ -79,7 +82,7 @@ export class OrganizationSearchService {
      */
     buildWhereClause(params, searchParams) {
         const { search = '', region, hasGeo, minRevenue, maxRevenue, minAge, maxAge, minCharterCapital, hasDirector, hasName, status, okved } = params;
-        const builder = new SearchWhereBuilder();
+        const builder = new search_where_builder_1.SearchWhereBuilder();
         if (region)
             builder.addRegion();
         if (hasGeo === 'true')
@@ -115,3 +118,4 @@ export class OrganizationSearchService {
         return builder.build();
     }
 }
+exports.OrganizationSearchService = OrganizationSearchService;

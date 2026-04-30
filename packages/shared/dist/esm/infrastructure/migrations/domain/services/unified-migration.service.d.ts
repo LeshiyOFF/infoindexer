@@ -2,32 +2,48 @@
  * Unified Migration Service
  *
  * @remarks
+ * v2.1: Refactored to Orchestrator pattern
  * Domain Service: координирует применение ВСЕХ миграций.
+ *
  * Следует SRP: ответственен только за координацию.
- * Следует DIP: зависит от IMigrationRunner port.
- * Следует DRY: использует единый метод applyMigration.
+ * Следует DIP: зависит от Ports (IMigrationDiscoverer, IMigrationApplier).
+ * Следует DRY: делегирует работу специализированным сервисам.
+ *
+ * @pattern Single Responsibility Principle (только координация)
+ * @pattern Dependency Inversion Principle (зависит от Ports)
+ * @pattern Orchestrator Pattern
  */
-import type { IMigrationRunner } from '../../ports';
 import type { MigrationDescriptor, MigrationStats } from '../value-objects';
+import type { IMigrationDiscoverer } from '../ports';
+import type { IMigrationApplier } from '../ports';
 /**
  * Параметры для создания UnifiedMigrationService
- */
-export interface UnifiedMigrationServiceParams {
-    /** Migration Runner для применения миграций */
-    readonly migrationRunner: IMigrationRunner;
-    /** Базовая директория с миграциями */
-    readonly migrationsBaseDir: string;
-}
-/**
- * Unified Migration Service
  *
  * @remarks
- * Domain Service для координации применения всех миграций.
- * Читает SQL файлы и применяет их через IMigrationRunner.
+ * v2.1: Зависимости через Ports для соблюдения DIP.
+ */
+export interface UnifiedMigrationServiceParams {
+    /** Discoverer для обнаружения миграций */
+    readonly discoverer: IMigrationDiscoverer;
+    /** Applier для применения миграций */
+    readonly applier: IMigrationApplier;
+}
+/**
+ * Unified Migration Service (Orchestrator)
+ *
+ * @remarks
+ * v2.1: Переписан как координатор.
+ * Делегирует обнаружение и применение специализированным сервисам.
+ *
+ * Изменения:
+ * - Убрана прямая зависимость от IMigrationRunner
+ * - Убрана логика обнаружения (делегирует Discoverer)
+ * - Убрана логика применения (делегирует Applier)
+ * - Зависимости через Ports (DIP compliance)
  */
 export declare class UnifiedMigrationService {
-    private readonly descriptors;
-    private readonly params;
+    private readonly discoverer;
+    private readonly applier;
     constructor(params: UnifiedMigrationServiceParams);
     /**
      * Применяет все миграции
@@ -36,46 +52,18 @@ export declare class UnifiedMigrationService {
      * @throws {Error} если какая-либо миграция не применяется
      *
      * @remarks
-     * - Применяет миграции по порядку версий
-     * - Пропускает уже применённые миграции
-     * - Собирает статистику
+     * Делегирует работу:
+     * 1. Discoverer → обнаруживает миграции
+     * 2. Applier → применяет миграции
      */
     applyAll(): Promise<MigrationStats>;
     /**
      * Получает список всех дескрипторов миграций
      *
      * @returns Readonly массив дескрипторов
-     */
-    getDescriptors(): ReadonlyArray<MigrationDescriptor>;
-    /**
-     * Применяет одну миграцию
-     *
-     * @param descriptor - Дескриптор миграции
-     * @returns Результат применения
      *
      * @remarks
-     * DRY compliance: единый метод для применения всех миграций.
+     * Делегирует работу Discoverer.
      */
-    private applyMigration;
-    /**
-     * Читает SQL файл миграции
-     *
-     * @param descriptor - Дескриптор миграции
-     * @returns Содержимое SQL файла
-     */
-    private readMigrationFile;
-    /**
-     * Получает директорию для категории миграции
-     *
-     * @param category - Категория миграции
-     * @returns Имя директории
-     */
-    private getCategoryDir;
-    /**
-     * Сортирует дескрипторы по версии
-     *
-     * @param descriptors - Дескрипторы для сортировки
-     * @returns Отсортированные дескрипторы
-     */
-    private sortByVersion;
+    getDescriptors(): ReadonlyArray<MigrationDescriptor>;
 }

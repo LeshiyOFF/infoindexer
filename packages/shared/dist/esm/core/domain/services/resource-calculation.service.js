@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ResourceCalculationService = void 0;
 /**
  * Resource Calculation Service
  */
-export class ResourceCalculationService {
+class ResourceCalculationService {
     MIN_MEMORY_GB = 2;
     /**
      * Calculate ClickHouse configuration for given resources
@@ -130,3 +133,4 @@ export class ResourceCalculationService {
         return 'Sufficient memory for production workload';
     }
 }
+exports.ResourceCalculationService = ResourceCalculationService;

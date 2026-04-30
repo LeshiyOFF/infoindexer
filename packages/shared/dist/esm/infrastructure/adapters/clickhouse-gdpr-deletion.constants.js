@@ -1,3 +1,4 @@
+"use strict";
 /**
  * ClickHouse GDPR Deletion Constants
  *
@@ -7,13 +8,16 @@
  *
  * Iteration 13: GDPR Right-to-Delete
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DEFAULT_DATABASE = exports.GDPR_TABLES = void 0;
+exports.getQualifiedTableName = getQualifiedTableName;
 /**
  * Table configuration for deletion
  *
  * @remarks
  * ONE source of truth for tables subject to GDPR deletion.
  */
-export const GDPR_TABLES = [
+exports.GDPR_TABLES = [
     'financial_reports',
     'financial_reports_summary',
     'companies_meta',
@@ -22,7 +26,7 @@ export const GDPR_TABLES = [
 /**
  * Database name
  */
-export const DEFAULT_DATABASE = 'infoindexer';
+exports.DEFAULT_DATABASE = 'infoindexer';
 /**
  * Get fully qualified table name
  *
@@ -30,6 +34,6 @@ export const DEFAULT_DATABASE = 'infoindexer';
  * @param table - Table name
  * @returns database.table
  */
-export function getQualifiedTableName(database, table) {
+function getQualifiedTableName(database, table) {
     return `${database}.${table}`;
 }

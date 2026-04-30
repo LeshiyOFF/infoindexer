@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Circuit Breaker Types
  *
@@ -7,6 +8,8 @@
  *
  * @see https://martinfowler.com/bliki/CircuitBreaker.html
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CircuitState = void 0;
 /**
  * Circuit Breaker State
  *
@@ -16,7 +19,7 @@
  * - OPEN: Failing state, requests are blocked
  * - HALF_OPEN: Testing if service has recovered
  */
-export var CircuitState;
+var CircuitState;
 (function (CircuitState) {
     /** Normal operation, all requests pass through */
     CircuitState["CLOSED"] = "closed";
@@ -24,4 +27,4 @@ export var CircuitState;
     CircuitState["OPEN"] = "open";
     /** Testing mode, checks if service recovered */
     CircuitState["HALF_OPEN"] = "half_open";
-})(CircuitState || (CircuitState = {}));
+})(CircuitState || (exports.CircuitState = CircuitState = {}));

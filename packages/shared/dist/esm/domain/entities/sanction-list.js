@@ -1,17 +1,20 @@
+"use strict";
 /**
  * SanctionList Value Object
  *
  * SanctionList — Value Object для списка санкций
  * Используется для операций над множеством санкций
  */
-import { Result } from '../../result';
-import { InvalidSanctionProgramError } from '../errors';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SanctionList = void 0;
+const result_1 = require("../../result");
+const errors_1 = require("../errors");
 /**
  * SanctionList — Value Object для списка санкций
  *
  * Используется для операций над множеством санкций
  */
-export class SanctionList {
+class SanctionList {
     sanctions;
     constructor(sanctions) {
         this.sanctions = sanctions;
@@ -30,9 +33,9 @@ export class SanctionList {
             ids.add(sanction.id);
         }
         if (duplicates.length > 0) {
-            return Result.error(new InvalidSanctionProgramError('Duplicate sanction IDs', { duplicates }));
+            return result_1.Result.error(new errors_1.InvalidSanctionProgramError('Duplicate sanction IDs', { duplicates }));
         }
-        return Result.ok(new SanctionList(sanctions));
+        return result_1.Result.ok(new SanctionList(sanctions));
     }
     /**
      * Создаёт список без валидации (internal use)
@@ -97,3 +100,4 @@ export class SanctionList {
         return result;
     }
 }
+exports.SanctionList = SanctionList;

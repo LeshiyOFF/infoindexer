@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Unified Migration Adapter
  *
@@ -9,6 +10,8 @@
  * Следует DIP: реализует IMigrationOrchestrator port.
  * Следует DRY: делегирует применение миграций UnifiedMigrationService.
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UnifiedMigrationAdapter = void 0;
 /**
  * Unified Migration Adapter
  *
@@ -19,7 +22,7 @@
  * - IMigrationLock для distributed lock
  * - ICircuitBreakerPort для fault tolerance
  */
-export class UnifiedMigrationAdapter {
+class UnifiedMigrationAdapter {
     migrationService;
     lock;
     breaker;
@@ -111,3 +114,4 @@ export class UnifiedMigrationAdapter {
         };
     }
 }
+exports.UnifiedMigrationAdapter = UnifiedMigrationAdapter;

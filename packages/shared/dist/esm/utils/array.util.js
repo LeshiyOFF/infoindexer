@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ArrayUtil = void 0;
 /**
  * Утилиты для работы с массивами
  */
-export class ArrayUtil {
+class ArrayUtil {
     /**
      * Гарантирует, что значение является массивом
      *
@@ -22,3 +25,4 @@ export class ArrayUtil {
         return arr.length > 0 ? arr[0] : null;
     }
 }
+exports.ArrayUtil = ArrayUtil;

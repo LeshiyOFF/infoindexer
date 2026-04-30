@@ -1,4 +1,7 @@
-import { ArrayUtil } from '../../../utils/array.util';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ClickHouseQueryExecutor = void 0;
+const array_util_1 = require("../../../utils/array.util");
 /**
  * Настройки ClickHouse для тяжёлых запросов
  */
@@ -14,7 +17,7 @@ const QUERY_SETTINGS = {
  * @remarks
  * Реализует Port IQueryExecutor для ClickHouse.
  */
-export class ClickHouseQueryExecutor {
+class ClickHouseQueryExecutor {
     client;
     constructor(client) {
         this.client = client;
@@ -30,8 +33,8 @@ export class ClickHouseQueryExecutor {
             clickhouse_settings: QUERY_SETTINGS
         });
         const json = await result.json();
-        const data = ArrayUtil.ensureArray(json);
-        const row = ArrayUtil.first(data);
+        const data = array_util_1.ArrayUtil.ensureArray(json);
+        const row = array_util_1.ArrayUtil.first(data);
         const rawTotal = row?.total ?? '0';
         return parseInt(rawTotal, 10);
     }
@@ -55,6 +58,7 @@ export class ClickHouseQueryExecutor {
             clickhouse_settings: QUERY_SETTINGS
         });
         const json = await result.json();
-        return ArrayUtil.ensureArray(json);
+        return array_util_1.ArrayUtil.ensureArray(json);
     }
 }
+exports.ClickHouseQueryExecutor = ClickHouseQueryExecutor;

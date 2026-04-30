@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Database Initializer Port
  *
@@ -11,4 +12,4 @@
  *
  * @packageDocumentation
  */
-export {};
+Object.defineProperty(exports, "__esModule", { value: true });

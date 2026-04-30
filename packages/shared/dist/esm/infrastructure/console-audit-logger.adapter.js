@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Console Audit Logger Adapter
  *
@@ -22,6 +23,9 @@
  *
  * Iteration 12: Audit Logging
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ConsoleAuditLoggerAdapter = void 0;
+exports.createConsoleAuditLogger = createConsoleAuditLogger;
 /**
  * Console Audit Logger Adapter
  *
@@ -36,7 +40,7 @@
  * await logger.logEvent(event);
  * ```
  */
-export class ConsoleAuditLoggerAdapter {
+class ConsoleAuditLoggerAdapter {
     config;
     stats = {
         logged: 0,
@@ -127,6 +131,7 @@ export class ConsoleAuditLoggerAdapter {
             colors.reset);
     }
 }
+exports.ConsoleAuditLoggerAdapter = ConsoleAuditLoggerAdapter;
 /**
  * Factory function for creating console audit logger
  *
@@ -141,6 +146,6 @@ export class ConsoleAuditLoggerAdapter {
  * const logger = createConsoleAuditLogger({ debug: true });
  * ```
  */
-export function createConsoleAuditLogger(config) {
+function createConsoleAuditLogger(config) {
     return new ConsoleAuditLoggerAdapter(config);
 }

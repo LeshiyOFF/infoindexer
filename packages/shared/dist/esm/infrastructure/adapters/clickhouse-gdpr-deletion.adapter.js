@@ -1,3 +1,4 @@
+"use strict";
 /**
  * ClickHouse GDPR Deletion Adapter
  *
@@ -23,21 +24,24 @@
  *
  * Iteration 13: GDPR Right-to-Delete
  */
-import { GdprDeleteResult as Result } from '../../domain/gdpr';
-import { GDPR_TABLES, DEFAULT_DATABASE, getQualifiedTableName } from './clickhouse-gdpr-deletion.constants';
-import { createDeletionCounts } from '../../domain/gdpr';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ClickHouseGdprDeletionAdapter = void 0;
+exports.createClickHouseGdprDeletion = createClickHouseGdprDeletion;
+const gdpr_1 = require("../../domain/gdpr");
+const clickhouse_gdpr_deletion_constants_1 = require("./clickhouse-gdpr-deletion.constants");
+const gdpr_2 = require("../../domain/gdpr");
 /**
  * ClickHouse GDPR Deletion Adapter
  *
  * @remarks
  * Implements GDPR deletion using ClickHouse ALTER TABLE DELETE.
  */
-export class ClickHouseGdprDeletionAdapter {
+class ClickHouseGdprDeletionAdapter {
     client;
     database;
     constructor(client, config) {
         this.client = client;
-        this.database = config?.database || DEFAULT_DATABASE;
+        this.database = config?.database || clickhouse_gdpr_deletion_constants_1.DEFAULT_DATABASE;
     }
     /**
      * Confirm deletion by counting records
@@ -47,7 +51,7 @@ export class ClickHouseGdprDeletionAdapter {
      */
     async confirm(inn) {
         const counts = await this.countRecords(inn);
-        return Result.confirmation(inn, counts);
+        return gdpr_1.GdprDeleteResult.confirmation(inn, counts);
     }
     /**
      * Execute deletion across all tables
@@ -60,7 +64,7 @@ export class ClickHouseGdprDeletionAdapter {
         const errors = results.filter((r) => 'error' in r);
         const successes = results.filter((r) => 'count' in r);
         // Build counts from successful deletions using factory
-        const counts = createDeletionCounts(0, 0, 0, 0);
+        const counts = (0, gdpr_2.createDeletionCounts)(0, 0, 0, 0);
         // Need mutable copy for accumulation
         const mutableCounts = { ...counts };
         for (const success of successes) {
@@ -80,7 +84,7 @@ export class ClickHouseGdprDeletionAdapter {
         };
         // Partial success if at least one table deleted
         const success = successes.length > 0;
-        return success ? Result.success(request.inn, finalCounts) : Result.failure(request.inn, errors);
+        return success ? gdpr_1.GdprDeleteResult.success(request.inn, finalCounts) : gdpr_1.GdprDeleteResult.failure(request.inn, errors);
     }
     /**
      * Check if adapter is healthy
@@ -97,10 +101,10 @@ export class ClickHouseGdprDeletionAdapter {
      * @returns Deletion counts
      */
     async countRecords(inn) {
-        const queries = GDPR_TABLES.map(table => this.countInTable(inn, table));
+        const queries = clickhouse_gdpr_deletion_constants_1.GDPR_TABLES.map(table => this.countInTable(inn, table));
         const queryResults = await Promise.allSettled(queries);
         const countsArray = await Promise.all(queryResults.map(r => r.status === 'fulfilled' ? r.value : 0));
-        return createDeletionCounts(countsArray[0] || 0, countsArray[1] || 0, countsArray[2] || 0, countsArray[3] || 0);
+        return (0, gdpr_2.createDeletionCounts)(countsArray[0] || 0, countsArray[1] || 0, countsArray[2] || 0, countsArray[3] || 0);
     }
     /**
      * Count records in single table
@@ -112,7 +116,7 @@ export class ClickHouseGdprDeletionAdapter {
     async countInTable(inn, table) {
         try {
             const result = await this.client.query({
-                query: `SELECT count() as cnt FROM ${getQualifiedTableName(this.database, table)} WHERE inn = {inn:String}`,
+                query: `SELECT count() as cnt FROM ${(0, clickhouse_gdpr_deletion_constants_1.getQualifiedTableName)(this.database, table)} WHERE inn = {inn:String}`,
                 query_params: { inn }
             });
             const json = await result.json();
@@ -134,7 +138,7 @@ export class ClickHouseGdprDeletionAdapter {
      * @returns Array of results (success or error)
      */
     async deleteFromAllTables(inn) {
-        const deletions = GDPR_TABLES.map(table => this.deleteFromTable(inn, table));
+        const deletions = clickhouse_gdpr_deletion_constants_1.GDPR_TABLES.map(table => this.deleteFromTable(inn, table));
         return Promise.all(deletions);
     }
     /**
@@ -148,7 +152,7 @@ export class ClickHouseGdprDeletionAdapter {
         try {
             const beforeCount = await this.countInTable(inn, table);
             await this.client.command({
-                query: `ALTER TABLE ${getQualifiedTableName(this.database, table)} DELETE WHERE inn = {inn:String}`,
+                query: `ALTER TABLE ${(0, clickhouse_gdpr_deletion_constants_1.getQualifiedTableName)(this.database, table)} DELETE WHERE inn = {inn:String}`,
                 query_params: { inn }
             });
             return { table, count: beforeCount };
@@ -161,6 +165,7 @@ export class ClickHouseGdprDeletionAdapter {
         }
     }
 }
+exports.ClickHouseGdprDeletionAdapter = ClickHouseGdprDeletionAdapter;
 /**
  * Factory function
  *
@@ -168,6 +173,6 @@ export class ClickHouseGdprDeletionAdapter {
  * @param config - Optional configuration
  * @returns IGdprDeletion instance
  */
-export function createClickHouseGdprDeletion(client, config) {
+function createClickHouseGdprDeletion(client, config) {
     return new ClickHouseGdprDeletionAdapter(client, config);
 }

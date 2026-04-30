@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Circuit Breaker Executor
  *
@@ -7,7 +8,9 @@
  *
  * Follows SRP: Responsible only for execution logic.
  */
-import { CircuitState } from '../domain/types/circuit-breaker.types';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CircuitBreakerExecutor = void 0;
+const circuit_breaker_types_1 = require("../domain/types/circuit-breaker.types");
 /**
  * Circuit Breaker Executor
  *
@@ -15,7 +18,7 @@ import { CircuitState } from '../domain/types/circuit-breaker.types';
  * Contains execution logic with state checking.
  * Used by CircuitBreakerAdapter for delegation.
  */
-export class CircuitBreakerExecutor {
+class CircuitBreakerExecutor {
     breakerName;
     state;
     eventsEmitter;
@@ -43,14 +46,14 @@ export class CircuitBreakerExecutor {
         const currentTime = this.now();
         // Check for timeout-based transition
         if (this.state.shouldAttemptTransition(currentTime)) {
-            this.state.transitionTo(CircuitState.HALF_OPEN);
+            this.state.transitionTo(circuit_breaker_types_1.CircuitState.HALF_OPEN);
         }
         // Check: circuit is open?
-        if (this.state.currentState === CircuitState.OPEN) {
+        if (this.state.currentState === circuit_breaker_types_1.CircuitState.OPEN) {
             this.metricsRecorder.recordBlocked(this.breakerName);
             return {
                 success: false,
-                state: CircuitState.OPEN,
+                state: circuit_breaker_types_1.CircuitState.OPEN,
                 error: 'circuit_open'
             };
         }
@@ -125,7 +128,7 @@ export class CircuitBreakerExecutor {
         if (this.eventsEmitter.hasEvents()) {
             this.eventsEmitter.emitFailure(this.breakerName, this.state.currentState, error, this.now(), this.state.failureCount, this.state.failures.length);
         }
-        const isErrorStateOpen = this.state.currentState === CircuitState.OPEN;
+        const isErrorStateOpen = this.state.currentState === circuit_breaker_types_1.CircuitState.OPEN;
         return {
             success: false,
             state: this.state.currentState,
@@ -133,3 +136,4 @@ export class CircuitBreakerExecutor {
         };
     }
 }
+exports.CircuitBreakerExecutor = CircuitBreakerExecutor;

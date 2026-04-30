@@ -1,12 +1,17 @@
+"use strict";
 /**
  * Sync Types
  *
  * Типы для синхронизации данных (EGRUL + Sanctions)
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DEFAULT_SYNC_CONFIG = exports.SyncStage = void 0;
+exports.createSyncStatus = createSyncStatus;
+exports.calculateStagePercentage = calculateStagePercentage;
 /**
  * Стадии синхронизации
  */
-export var SyncStage;
+var SyncStage;
 (function (SyncStage) {
     SyncStage["IDLE"] = "idle";
     // EGRUL stages (0-40%)
@@ -22,11 +27,11 @@ export var SyncStage;
     SyncStage["CLEANUP"] = "cleanup";
     SyncStage["COMPLETED"] = "completed";
     SyncStage["ERROR"] = "error";
-})(SyncStage || (SyncStage = {}));
+})(SyncStage || (exports.SyncStage = SyncStage = {}));
 /**
  * Значения конфигурации по умолчанию
  */
-export const DEFAULT_SYNC_CONFIG = {
+exports.DEFAULT_SYNC_CONFIG = {
     batchSize: 1000,
     maxRetries: 3,
     timeout: 30000,
@@ -35,7 +40,7 @@ export const DEFAULT_SYNC_CONFIG = {
 /**
  * Создаёт данные статуса синхронизации
  */
-export function createSyncStatus(status, stage, message, percentage, startedAt, error) {
+function createSyncStatus(status, stage, message, percentage, startedAt, error) {
     return {
         status,
         stage,
@@ -49,7 +54,7 @@ export function createSyncStatus(status, stage, message, percentage, startedAt, 
 /**
  * Вычисляет процент выполнения по стадии
  */
-export function calculateStagePercentage(stage) {
+function calculateStagePercentage(stage) {
     const stageWeights = {
         [SyncStage.IDLE]: 0,
         [SyncStage.EGRUL_DOWNLOAD]: 5,

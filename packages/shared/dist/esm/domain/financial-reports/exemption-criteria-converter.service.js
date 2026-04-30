@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Exemption Criteria Converter Service
  *
@@ -14,8 +15,10 @@
  * - Parquet (VARCHAR) → ClickHouse (Enum8 string)
  * - Strict validation: unknown values logged, not defaulted
  */
-import { ExemptionCriteria, ALL_EXEMPTION_CRITERIA, isValidExemptionCriteria } from './exemption-criteria.enum';
-import { ExemptionCriteriaError } from './exemption-criteria-error';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.exemptionCriteriaConverter = exports.ExemptionCriteriaConverter = void 0;
+const exemption_criteria_enum_1 = require("./exemption-criteria.enum");
+const exemption_criteria_error_1 = require("./exemption-criteria-error");
 /**
  * Сервис для конвертации exemption_criteria
  *
@@ -30,9 +33,9 @@ import { ExemptionCriteriaError } from './exemption-criteria-error';
  * // { success: true, value: 'none' }
  * ```
  */
-export class ExemptionCriteriaConverter {
+class ExemptionCriteriaConverter {
     onInvalidValue;
-    static DEFAULT_VALUE = ExemptionCriteria.NONE;
+    static DEFAULT_VALUE = exemption_criteria_enum_1.ExemptionCriteria.NONE;
     constructor(onInvalidValue) {
         this.onInvalidValue = onInvalidValue;
     }
@@ -71,7 +74,7 @@ export class ExemptionCriteriaConverter {
             };
         }
         // Валидация
-        if (!isValidExemptionCriteria(trimmed)) {
+        if (!(0, exemption_criteria_enum_1.isValidExemptionCriteria)(trimmed)) {
             this.reportInvalid(trimmed);
             return {
                 success: true,
@@ -93,7 +96,7 @@ export class ExemptionCriteriaConverter {
     convertOrThrow(value) {
         const result = this.convert(value);
         if (!result.success || !result.value) {
-            throw result.error || new ExemptionCriteriaError(String(value), ALL_EXEMPTION_CRITERIA);
+            throw result.error || new exemption_criteria_error_1.ExemptionCriteriaError(String(value), exemption_criteria_enum_1.ALL_EXEMPTION_CRITERIA);
         }
         return result.value;
     }
@@ -112,7 +115,8 @@ export class ExemptionCriteriaConverter {
         }
     }
 }
+exports.ExemptionCriteriaConverter = ExemptionCriteriaConverter;
 /**
  * Singleton instance без логирования
  */
-export const exemptionCriteriaConverter = new ExemptionCriteriaConverter();
+exports.exemptionCriteriaConverter = new ExemptionCriteriaConverter();

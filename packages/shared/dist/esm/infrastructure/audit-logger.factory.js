@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Audit Logger Factory
  *
@@ -17,15 +18,18 @@
  *
  * Iteration 12: Audit Logging
  */
-import { createClickHouseAuditLogger } from './clickhouse-audit-logger.factory';
-import { createConsoleAuditLogger } from './console-audit-logger.adapter';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createConsoleAuditLogger = exports.ConsoleAuditLoggerAdapter = exports.ClickHouseAuditLoggerAdapter = exports.createClickHouseAuditLogger = exports.AuditLoggerType = void 0;
+exports.createAuditLogger = createAuditLogger;
+const clickhouse_audit_logger_factory_1 = require("./clickhouse-audit-logger.factory");
+const console_audit_logger_adapter_1 = require("./console-audit-logger.adapter");
 /**
  * Audit logger type
  *
  * @remarks
  * Determines which adapter to use.
  */
-export var AuditLoggerType;
+var AuditLoggerType;
 (function (AuditLoggerType) {
     /** ClickHouse adapter (production) */
     AuditLoggerType["CLICKHOUSE"] = "clickhouse";
@@ -33,7 +37,7 @@ export var AuditLoggerType;
     AuditLoggerType["CONSOLE"] = "console";
     /** Auto-select based on NODE_ENV */
     AuditLoggerType["AUTO"] = "auto";
-})(AuditLoggerType || (AuditLoggerType = {}));
+})(AuditLoggerType || (exports.AuditLoggerType = AuditLoggerType = {}));
 /**
  * Create an audit logger based on configuration
  *
@@ -68,7 +72,7 @@ export var AuditLoggerType;
  * });
  * ```
  */
-export async function createAuditLogger(client, options = {}) {
+async function createAuditLogger(client, options = {}) {
     const type = options.type ?? AuditLoggerType.AUTO;
     const effectiveType = type === AuditLoggerType.AUTO
         ? selectAutoType()
@@ -93,7 +97,7 @@ async function createClickHouseLogger(client, options) {
         throw new Error('ClickHouse client is required for CLICKHOUSE audit logger type. ' +
             'Provide a client or use CONSOLE type.');
     }
-    return await createClickHouseAuditLogger(client, {
+    return await (0, clickhouse_audit_logger_factory_1.createClickHouseAuditLogger)(client, {
         database: options.database,
         tableName: options.tableName,
         options: options.loggerOptions
@@ -103,7 +107,7 @@ async function createClickHouseLogger(client, options) {
  * Create console audit logger
  */
 function createConsoleLogger(options) {
-    return createConsoleAuditLogger({
+    return (0, console_audit_logger_adapter_1.createConsoleAuditLogger)({
         debug: options.consoleDebug,
         colors: options.consoleColors
     });
@@ -123,6 +127,10 @@ function selectAutoType() {
     return AuditLoggerType.CONSOLE;
 }
 // Re-export for direct access
-export { createClickHouseAuditLogger } from './clickhouse-audit-logger.factory';
-export { ClickHouseAuditLoggerAdapter } from './clickhouse-audit-logger.adapter';
-export { ConsoleAuditLoggerAdapter, createConsoleAuditLogger } from './console-audit-logger.adapter';
+var clickhouse_audit_logger_factory_2 = require("./clickhouse-audit-logger.factory");
+Object.defineProperty(exports, "createClickHouseAuditLogger", { enumerable: true, get: function () { return clickhouse_audit_logger_factory_2.createClickHouseAuditLogger; } });
+var clickhouse_audit_logger_adapter_1 = require("./clickhouse-audit-logger.adapter");
+Object.defineProperty(exports, "ClickHouseAuditLoggerAdapter", { enumerable: true, get: function () { return clickhouse_audit_logger_adapter_1.ClickHouseAuditLoggerAdapter; } });
+var console_audit_logger_adapter_2 = require("./console-audit-logger.adapter");
+Object.defineProperty(exports, "ConsoleAuditLoggerAdapter", { enumerable: true, get: function () { return console_audit_logger_adapter_2.ConsoleAuditLoggerAdapter; } });
+Object.defineProperty(exports, "createConsoleAuditLogger", { enumerable: true, get: function () { return console_audit_logger_adapter_2.createConsoleAuditLogger; } });

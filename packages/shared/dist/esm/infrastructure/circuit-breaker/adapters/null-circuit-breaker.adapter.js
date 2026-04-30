@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Null Circuit Breaker Adapter
  *
@@ -8,7 +9,9 @@
  * Follows SRP: Always allows execution.
  * Follows LSP: Substitutable with any ICircuitBreakerPort.
  */
-import { CircuitState } from '../domain/types/circuit-breaker.types';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.NullCircuitBreakerAdapter = void 0;
+const circuit_breaker_types_1 = require("../domain/types/circuit-breaker.types");
 /**
  * Null Circuit Breaker Adapter
  *
@@ -21,7 +24,7 @@ import { CircuitState } from '../domain/types/circuit-breaker.types';
  * - Development
  * - When Circuit Breaker is disabled
  */
-export class NullCircuitBreakerAdapter {
+class NullCircuitBreakerAdapter {
     breakerName;
     constructor(breakerName = 'null-circuit-breaker') {
         this.breakerName = breakerName;
@@ -31,14 +34,14 @@ export class NullCircuitBreakerAdapter {
             const value = await fn();
             return {
                 success: true,
-                state: CircuitState.CLOSED,
+                state: circuit_breaker_types_1.CircuitState.CLOSED,
                 value
             };
         }
         catch (error) {
             return {
                 success: false,
-                state: CircuitState.CLOSED,
+                state: circuit_breaker_types_1.CircuitState.CLOSED,
                 error: 'execution_failed'
             };
         }
@@ -51,11 +54,11 @@ export class NullCircuitBreakerAdapter {
         return fallback(result.error);
     }
     getState() {
-        return CircuitState.CLOSED;
+        return circuit_breaker_types_1.CircuitState.CLOSED;
     }
     getStats() {
         return {
-            state: CircuitState.CLOSED,
+            state: circuit_breaker_types_1.CircuitState.CLOSED,
             failureCount: 0,
             successCount: 0,
             failuresInWindow: 0,
@@ -71,3 +74,4 @@ export class NullCircuitBreakerAdapter {
         return true;
     }
 }
+exports.NullCircuitBreakerAdapter = NullCircuitBreakerAdapter;

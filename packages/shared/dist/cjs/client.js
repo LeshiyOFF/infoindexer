@@ -20,7 +20,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEFAULT_SYNC_CONFIG = exports.calculateStagePercentage = exports.createSyncStatus = exports.SyncStage = exports.ApiErrorCode = exports.apiPaginated = exports.apiError = exports.apiSuccess = void 0;
+exports.innValidator = exports.GdprDeleteRequest = exports.OrganizationService = exports.DEFAULT_SYNC_CONFIG = exports.calculateStagePercentage = exports.createSyncStatus = exports.SyncStage = exports.ApiErrorCode = exports.apiPaginated = exports.apiError = exports.apiSuccess = void 0;
 // Core types
 __exportStar(require("./interfaces"), exports);
 // Domain Layer (только типы, без runtime зависимостей)
@@ -43,3 +43,10 @@ Object.defineProperty(exports, "DEFAULT_SYNC_CONFIG", { enumerable: true, get: f
 __exportStar(require("./repositories"), exports);
 // Services (pure functions только)
 __exportStar(require("./financial-reports"), exports);
+// Organization Service
+var organization_service_1 = require("./services/organization.service");
+Object.defineProperty(exports, "OrganizationService", { enumerable: true, get: function () { return organization_service_1.OrganizationService; } });
+// Domain - GDPR
+var gdpr_1 = require("./domain/gdpr");
+Object.defineProperty(exports, "GdprDeleteRequest", { enumerable: true, get: function () { return gdpr_1.GdprDeleteRequest; } });
+Object.defineProperty(exports, "innValidator", { enumerable: true, get: function () { return gdpr_1.innValidator; } });

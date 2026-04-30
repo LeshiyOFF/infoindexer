@@ -1,3 +1,4 @@
+"use strict";
 /**
  * GDPR Delete Request DTO
  *
@@ -12,7 +13,9 @@
  *
  * Iteration 13: GDPR Right-to-Delete
  */
-import { innValidator } from './inn.validator';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GdprDeleteRequest = void 0;
+const inn_validator_1 = require("./inn.validator");
 /**
  * GDPR Delete Request
  *
@@ -20,7 +23,7 @@ import { innValidator } from './inn.validator';
  * Value object representing a request to delete all data
  * for a specific organization by INN.
  */
-export class GdprDeleteRequest {
+class GdprDeleteRequest {
     inn;
     requestedBy;
     requestDate;
@@ -46,7 +49,7 @@ export class GdprDeleteRequest {
             throw new Error('requestDate must be a valid Date');
         }
         const trimmedInn = inn.trim();
-        innValidator.validateOrThrow(trimmedInn);
+        inn_validator_1.innValidator.validateOrThrow(trimmedInn);
         return new GdprDeleteRequest(trimmedInn, requestedBy.trim(), requestDate);
     }
     /**
@@ -81,3 +84,4 @@ export class GdprDeleteRequest {
         return Date.now() - this.requestDate.getTime() >= maxAgeMs;
     }
 }
+exports.GdprDeleteRequest = GdprDeleteRequest;

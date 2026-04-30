@@ -1,3 +1,4 @@
+"use strict";
 /**
  * ClickHouse RBAC Port
  *
@@ -17,4 +18,4 @@
  * Iteration 10: RBAC + Users
  * Iteration 11: Potential Vault integration for passwords
  */
-export {};
+Object.defineProperty(exports, "__esModule", { value: true });

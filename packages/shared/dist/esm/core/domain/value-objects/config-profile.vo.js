@@ -1,7 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ConfigProfile = void 0;
 /**
  * Config Profile Value Object
  */
-export class ConfigProfile {
+class ConfigProfile {
     data;
     constructor(data) {
         this.validate(data);
@@ -101,3 +104,4 @@ export class ConfigProfile {
         }
     }
 }
+exports.ConfigProfile = ConfigProfile;

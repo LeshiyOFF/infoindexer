@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Redis адаптер для отмены операций
  *
@@ -5,11 +6,13 @@
  * Публикует команды отмены в Redis Pub/Sub.
  * Реализует порт IAbortHandler.
  */
-import { serializeAbortCommand } from '../../domain/abort/abort-command.dto';
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RedisAbortAdapter = exports.ABORT_CHANNELS = void 0;
+const abort_command_dto_1 = require("../../domain/abort/abort-command.dto");
 /**
  * Каналы Redis для отмены операций
  */
-export const ABORT_CHANNELS = {
+exports.ABORT_CHANNELS = {
     financialSync: 'sync:abort',
     egrulSync: 'sync:egrul:abort',
     sanctionsSync: 'sync:sanctions:abort',
@@ -18,7 +21,7 @@ export const ABORT_CHANNELS = {
 /**
  * Redis адаптер для отмены операций
  */
-export class RedisAbortAdapter {
+class RedisAbortAdapter {
     redis;
     constructor(redis) {
         this.redis = redis;
@@ -36,7 +39,7 @@ export class RedisAbortAdapter {
                 operationType,
                 timestamp: Date.now()
             };
-            await this.redis.publish(channel, serializeAbortCommand(command));
+            await this.redis.publish(channel, (0, abort_command_dto_1.serializeAbortCommand)(command));
             return {
                 success: true,
                 message: 'Команда отмены отправлена'
@@ -79,13 +82,14 @@ export class RedisAbortAdapter {
     getChannelForType(operationType) {
         switch (operationType) {
             case 'egrul-sync':
-                return ABORT_CHANNELS.egrulSync;
+                return exports.ABORT_CHANNELS.egrulSync;
             case 'sanctions-sync':
-                return ABORT_CHANNELS.sanctionsSync;
+                return exports.ABORT_CHANNELS.sanctionsSync;
             case 'summary-refresh':
-                return ABORT_CHANNELS.summaryRefresh;
+                return exports.ABORT_CHANNELS.summaryRefresh;
             default:
-                return ABORT_CHANNELS.financialSync;
+                return exports.ABORT_CHANNELS.financialSync;
         }
     }
 }
+exports.RedisAbortAdapter = RedisAbortAdapter;

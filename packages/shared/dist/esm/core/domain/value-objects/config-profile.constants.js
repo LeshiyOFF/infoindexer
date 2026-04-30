@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ALL_PROFILES = exports.HIGH = exports.STANDARD = exports.LOW = void 0;
 /**
  * Predefined Configuration Profiles
  *
@@ -5,13 +8,13 @@
  * Static profile definitions for different memory ranges.
  * Imported by ConfigProfile class for static access.
  */
-import { ConfigProfile } from './config-profile.vo';
-import { ConfigProfileType } from './config-profile-type.enum';
+const config_profile_vo_1 = require("./config-profile.vo");
+const config_profile_type_enum_1 = require("./config-profile-type.enum");
 /**
  * LOW Profile - for systems with less than 4GB RAM
  */
-export const LOW = new ConfigProfile({
-    type: ConfigProfileType.LOW,
+exports.LOW = new config_profile_vo_1.ConfigProfile({
+    type: config_profile_type_enum_1.ConfigProfileType.LOW,
     name: 'Low Memory',
     description: 'For systems with less than 4GB RAM',
     minMemoryGB: 0,
@@ -25,8 +28,8 @@ export const LOW = new ConfigProfile({
 /**
  * STANDARD Profile - for systems with 4-16GB RAM
  */
-export const STANDARD = new ConfigProfile({
-    type: ConfigProfileType.STANDARD,
+exports.STANDARD = new config_profile_vo_1.ConfigProfile({
+    type: config_profile_type_enum_1.ConfigProfileType.STANDARD,
     name: 'Standard',
     description: 'For systems with 4-16GB RAM',
     minMemoryGB: 4,
@@ -39,8 +42,8 @@ export const STANDARD = new ConfigProfile({
 /**
  * HIGH Profile - for systems with more than 16GB RAM
  */
-export const HIGH = new ConfigProfile({
-    type: ConfigProfileType.HIGH,
+exports.HIGH = new config_profile_vo_1.ConfigProfile({
+    type: config_profile_type_enum_1.ConfigProfileType.HIGH,
     name: 'High Memory',
     description: 'For systems with more than 16GB RAM',
     minMemoryGB: 16,
@@ -53,4 +56,4 @@ export const HIGH = new ConfigProfile({
 /**
  * All available profiles array
  */
-export const ALL_PROFILES = [LOW, STANDARD, HIGH];
+exports.ALL_PROFILES = [exports.LOW, exports.STANDARD, exports.HIGH];

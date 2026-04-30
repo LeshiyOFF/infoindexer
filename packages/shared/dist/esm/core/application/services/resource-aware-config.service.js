@@ -1,8 +1,11 @@
-import { ResourceCalculationService } from '../../domain/services/resource-calculation.service';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ResourceAwareConfigService = void 0;
+const resource_calculation_service_1 = require("../../domain/services/resource-calculation.service");
 /**
  * Resource-Aware Configuration Service
  */
-export class ResourceAwareConfigService {
+class ResourceAwareConfigService {
     resourceDiscovery;
     profileSelector;
     healthCheck;
@@ -11,7 +14,7 @@ export class ResourceAwareConfigService {
     cachedResources = null;
     cachedProfile = null;
     cachedConfig = null;
-    constructor(resourceDiscovery, profileSelector, healthCheck, calculationService = new ResourceCalculationService()) {
+    constructor(resourceDiscovery, profileSelector, healthCheck, calculationService = new resource_calculation_service_1.ResourceCalculationService()) {
         this.resourceDiscovery = resourceDiscovery;
         this.profileSelector = profileSelector;
         this.healthCheck = healthCheck;
@@ -138,3 +141,4 @@ export class ResourceAwareConfigService {
         this.cachedConfig = null;
     }
 }
+exports.ResourceAwareConfigService = ResourceAwareConfigService;

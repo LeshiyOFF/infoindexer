@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Audit Logger Helper Functions
  *
@@ -7,13 +8,21 @@
  *
  * Iteration 12: Audit Logging
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.extractErrorMessage = extractErrorMessage;
+exports.isRecoverableError = isRecoverableError;
+exports.logToConsole = logToConsole;
+exports.validateAuditLoggerConfig = validateAuditLoggerConfig;
+exports.validateDatabaseName = validateDatabaseName;
+exports.validateTableName = validateTableName;
+exports.generateLogId = generateLogId;
 /**
  * Extract error message from unknown error type
  *
  * @param error - Unknown error object
  * @returns String error message
  */
-export function extractErrorMessage(error) {
+function extractErrorMessage(error) {
     if (error instanceof Error) {
         return error.message;
     }
@@ -32,7 +41,7 @@ export function extractErrorMessage(error) {
  * @param error - Unknown error object
  * @returns true if error is recoverable
  */
-export function isRecoverableError(error) {
+function isRecoverableError(error) {
     const msg = extractErrorMessage(error).toLowerCase();
     const unrecoverablePatterns = [
         'authentication',
@@ -53,7 +62,7 @@ export function isRecoverableError(error) {
  * @param event - The audit event that failed
  * @param error - The error that occurred
  */
-export function logToConsole(event, error) {
+function logToConsole(event, error) {
     const eventObj = event.toObject();
     const errorMsg = extractErrorMessage(error);
     console.error(JSON.stringify({
@@ -69,7 +78,7 @@ export function logToConsole(event, error) {
  *
  * @throws {Error} If configuration is invalid
  */
-export function validateAuditLoggerConfig(database, tableName) {
+function validateAuditLoggerConfig(database, tableName) {
     if (!validateDatabaseName(database)) {
         throw new Error(`Invalid database name: ${database}`);
     }
@@ -80,18 +89,18 @@ export function validateAuditLoggerConfig(database, tableName) {
 /**
  * Validate database name
  */
-export function validateDatabaseName(name) {
+function validateDatabaseName(name) {
     return /^[a-z_][a-z0-9_]{0,60}$/.test(name);
 }
 /**
  * Validate table name
  */
-export function validateTableName(name) {
+function validateTableName(name) {
     return /^[a-z_][a-z0-9_]{0,60}$/.test(name);
 }
 /**
  * Generate unique log entry ID
  */
-export function generateLogId() {
+function generateLogId() {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }

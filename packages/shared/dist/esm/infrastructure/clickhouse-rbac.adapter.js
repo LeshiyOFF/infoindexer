@@ -1,3 +1,4 @@
+"use strict";
 /**
  * ClickHouse RBAC Adapter
  *
@@ -16,6 +17,9 @@
  *
  * Iteration 10: RBAC + Users
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ClickHouseRBACAdapter = void 0;
+exports.createClickHouseRBACAdapter = createClickHouseRBACAdapter;
 /**
  * ClickHouse RBAC Manager Implementation
  *
@@ -35,7 +39,7 @@
  * });
  * ```
  */
-export class ClickHouseRBACAdapter {
+class ClickHouseRBACAdapter {
     client;
     logger;
     constructor(client, logger) {
@@ -198,6 +202,7 @@ export class ClickHouseRBACAdapter {
         return parts.join('\n    ');
     }
 }
+exports.ClickHouseRBACAdapter = ClickHouseRBACAdapter;
 /**
  * Factory function to create RBAC adapter
  *
@@ -205,6 +210,6 @@ export class ClickHouseRBACAdapter {
  * @param logger - Logger instance
  * @returns Configured RBAC adapter
  */
-export function createClickHouseRBACAdapter(client, logger) {
+function createClickHouseRBACAdapter(client, logger) {
     return new ClickHouseRBACAdapter(client, logger);
 }

@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MemorySize = void 0;
 /**
  * Memory Size Value Object
  *
@@ -13,7 +16,7 @@
  * console.log(size.toGB());    // 8
  * ```
  */
-export class MemorySize {
+class MemorySize {
     bytes;
     BYTES_IN_MB = 1024 * 1024;
     BYTES_IN_GB = 1024 * 1024 * 1024;
@@ -116,3 +119,4 @@ export class MemorySize {
         return `${this.bytes}B`;
     }
 }
+exports.MemorySize = MemorySize;

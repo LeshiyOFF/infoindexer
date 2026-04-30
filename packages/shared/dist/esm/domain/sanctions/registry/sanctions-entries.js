@@ -1,58 +1,61 @@
-import { SanctionTopic } from '../sanction-topic.enum';
-import { SanctionLevel } from '../sanction-level.enum';
-import { SanctionCategory, createSanctionTopicInfo } from '../sanction-topic-info.model';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sanctionsEntries = void 0;
+const sanction_topic_enum_1 = require("../sanction-topic.enum");
+const sanction_level_enum_1 = require("../sanction-level.enum");
+const sanction_topic_info_model_1 = require("../sanction-topic-info.model");
 /**
  * Entries для категории SANCTIONS
  * Международные санкции различных регуляторов
  */
-export const sanctionsEntries = Object.freeze([
-    createSanctionTopicInfo({
-        topic: SanctionTopic.SANCTION,
+exports.sanctionsEntries = Object.freeze([
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.SANCTION,
         label: 'Международные санкции',
-        level: SanctionLevel.HIGH,
+        level: sanction_level_enum_1.SanctionLevel.HIGH,
         description: 'Компания находится под санкциями EU, US, UN или других регуляторов',
-        category: SanctionCategory.SANCTIONS
+        category: sanction_topic_info_model_1.SanctionCategory.SANCTIONS
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.SANCTION_LINKED,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.SANCTION_LINKED,
         label: 'Связь с санкционными лицами',
-        level: SanctionLevel.HIGH,
+        level: sanction_level_enum_1.SanctionLevel.HIGH,
         description: 'Компания связана с лицами под санкциями',
-        category: SanctionCategory.SANCTIONS
+        category: sanction_topic_info_model_1.SanctionCategory.SANCTIONS
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.SANCTION_US_OFAC,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.SANCTION_US_OFAC,
         label: 'Санкции OFAC (США)',
-        level: SanctionLevel.HIGH,
+        level: sanction_level_enum_1.SanctionLevel.HIGH,
         description: 'В санкционном списке OFAC Министерства финансов США',
-        category: SanctionCategory.SANCTIONS
+        category: sanction_topic_info_model_1.SanctionCategory.SANCTIONS
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.SANCTION_EU,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.SANCTION_EU,
         label: 'Санкции ЕС',
-        level: SanctionLevel.HIGH,
+        level: sanction_level_enum_1.SanctionLevel.HIGH,
         description: 'В санкционном списке Европейского союза',
-        category: SanctionCategory.SANCTIONS
+        category: sanction_topic_info_model_1.SanctionCategory.SANCTIONS
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.SANCTION_UK,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.SANCTION_UK,
         label: 'Санкции Великобритании',
-        level: SanctionLevel.HIGH,
+        level: sanction_level_enum_1.SanctionLevel.HIGH,
         description: 'В санкционном списке Великобритании',
-        category: SanctionCategory.SANCTIONS
+        category: sanction_topic_info_model_1.SanctionCategory.SANCTIONS
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.SANCTION_UN,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.SANCTION_UN,
         label: 'Санкции ООН',
-        level: SanctionLevel.HIGH,
+        level: sanction_level_enum_1.SanctionLevel.HIGH,
         description: 'В санкционном списке ООН',
-        category: SanctionCategory.SANCTIONS
+        category: sanction_topic_info_model_1.SanctionCategory.SANCTIONS
     }),
-    createSanctionTopicInfo({
-        topic: SanctionTopic.SANCTION_SEC,
+    (0, sanction_topic_info_model_1.createSanctionTopicInfo)({
+        topic: sanction_topic_enum_1.SanctionTopic.SANCTION_SEC,
         label: 'Секторальные санкции',
-        level: SanctionLevel.HIGH,
+        level: sanction_level_enum_1.SanctionLevel.HIGH,
         description: 'Попадает под секторальные санкции',
-        category: SanctionCategory.SANCTIONS
+        category: sanction_topic_info_model_1.SanctionCategory.SANCTIONS
     }),
 ]);

@@ -1,3 +1,4 @@
+"use strict";
 /**
  * ClickHouse Migration Adapter
  *
@@ -8,6 +9,8 @@
  * Следует SRP: ответственен только за выполнение миграций.
  * Следует DIP: реализует IMigrationRunner port.
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ClickHouseMigrationAdapter = void 0;
 const MIGRATIONS_TABLE = 'schema_migrations';
 /**
  * ClickHouse Migration Adapter
@@ -16,7 +19,7 @@ const MIGRATIONS_TABLE = 'schema_migrations';
  * Реализует IMigrationRunner порт для ClickHouse.
  * Хранит историю миграций в таблице schema_migrations.
  */
-export class ClickHouseMigrationAdapter {
+class ClickHouseMigrationAdapter {
     client;
     constructor(client) {
         this.client = client;
@@ -246,3 +249,4 @@ export class ClickHouseMigrationAdapter {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 }
+exports.ClickHouseMigrationAdapter = ClickHouseMigrationAdapter;

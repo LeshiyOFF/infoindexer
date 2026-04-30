@@ -1,12 +1,15 @@
-import { ResourceCalculationService } from '../../domain/services/resource-calculation.service';
-import { selectConfigProfile } from '../../domain/value-objects/config-profile.utils';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.StartupHealthCheckAdapter = void 0;
+const resource_calculation_service_1 = require("../../domain/services/resource-calculation.service");
+const config_profile_utils_1 = require("../../domain/value-objects/config-profile.utils");
 /**
  * Startup Health Check Adapter
  */
-export class StartupHealthCheckAdapter {
+class StartupHealthCheckAdapter {
     calculationService;
     MIN_MEMORY_GB = 2;
-    constructor(calculationService = new ResourceCalculationService()) {
+    constructor(calculationService = new resource_calculation_service_1.ResourceCalculationService()) {
         this.calculationService = calculationService;
     }
     /**
@@ -21,7 +24,7 @@ export class StartupHealthCheckAdapter {
                 action: this.getInsufficientMemoryAction(totalGB)
             };
         }
-        const profile = selectConfigProfile(totalGB);
+        const profile = (0, config_profile_utils_1.selectConfigProfile)(totalGB);
         if (totalGB < 4) {
             return {
                 status: 'degraded',
@@ -90,3 +93,4 @@ export class StartupHealthCheckAdapter {
         return lines.join('\n');
     }
 }
+exports.StartupHealthCheckAdapter = StartupHealthCheckAdapter;

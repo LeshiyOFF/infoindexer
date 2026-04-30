@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Circuit Breaker Events Emitter
  *
@@ -8,6 +9,8 @@
  * Follows SRP: Responsible only for event emission.
  * Follows Observer Pattern: Notifies subscribers.
  */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CircuitBreakerEventsEmitter = void 0;
 /**
  * Circuit Breaker Events Emitter
  *
@@ -15,7 +18,7 @@
  * Wrapper over ICircuitBreakerEventsPort for convenient usage.
  * All methods optional — if handler doesn't implement method, nothing happens.
  */
-export class CircuitBreakerEventsEmitter {
+class CircuitBreakerEventsEmitter {
     events;
     constructor(events) {
         this.events = events;
@@ -113,3 +116,4 @@ export class CircuitBreakerEventsEmitter {
         return this.events !== undefined;
     }
 }
+exports.CircuitBreakerEventsEmitter = CircuitBreakerEventsEmitter;
