@@ -22,6 +22,7 @@ import type { IGracefulShutdown } from './core/ports';
 import type { ICircuitBreakerManagerPort } from './core/ports';
 import type { CircuitBreakerManager } from './core/domain/circuit-breaker-manager.service';
 import type { HealthCheckService } from './core/domain/health-check.service';
+import type { TransformPollingWorker } from './core/workers/transform-polling.worker';
 
 export interface AppState {
   clickhouseClient: ClickHouseClient;
@@ -40,6 +41,7 @@ export interface AppState {
   gracefulShutdownService: IGracefulShutdown;
   circuitBreakerManager: CircuitBreakerManager;
   healthCheckService: HealthCheckService;
+  transformPollingWorker: TransformPollingWorker;
 }
 
 /**

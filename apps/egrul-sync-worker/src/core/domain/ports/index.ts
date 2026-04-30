@@ -19,3 +19,8 @@ export * from './i-production-storage.port';
 export * from './i-memory-monitor.port';
 export * from './i-transform-service.port';
 export * from './i-identity-resolver.port';
+export * from './i-health-check.port';
+
+// Logger & Worker ports (Iteration 4)
+export * from './i-logger.port';
+export * from './i-worker.port';

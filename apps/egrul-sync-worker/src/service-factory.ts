@@ -52,6 +52,9 @@ import { CircuitBreakerManager } from './core/domain/circuit-breaker-manager.ser
 import { HealthCheckService } from './core/domain/health-check.service';
 import { CircuitBreakerAdapter } from './core/infrastructure/adapters/circuit-breaker.adapter';
 import { CircuitBreakerConfigFactory } from './core/domain/factories/circuit-breaker-config.factory';
+import { TransformPollingWorker } from './core/workers/transform-polling.worker';
+import { WorkerConfig } from './core/domain/value-objects/worker-config.vo';
+import { ConsoleLoggerAdapter } from './core/infrastructure/adapters/console-logger.adapter';
 
 /**
  * Initialize all application services
@@ -153,6 +156,16 @@ export async function initializeServices(
   );
   const stagingSync = new StagingSyncService(stagingStorage, transformService);
 
+  // Transform Polling Worker (Iteration 4)
+  const transformPollingWorker = new TransformPollingWorker(
+    transformService,
+    WorkerConfig.forProduction(),
+    enableMetrics ? metrics : undefined,
+    new ConsoleLoggerAdapter()
+  );
+  await transformPollingWorker.start();
+  console.log('Transform Polling Worker started (automatic transform enabled)');
+
   // External Enrichment (optional)
   let enrichment: import('./core/services/external-enrichment.service').ExternalEnrichmentService | undefined;
 
@@ -209,6 +222,7 @@ export async function initializeServices(
     },
     async () => {
       await Promise.all([
+        transformPollingWorker.stop(60000).catch(err => console.error('[Shutdown] TransformPollingWorker stop error:', err)),
         redisClient.quit().catch(err => console.error('[Shutdown] Redis quit error:', err)),
         redisSub.quit().catch(err => console.error('[Shutdown] RedisSub quit error:', err)),
         clickhouseClient.close().catch(err => console.error('[Shutdown] ClickHouse close error:', err))
@@ -232,6 +246,7 @@ export async function initializeServices(
     sanctionsOnlyService,
     gracefulShutdownService,
     circuitBreakerManager,
-    healthCheckService
+    healthCheckService,
+    transformPollingWorker
   };
 }

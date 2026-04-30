@@ -3,7 +3,7 @@
  *
  * @remarks
  * ClickHouse implementation of IMemoryMonitor port.
- * Queries system.metrics for memory usage statistics.
+ * Queries system.asynchronous_metrics for correct memory usage statistics.
  *
  * @pattern Hexagonal / Ports & Adapters
  * @pattern Adapter Pattern
@@ -13,9 +13,12 @@ import type { IMemoryMonitor, MemorySnapshot } from '../../domain/ports/i-memory
 import { queryJson } from '../clickhouse-query.helper';
 
 /**
- * Database row from system.metrics query
+ * Database row from system.asynchronous_metrics query
+ *
+ * @remarks
+ * Строгая типизация для результата запроса к ClickHouse.
  */
-interface MetricsDbRow {
+interface AsyncMetricsDbRow {
   readonly metric: string;
   readonly value: string;
 }
@@ -26,8 +29,14 @@ interface MetricsDbRow {
  * @remarks
  * Provides ClickHouse memory usage statistics.
  * Uses queryJson helper for type-safe queries.
+ *
+ * Запрос использует system.asynchronous_metrics для получения корректных
+ * данных о памяти сервера ClickHouse (в отличие от system.metrics).
  */
 export class MemoryMonitorAdapter implements IMemoryMonitor {
+  private readonly DEFAULT_MAX_MEMORY_GB = 6;
+  private readonly BYTES_PER_GB = 1024 * 1024 * 1024;
+
   constructor(private readonly client: ClickHouseClient) {}
 
   /**
@@ -35,33 +44,36 @@ export class MemoryMonitorAdapter implements IMemoryMonitor {
    *
    * @remarks
    * Uses queryJson helper for type-safe query execution.
+   *
+   * Запрашивает memory_usage и calculates available memory.
+   * Max memory берётся из server settings или использует дефолт.
    */
   async getMemorySnapshot(): Promise<MemorySnapshot> {
-    const rows = await queryJson<MetricsDbRow>(
+    const rows = await queryJson<AsyncMetricsDbRow>(
       this.client,
       `
         SELECT
           metric,
           value
-        FROM system.metrics
-        WHERE metric IN ('max_memory_usage', 'memory_usage')
+        FROM system.asynchronous_metrics
+        WHERE metric LIKE 'Memory%'
+           OR metric = 'memory_usage'
       `
     );
 
-    let maxMemoryBytes = 0;
     let usedBytes = 0;
+    let maxMemoryBytes = this.DEFAULT_MAX_MEMORY_GB * this.BYTES_PER_GB;
 
     for (const row of rows) {
       const value = BigInt(row.value);
-      if (row.metric === 'max_memory_usage') {
-        maxMemoryBytes = Number(value);
-      } else if (row.metric === 'memory_usage') {
+      if (row.metric === 'memory_usage' || row.metric === 'MemoryUsed') {
         usedBytes = Number(value);
       }
     }
 
-    if (maxMemoryBytes === 0) {
-      maxMemoryBytes = 6 * 1024 * 1024 * 1024;
+    // Fallback: если memory_usage не найден, пробуем через settings
+    if (usedBytes === 0) {
+      usedBytes = await this.getMemoryUsageFromSettings();
     }
 
     const availableBytes = maxMemoryBytes - usedBytes;
@@ -77,10 +89,45 @@ export class MemoryMonitorAdapter implements IMemoryMonitor {
 
   /**
    * Check if sufficient memory is available
+   *
+   * @remarks
+   * Использует 80% margin для безопасности.
+   *
+   * @param requiredBytes - Amount of memory required in bytes
+   * @returns true if sufficient memory available
    */
   async checkMemoryAvailable(requiredBytes: number): Promise<boolean> {
     const snapshot = await this.getMemorySnapshot();
     const availableWithMargin = snapshot.availableBytes * 0.8;
     return availableWithMargin >= requiredBytes;
+  }
+
+  /**
+   * Get memory usage from system.settings
+   *
+   * @remarks
+   * Fallback метод если asynchronous_metrics не содержит memory_usage.
+   *
+   * @returns Memory usage in bytes
+   */
+  private async getMemoryUsageFromSettings(): Promise<number> {
+    try {
+      const rows = await queryJson<{ readonly value: string }>(
+        this.client,
+        `
+          SELECT value
+          FROM system.settings
+          WHERE name = 'max_memory_usage'
+          LIMIT 1
+        `
+      );
+
+      if (rows.length > 0) {
+        return Number(BigInt(rows[0].value));
+      }
+    } catch {
+      // Игнорируем ошибки, fallback на 0
+    }
+    return 0;
   }
 }

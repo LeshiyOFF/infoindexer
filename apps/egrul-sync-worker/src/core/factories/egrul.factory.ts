@@ -7,7 +7,7 @@
  *
  * Следует SRP: ответственность только за создание объектов.
  *
- * v2.0: Added TransformService, MemoryMonitorAdapter, TransformPollingWorker.
+ * v2.1: Added ILogger, WorkerConfig, updated TransformPollingWorker (Iteration 4).
  */
 
 import { clickhouseClient } from 'shared';
@@ -21,6 +21,9 @@ import { EgrulTransformService } from '../services/egrul-transform.service';
 import { TransformPollingWorker } from '../workers/transform-polling.worker';
 import { StagingSyncService } from '../services/staging-sync.service';
 import { StagingConfig } from '../domain/value-objects/staging-config.vo';
+import { WorkerConfig } from '../domain/value-objects/worker-config.vo';
+import type { ILogger } from '../domain/ports/i-logger.port';
+import { ConsoleLoggerAdapter } from '../infrastructure/adapters/console-logger.adapter';
 import type { IStagingStoragePort } from '../domain/ports/i-staging-storage.port';
 import type { IProductionStorage } from '../domain/ports/i-production-storage.port';
 import type { IMemoryMonitor } from '../domain/ports/i-memory-monitor.port';
@@ -41,15 +44,18 @@ export class EgrulWorkerFactory {
   private productionStorage: IProductionStorage | null = null;
   private memoryMonitor: IMemoryMonitor | null = null;
   private transformService: ITransformService | null = null;
+  private logger: ILogger | null = null;
   private stagingConfig: StagingConfig;
+  private workerConfig: WorkerConfig;
 
   private readonly migrationsDir = path.join(
     __dirname,
     '../infrastructure/migrations'
   );
 
-  constructor(config?: Partial<{ stagingConfig: StagingConfig }>) {
+  constructor(config?: Partial<{ stagingConfig: StagingConfig; workerConfig: WorkerConfig }>) {
     this.stagingConfig = config?.stagingConfig || StagingConfig.forProduction();
+    this.workerConfig = config?.workerConfig || WorkerConfig.forProduction();
   }
 
   /**
@@ -107,6 +113,29 @@ export class EgrulWorkerFactory {
   }
 
   /**
+   * Создаёт или возвращает Logger
+   *
+   * @remarks
+   * Singleton logger instance for all components.
+   */
+  createLogger(): ILogger {
+    if (!this.logger) {
+      this.logger = new ConsoleLoggerAdapter();
+    }
+    return this.logger;
+  }
+
+  /**
+   * Создаёт или возвращает Worker Config
+   *
+   * @remarks
+   * Returns the worker configuration instance.
+   */
+  createWorkerConfig(): WorkerConfig {
+    return this.workerConfig;
+  }
+
+  /**
    * Создаёт или возвращает Transform Service
    *
    * @remarks
@@ -137,7 +166,13 @@ export class EgrulWorkerFactory {
    */
   createTransformPollingWorker(): TransformPollingWorker {
     const transformService = this.createTransformService();
-    return new TransformPollingWorker(transformService, this.stagingConfig);
+    const logger = this.createLogger();
+    return new TransformPollingWorker(
+      transformService,
+      this.workerConfig,
+      undefined,
+      logger
+    );
   }
 
   /**

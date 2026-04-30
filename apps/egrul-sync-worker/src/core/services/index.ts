@@ -11,3 +11,7 @@ export * from './egrul-transform.service';
 export * from './transform-aggregator.service';
 export * from './transform-data-fetcher.service';
 export * from './transform-state-manager.service';
+export * from './transform-metrics-names';
+export * from './metrics-endpoint.service';
+export * from './transform-health-check.service';
+export * from './transform-metrics-recorder.service';
