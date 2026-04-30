@@ -123,7 +123,7 @@ services:
     build:
       context: .
       dockerfile: apps/egrul-sync-worker/Dockerfile
-    command: node apps/egrul-sync-worker/dist/src/index.js
+    command: node apps/egrul-sync-worker/dist/index.js
     env_file:
       - ./docker/compose/base.env
       - ./docker/compose/egrul.env
