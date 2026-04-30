@@ -221,6 +221,9 @@ export async function initializeServices(
       return saved;
     },
     async () => {
+      const { stopRedisSubscriptions } = await import('./redis-handlers');
+      await stopRedisSubscriptions().catch(err => console.error('[Shutdown] Redis subscriptions stop error:', err));
+
       await Promise.all([
         transformPollingWorker.stop(60000).catch(err => console.error('[Shutdown] TransformPollingWorker stop error:', err)),
         redisClient.quit().catch(err => console.error('[Shutdown] Redis quit error:', err)),

@@ -6,26 +6,15 @@
  */
 
 import { NextResponse } from 'next/server';
-import { redisPub, redisClient } from 'shared';
+import { redisPub, redisClient, getSubscriberCount } from 'shared';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 
-/**
- * Redis канал для синхронизации санкций
- */
 const SANCTIONS_SYNC_CHANNEL = 'sync:sanctions:start';
-
-/**
- * Redis ключ для статуса синхронизации санкций
- */
 const SANCTIONS_STATUS_KEY = 'sync:status:sanctions';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * POST /api/sync/sanctions/start — запуск синхронизации санкций
- */
 export async function POST(request: Request): Promise<NextResponse> {
-  // Проверка авторизации
   if (!checkAuth(request)) {
     return NextResponse.json(UNAUTHORIZED_RESPONSE.json, {
       status: UNAUTHORIZED_RESPONSE.status
@@ -33,7 +22,6 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    // Проверяем, не запущена ли уже синхронизация
     const currentStatus = await redisClient.hgetall(SANCTIONS_STATUS_KEY);
 
     if (currentStatus.status === 'running') {
@@ -43,7 +31,22 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    // Инициализируем статус
+    const subscriberCount = await getSubscriberCount(SANCTIONS_SYNC_CHANNEL);
+
+    if (subscriberCount === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'WORKER_UNAVAILABLE',
+            message: 'Worker недоступен. Проверьте что egrul-sync-worker запущен.',
+            hint: 'Выполните: docker compose logs egrul-sync-worker'
+          }
+        },
+        { status: 503 }
+      );
+    }
+
     await redisClient.hset(
       SANCTIONS_STATUS_KEY,
       'status', 'running',
@@ -52,7 +55,6 @@ export async function POST(request: Request): Promise<NextResponse> {
       'startedAt', new Date().toISOString()
     );
 
-    // Публикуем событие запуска
     await redisPub.publish(
       SANCTIONS_SYNC_CHANNEL,
       JSON.stringify({
@@ -62,7 +64,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json({
       success: true,
-      data: { message: 'Синхронизация санкций запущена' }
+      data: { message: 'Синхронизация санкций запущена', subscribers: subscriberCount }
     });
 
   } catch (error) {

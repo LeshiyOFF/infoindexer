@@ -56,8 +56,21 @@ export default function SettingsPage() {
   const [isAbortingSummary, setIsAbortingSummary] = useState(false);
 
   const handleResponse = async (res: Response): Promise<boolean> => {
-    if (res.status === 401) {
-      alert('Ошибка авторизации. Проверьте пароль.');
+    if (!res.ok) {
+      let errorMessage = `Ошибка сервера: ${res.status}`;
+
+      try {
+        const data = await res.json();
+        errorMessage = data.error || errorMessage;
+      } catch {
+        if (res.status === 401) {
+          errorMessage = 'Ошибка авторизации. Проверьте пароль.';
+        } else if (res.status === 503) {
+          errorMessage = 'Сервис недоступен. Worker может быть не запущен.';
+        }
+      }
+
+      alert(errorMessage);
       return false;
     }
     return true;

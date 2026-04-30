@@ -16,3 +16,6 @@ export * from './i-circuit-breaker-events.port';
 export * from './i-circuit-breaker-manager.port';
 export * from './i-mv-insert.port';
 export * from './i-direct-insert.port';
+
+// Redis subscription manager (Iteration 5: Auto-resubscribe on reconnect)
+export * from './i-redis-subscription-manager.port';

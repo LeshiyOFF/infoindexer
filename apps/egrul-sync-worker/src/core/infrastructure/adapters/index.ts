@@ -16,3 +16,6 @@ export * from './memory-monitor-adapter.service';
 
 // Logger adapter (Iteration 4)
 export * from './console-logger.adapter';
+
+// Redis subscription manager (Iteration 5: Auto-resubscribe on reconnect)
+export * from './redis-subscription-manager.adapter';

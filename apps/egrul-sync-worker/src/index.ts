@@ -48,8 +48,8 @@ import type { SocksProxyAgent } from 'socks-proxy-agent';
     process.on('SIGINT', () => handleShutdownSignal('SIGINT'));
     process.on('SIGTERM', () => handleShutdownSignal('SIGTERM'));
 
-    // Setup Redis subscriptions
-    setupRedisSubscriptions();
+    // Setup Redis subscriptions (async - wait for completion)
+    await setupRedisSubscriptions();
 
     console.log(proxyUrl ? `Using SOCKS5 proxy: ${proxyUrl}` : 'Connecting directly (no proxy)');
     console.log('EGRUL Sync Worker started. Listening for commands...');
