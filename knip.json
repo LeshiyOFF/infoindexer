@@ -46,7 +46,6 @@
     "**/hooks/index.ts",
     "**/lib/index.ts",
     "scripts/docker-fetch-duckdb-httpfs.cjs",
-    "packages/shared/**/*.ts",
     "apps/sync-worker/src/scripts/**"
   ],
   "workspaces": {
@@ -75,7 +74,7 @@
     },
     "packages/shared": {
       "entry": ["index.ts"],
-      "project": ["**/*.ts", "**/*.tsx"],
+      "project": ["**/*.ts"],
       "ignore": ["dist/**", "node_modules/**"]
     }
   }

@@ -108,26 +108,6 @@ export type { IClickHouseConfig, ClickHouseSettings, TLSSettings } from './infra
 // ClickHouse Client (Iteration 10: Added factory function)
 export { clickhouseClient, createClickHouseClient } from './clickhouse';
 
-// Certificate Provider (Iteration 9.1: TLS Certificate Automation)
-export {
-  FileSystemCertificateProvider,
-  createCertificateProvider
-} from './infrastructure/file-certificate-provider.adapter';
-export { CertificateGenerator } from './infrastructure/certificate-generator.service';
-export type {
-  ICertificateProvider,
-  CertificateGenerationOptions
-} from './infrastructure/ports/i-certificate-provider.port';
-
-// Vault Certificate Provider (Iteration 11: Secrets Management)
-export {
-  VaultCertificateProvider,
-  createVaultCertificateProvider
-} from './infrastructure/vault-certificate-provider.adapter';
-export type {
-  VaultCertificateProviderOptions
-} from './infrastructure/vault-certificate-provider.adapter';
-
 // Logger (Iteration 10: RBAC + Config Validation)
 export { createLogger, StructuredLoggerAdapter } from './infrastructure/structured-logger.adapter';
 export { LogLevel } from './infrastructure/ports/i-logger.port';
