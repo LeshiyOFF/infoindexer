@@ -140,8 +140,8 @@ export const LEGACY_MIGRATION_DESCRIPTORS: ReadonlyArray<MigrationDescriptor> = 
   ),
   createMigrationDescriptor(
     '001',
-    '001_create_materialized_view.sql',
-    'Create Materialized View for Financial Reports Summary',
+    '001_create_companies_meta.sql',
+    'Create Base companies_meta Table',
     'shared'
   ),
   createMigrationDescriptor(

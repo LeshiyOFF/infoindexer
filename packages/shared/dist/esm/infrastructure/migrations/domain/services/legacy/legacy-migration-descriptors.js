@@ -32,7 +32,7 @@ export const LEGACY_MIGRATION_DESCRIPTORS = [
     createMigrationDescriptor('014', '014_cleanup_egrul_data.sql', 'Cleanup EGRUL data for Three MV Pattern approach (Clean Slate)', 'egrul-sync-worker'),
     createMigrationDescriptor('015', '015_refactor_egrul_schema_for_mv.sql', 'Refactor EGRUL schema for Three MV Pattern (Variant B)', 'egrul-sync-worker'),
     createMigrationDescriptor('016', '016_add_staging_tables.sql', 'Add staging tables for FTM raw data (Staging + Transform pattern)', 'egrul-sync-worker'),
-    createMigrationDescriptor('001', '001_create_materialized_view.sql', 'Create Materialized View for Financial Reports Summary', 'shared'),
+    createMigrationDescriptor('001', '001_create_companies_meta.sql', 'Create Base companies_meta Table', 'shared'),
     createMigrationDescriptor('002', '002_create_summary_view.sql', 'Create Read View for Financial Reports Summary', 'shared'),
     createMigrationDescriptor('003', '003_create_companies_meta_sync_trigger.sql', 'Companies Meta Sync Mechanism', 'shared'),
     createMigrationDescriptor('004', '004_update_summary_checker.sql', 'Update Summary Checker for View + MV compatibility', 'shared'),
