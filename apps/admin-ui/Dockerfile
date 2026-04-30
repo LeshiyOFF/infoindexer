@@ -48,6 +48,10 @@ WORKDIR /app
 # Copy standalone (preserves monorepo structure with node_modules at root)
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/standalone ./
 
+# Copy shared package compiled output (required for workspace dependencies)
+# Next.js standalone does not include external workspace package dist files
+COPY --from=builder --chown=nextjs:nodejs /app/packages/shared ./packages/shared
+
 # Copy static files (official Next.js method)
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/public ./apps/admin-ui/public/
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin-ui/.next/static ./apps/admin-ui/.next/static/
