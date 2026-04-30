@@ -49,8 +49,6 @@ jobs:
           file: ./apps/admin-ui/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:admin-ui-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-admin-ui.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           labels: ${{ steps.meta-admin-ui.outputs.labels }}
 
       # Build egrul-sync-worker
@@ -72,8 +70,6 @@ jobs:
           file: ./apps/egrul-sync-worker/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:egrul-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-egrul.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           labels: ${{ steps.meta-egrul.outputs.labels }}
 
       # Build migration-worker
@@ -95,8 +91,6 @@ jobs:
           file: ./apps/migration-worker/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:migration-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-migration.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           labels: ${{ steps.meta-migration.outputs.labels }}
 
       # Build contacts-parser (Playwright)
@@ -118,6 +112,4 @@ jobs:
           file: ./Dockerfile.playwright
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:contacts-latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-contacts.outputs.version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           labels: ${{ steps.meta-contacts.outputs.labels }}
