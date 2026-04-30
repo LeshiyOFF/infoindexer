@@ -33,4 +33,5 @@ CREATE TABLE IF NOT EXISTS company_sanctions (
   INDEX authority_idx authority TYPE tokenbf_v1(4096, 3, 0) GRANULARITY 1
 ) ENGINE = ReplacingMergeTree(updated_at)
 ORDER BY (inn, id)
+TTL updated_at + INTERVAL 5 YEAR
 SETTINGS index_granularity = 8192;

@@ -162,10 +162,4 @@ export const LEGACY_MIGRATION_DESCRIPTORS: ReadonlyArray<MigrationDescriptor> = 
     'Update Summary Checker for View + MV compatibility',
     'shared'
   ),
-  createMigrationDescriptor(
-    '002',
-    '002_add_ttl.sql',
-    'TTL для автоудаления старых данных',
-    'sync-worker'
-  ),
 ] as const;

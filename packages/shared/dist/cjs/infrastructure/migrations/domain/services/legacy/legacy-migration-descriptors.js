@@ -39,5 +39,4 @@ exports.LEGACY_MIGRATION_DESCRIPTORS = [
     (0, value_objects_1.createMigrationDescriptor)('002', '002_create_summary_view.sql', 'Create Read View for Financial Reports Summary', 'shared'),
     (0, value_objects_1.createMigrationDescriptor)('003', '003_create_companies_meta_sync_trigger.sql', 'Companies Meta Sync Mechanism', 'shared'),
     (0, value_objects_1.createMigrationDescriptor)('004', '004_update_summary_checker.sql', 'Update Summary Checker for View + MV compatibility', 'shared'),
-    (0, value_objects_1.createMigrationDescriptor)('002', '002_add_ttl.sql', 'TTL для автоудаления старых данных', 'sync-worker'),
 ];

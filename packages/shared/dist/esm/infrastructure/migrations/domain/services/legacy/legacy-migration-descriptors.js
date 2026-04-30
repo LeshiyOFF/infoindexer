@@ -36,5 +36,4 @@ export const LEGACY_MIGRATION_DESCRIPTORS = [
     createMigrationDescriptor('002', '002_create_summary_view.sql', 'Create Read View for Financial Reports Summary', 'shared'),
     createMigrationDescriptor('003', '003_create_companies_meta_sync_trigger.sql', 'Companies Meta Sync Mechanism', 'shared'),
     createMigrationDescriptor('004', '004_update_summary_checker.sql', 'Update Summary Checker for View + MV compatibility', 'shared'),
-    createMigrationDescriptor('002', '002_add_ttl.sql', 'TTL для автоудаления старых данных', 'sync-worker'),
 ];
