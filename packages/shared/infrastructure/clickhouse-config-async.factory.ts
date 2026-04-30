@@ -12,12 +12,9 @@
  */
 import type {
   IClickHouseConfig,
-  ClickHouseSettings,
-  TLSSettings
+  ClickHouseSettings
 } from './ports/i-clickhouse-config.port';
-import type { ICertificateProvider } from './ports/i-certificate-provider.port';
 import { CLICKHOUSE_DEFAULTS } from './clickhouse.constants';
-import { createCertificateProvider } from './file-certificate-provider.adapter';
 import type { CalculatedConfig } from '../core/domain/services/resource-calculation.service';
 
 /**
@@ -33,11 +30,9 @@ class ResourceAwareClickHouseConfig implements IClickHouseConfig {
   readonly max_idle_connections: number;
   readonly connection_idle_timeout: number;
   readonly clickhouse_settings: ClickHouseSettings;
-  readonly tls?: TLSSettings;
 
   constructor(
-    private readonly calculatedConfig: CalculatedConfig | null,
-    private readonly certProvider?: ICertificateProvider
+    private readonly calculatedConfig: CalculatedConfig | null
   ) {
     this.url = this.buildUrl();
     this.username = this.getUsername();
@@ -48,7 +43,6 @@ class ResourceAwareClickHouseConfig implements IClickHouseConfig {
     this.max_idle_connections = CLICKHOUSE_DEFAULTS.MAX_IDLE_CONNECTIONS;
     this.connection_idle_timeout = CLICKHOUSE_DEFAULTS.CONNECTION_IDLE_TIMEOUT;
     this.clickhouse_settings = this.buildSettings();
-    this.tls = this.buildTLSSettings();
   }
 
   private buildUrl(): string {
@@ -106,28 +100,12 @@ class ResourceAwareClickHouseConfig implements IClickHouseConfig {
       max_threads: config?.maxThreads ?? CLICKHOUSE_DEFAULTS.MAX_THREADS,
     };
   }
-
-  private buildTLSSettings(): TLSSettings | undefined {
-    if (process.env.CLICKHOUSE_SECURE !== 'true') {
-      return undefined;
-    }
-
-    const provider = this.certProvider || createCertificateProvider();
-
-    try {
-      const caCert = provider.getCACert();
-      return { ca_cert: caCert };
-    } catch (error) {
-      throw new Error('TLS enabled but certificate not found. Run: npm run setup:certs');
-    }
-  }
 }
 
 /**
  * Create ClickHouse configuration with resource-aware settings
  *
  * @param calculatedConfig - Calculated config from ResourceAwareConfigService (optional)
- * @param certProvider - Certificate provider for TLS (optional)
  * @returns ClickHouse configuration
  *
  * @example
@@ -138,8 +116,7 @@ class ResourceAwareClickHouseConfig implements IClickHouseConfig {
  * ```
  */
 export async function createClickHouseConfigAsync(
-  calculatedConfig: CalculatedConfig | null = null,
-  certProvider?: ICertificateProvider
+  calculatedConfig: CalculatedConfig | null = null
 ): Promise<IClickHouseConfig> {
-  return new ResourceAwareClickHouseConfig(calculatedConfig, certProvider);
+  return new ResourceAwareClickHouseConfig(calculatedConfig);
 }

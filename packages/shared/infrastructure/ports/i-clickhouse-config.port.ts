@@ -50,9 +50,6 @@ export interface IClickHouseConfig {
 
   /** ClickHouse session settings for async insert and query optimization */
   readonly clickhouse_settings: ClickHouseSettings;
-
-  /** TLS/SSL settings for secure connections (optional) */
-  readonly tls?: TLSSettings;
 }
 
 /**
@@ -103,26 +100,4 @@ export interface ClickHouseSettings {
 
   /** Index signature for @clickhouse/client compatibility */
   readonly [key: string]: string | number | boolean | undefined;
-}
-
-/**
- * TLS/SSL settings for secure ClickHouse connections
- *
- * @remarks
- * Enables encrypted connections to ClickHouse using TLS.
- * Used when CLICKHOUSE_SECURE environment variable is set to 'true'.
- *
- * Type compatibility with @clickhouse/client:
- * - Matches BasicTLSOptions interface exactly
- * - ca_cert: Buffer (CA certificate content)
- *
- * Architecture:
- * - Port (Domain Layer): Defines TLS contract
- * - Adapter (Infrastructure): Reads certificates and builds TLS config
- *
- * @see https://clickhouse.com/docs/en/interfaces/tcp/
- */
-export interface TLSSettings {
-  /** CA certificate for server verification */
-  readonly ca_cert: Buffer;
 }

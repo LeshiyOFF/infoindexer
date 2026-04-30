@@ -9,9 +9,7 @@
   "scripts": {
     "dev": "npm run dev --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "start": "npm run start --workspaces --if-present",
-    "setup:certs": "node scripts/setup-certs.js",
-    "postinstall": "node scripts/setup-certs.js"
+    "start": "npm run start --workspaces --if-present"
   },
   "devDependencies": {
     "@types/stream-json": "^1.7.8",

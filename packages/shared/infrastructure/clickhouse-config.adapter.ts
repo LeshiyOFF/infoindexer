@@ -1,11 +1,8 @@
 import type {
   IClickHouseConfig,
-  ClickHouseSettings,
-  TLSSettings
+  ClickHouseSettings
 } from './ports/i-clickhouse-config.port';
-import type { ICertificateProvider } from './ports/i-certificate-provider.port';
 import { CLICKHOUSE_DEFAULTS } from './clickhouse.constants';
-import { createCertificateProvider } from './file-certificate-provider.adapter';
 
 /**
  * ClickHouse configuration adapter (Hexagonal / Ports & Adapters)
@@ -37,18 +34,10 @@ export class ClickHouseConfigAdapter implements IClickHouseConfig {
   readonly clickhouse_settings: ClickHouseSettings;
 
   // ============================================
-  // TLS SETTINGS (Iteration 9)
-  // ============================================
-
-  readonly tls?: TLSSettings;
-
-  // ============================================
   // CONSTRUCTOR
   // ============================================
 
-  constructor(
-    private readonly certProvider?: ICertificateProvider
-  ) {
+  constructor() {
     // Build URL from environment or default to localhost
     this.url = this.buildUrl();
 
@@ -72,9 +61,6 @@ export class ClickHouseConfigAdapter implements IClickHouseConfig {
 
     // ClickHouse session settings from constants (DRY)
     this.clickhouse_settings = this.buildSettings();
-
-    // TLS settings from environment (optional) - Iteration 9.1
-    this.tls = this.buildTLSSettings();
   }
 
   // ============================================
@@ -139,34 +125,6 @@ export class ClickHouseConfigAdapter implements IClickHouseConfig {
       optimize_read_in_order: CLICKHOUSE_DEFAULTS.OPTIMIZE_READ_IN_ORDER as 0 | 1,
       max_threads: CLICKHOUSE_DEFAULTS.MAX_THREADS,
     };
-  }
-
-  /**
-   * Build TLS settings from environment and certificate provider
-   * @throws {Error} If CLICKHOUSE_SECURE=true but certificate not found
-   * @returns TLS settings object or undefined (if disabled)
-   */
-  private buildTLSSettings(): TLSSettings | undefined {
-    const secure = process.env.CLICKHOUSE_SECURE;
-
-    if (secure !== 'true') {
-      return undefined;
-    }
-
-    // Use injected provider or create default (FileSystem)
-    const provider = this.certProvider || createCertificateProvider();
-
-    try {
-      const caCert = provider.getCACert();
-
-      return {
-        ca_cert: caCert,
-      };
-    } catch (error) {
-      throw new Error(
-        `TLS enabled but certificate not found. Run: npm run setup:certs`
-      );
-    }
   }
 }
 
