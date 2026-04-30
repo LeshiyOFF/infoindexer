@@ -1,16 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MigrationApplierService = void 0;
-const migration_stats_vo_1 = require("../value-objects/migration-stats.vo");
-const migration_applier_metrics_vo_1 = require("./migration-applier-metrics.vo");
-const migration_sql_reader_vo_1 = require("./migration-sql-reader.vo");
+import { createInitialStats, updateStats } from '../value-objects/migration-stats.vo';
+import { MigrationApplierMetrics, createMigrationApplierMetrics } from './migration-applier-metrics.vo';
+import { MigrationSqlReader } from './migration-sql-reader.vo';
 /**
  * Сервис применения миграций
  *
  * @remarks
  * Отвечает только за применение миграций к базе данных.
  */
-class MigrationApplierService {
+export class MigrationApplierService {
     migrationRunner;
     migrationsBaseDir;
     constructor(migrationRunner, migrationsBaseDir) {
@@ -24,12 +21,12 @@ class MigrationApplierService {
      * @returns Статистика выполнения
      */
     async applyAll(descriptors) {
-        const metrics = (0, migration_applier_metrics_vo_1.createMigrationApplierMetrics)();
+        const metrics = createMigrationApplierMetrics();
         metrics.logStart();
-        let stats = (0, migration_stats_vo_1.createInitialStats)();
+        let stats = createInitialStats();
         for (const descriptor of descriptors) {
             const result = await this.applyOne(descriptor);
-            stats = (0, migration_stats_vo_1.updateStats)(stats, result);
+            stats = updateStats(stats, result);
             if (result.success && !result.skipped) {
                 metrics.logSuccess(descriptor, result);
             }
@@ -52,7 +49,7 @@ class MigrationApplierService {
         try {
             const isApplied = await this.migrationRunner.isApplied(descriptor.category, descriptor.version);
             if (isApplied) {
-                return migration_applier_metrics_vo_1.MigrationApplierMetrics.createSkipResult(startTime);
+                return MigrationApplierMetrics.createSkipResult(startTime);
             }
             const sql = this.readSql(descriptor);
             const result = await this.migrationRunner.apply(sql, {
@@ -61,12 +58,12 @@ class MigrationApplierService {
                 description: descriptor.description
             });
             if (!result.success) {
-                return migration_applier_metrics_vo_1.MigrationApplierMetrics.createFailureResult(result, startTime);
+                return MigrationApplierMetrics.createFailureResult(result, startTime);
             }
-            return migration_applier_metrics_vo_1.MigrationApplierMetrics.createSuccessResult(result, startTime);
+            return MigrationApplierMetrics.createSuccessResult(result, startTime);
         }
         catch (error) {
-            return migration_applier_metrics_vo_1.MigrationApplierMetrics.createErrorResult(error, startTime);
+            return MigrationApplierMetrics.createErrorResult(error, startTime);
         }
     }
     /**
@@ -76,8 +73,7 @@ class MigrationApplierService {
      * @returns Содержимое SQL файла
      */
     readSql(descriptor) {
-        const reader = new migration_sql_reader_vo_1.MigrationSqlReader(this.migrationsBaseDir);
+        const reader = new MigrationSqlReader(this.migrationsBaseDir);
         return reader.read(descriptor);
     }
 }
-exports.MigrationApplierService = MigrationApplierService;

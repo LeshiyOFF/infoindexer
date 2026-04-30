@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Exemption Criteria Validation Error
  *
@@ -11,9 +10,7 @@
  * - Follows project error pattern (InnInvalidError, etc.)
  * - SRP: только ошибка валидации exemption_criteria
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ExemptionCriteriaError = void 0;
-const domain_error_1 = require("../domain-error");
+import { DomainError } from '../domain-error';
 /**
  * Ошибка валидации exemption_criteria
  *
@@ -27,7 +24,7 @@ const domain_error_1 = require("../domain-error");
  * // Error: Invalid exemption_criteria value: 'unknown_value'. Valid values: none, initiated, state, financial, religious
  * ```
  */
-class ExemptionCriteriaError extends domain_error_1.DomainError {
+export class ExemptionCriteriaError extends DomainError {
     context;
     constructor(invalidValue, validValues) {
         const validList = validValues.join(', ');
@@ -36,4 +33,3 @@ class ExemptionCriteriaError extends domain_error_1.DomainError {
         this.context = { invalidValue, validValues };
     }
 }
-exports.ExemptionCriteriaError = ExemptionCriteriaError;

@@ -1,14 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MigrationFileNotFoundError = void 0;
-const migration_error_1 = require("./migration-error");
+import { MigrationError } from './migration-error';
 /**
  * Ошибка отсутствия файла миграции
  *
  * @remarks
  * Выбрасывается когда файл не найден в файловой системе.
  */
-class MigrationFileNotFoundError extends migration_error_1.MigrationError {
+export class MigrationFileNotFoundError extends MigrationError {
     filepath;
     constructor(category, version, filepath, cause) {
         super(`Migration file not found: ${filepath}`, category, version, cause);
@@ -19,4 +16,3 @@ class MigrationFileNotFoundError extends migration_error_1.MigrationError {
         }
     }
 }
-exports.MigrationFileNotFoundError = MigrationFileNotFoundError;

@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FallbackMetadataParser = void 0;
-const value_objects_1 = require("../../../value-objects");
+import { MetadataFormat } from '../../../value-objects';
 /**
  * Fallback парсер метаданных
  *
@@ -9,7 +6,7 @@ const value_objects_1 = require("../../../value-objects");
  * Используется когда ни одна другая стратегия не подошла.
  * Гарантирует успешный парсинг за счёт extraction из filename.
  */
-class FallbackMetadataParser {
+export class FallbackMetadataParser {
     /**
      * Всегда поддерживается (fallback стратегия)
      *
@@ -34,7 +31,7 @@ class FallbackMetadataParser {
             metadata: {
                 version,
                 description,
-                format: value_objects_1.MetadataFormat.UNKNOWN,
+                format: MetadataFormat.UNKNOWN,
                 isValid: () => true,
                 hasExtendedMetadata: () => false
             }
@@ -62,4 +59,3 @@ class FallbackMetadataParser {
         return parts.join(' ').replace(/_/g, ' ') || 'Migration';
     }
 }
-exports.FallbackMetadataParser = FallbackMetadataParser;

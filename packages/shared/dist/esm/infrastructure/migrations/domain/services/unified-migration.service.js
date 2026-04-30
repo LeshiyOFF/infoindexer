@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.UnifiedMigrationService = void 0;
 /**
  * Unified Migration Service (Orchestrator)
  *
@@ -14,7 +11,7 @@ exports.UnifiedMigrationService = void 0;
  * - Убрана логика применения (делегирует Applier)
  * - Зависимости через Ports (DIP compliance)
  */
-class UnifiedMigrationService {
+export class UnifiedMigrationService {
     discoverer;
     applier;
     constructor(params) {
@@ -48,4 +45,3 @@ class UnifiedMigrationService {
         return this.discoverer.discover();
     }
 }
-exports.UnifiedMigrationService = UnifiedMigrationService;

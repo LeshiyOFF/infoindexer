@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Circuit Breaker State Storage
  *
@@ -9,9 +8,7 @@
  * Follows SRP: Responsible only for state storage and transitions.
  * Follows State Machine Pattern: CLOSED → OPEN → HALF_OPEN → CLOSED.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CircuitStateStorage = void 0;
-const circuit_breaker_types_1 = require("../domain/types/circuit-breaker.types");
+import { CircuitState } from '../domain/types/circuit-breaker.types';
 /**
  * Circuit Breaker State Storage
  *
@@ -19,7 +16,7 @@ const circuit_breaker_types_1 = require("../domain/types/circuit-breaker.types")
  * Thread-safety: Not guaranteed for concurrent access.
  * Uses sliding window for failure tracking.
  */
-class CircuitStateStorage {
+export class CircuitStateStorage {
     config;
     now;
     /** Current state */
@@ -41,7 +38,7 @@ class CircuitStateStorage {
     constructor(config, now) {
         this.config = config;
         this.now = now;
-        this.currentState = circuit_breaker_types_1.CircuitState.CLOSED;
+        this.currentState = CircuitState.CLOSED;
         this.lastStateChange = now();
     }
     /**
@@ -54,7 +51,7 @@ class CircuitStateStorage {
      * In OPEN state, checks timeout.
      */
     shouldAttemptTransition(currentTime) {
-        return this.currentState === circuit_breaker_types_1.CircuitState.OPEN && currentTime >= this.nextAttemptTime;
+        return this.currentState === CircuitState.OPEN && currentTime >= this.nextAttemptTime;
     }
     /**
      * Record successful execution
@@ -68,16 +65,16 @@ class CircuitStateStorage {
     recordSuccess() {
         this.failureCount = 0;
         this.failures.length = 0;
-        if (this.currentState === circuit_breaker_types_1.CircuitState.HALF_OPEN) {
+        if (this.currentState === CircuitState.HALF_OPEN) {
             this.halfOpenCalls++;
             if (this.halfOpenCalls >= this.config.halfOpenMaxCalls ||
                 this.successCount + 1 >= this.config.successThreshold) {
-                this.transitionTo(circuit_breaker_types_1.CircuitState.CLOSED);
+                this.transitionTo(CircuitState.CLOSED);
                 this.successCount = 0;
-                return { transition: true, to: circuit_breaker_types_1.CircuitState.CLOSED, reason: 'success_threshold' };
+                return { transition: true, to: CircuitState.CLOSED, reason: 'success_threshold' };
             }
         }
-        else if (this.currentState === circuit_breaker_types_1.CircuitState.CLOSED) {
+        else if (this.currentState === CircuitState.CLOSED) {
             this.successCount++;
         }
         return { transition: false };
@@ -97,15 +94,15 @@ class CircuitStateStorage {
         this.lastFailureTime = currentTime;
         this.failures.push(currentTime);
         this.cleanOldFailures(currentTime);
-        if (this.currentState === circuit_breaker_types_1.CircuitState.CLOSED && this.shouldOpenCircuit()) {
-            this.transitionTo(circuit_breaker_types_1.CircuitState.OPEN);
+        if (this.currentState === CircuitState.CLOSED && this.shouldOpenCircuit()) {
+            this.transitionTo(CircuitState.OPEN);
             this.nextAttemptTime = currentTime + this.config.openTimeout;
-            return { transition: true, to: circuit_breaker_types_1.CircuitState.OPEN, reason: 'threshold_exceeded' };
+            return { transition: true, to: CircuitState.OPEN, reason: 'threshold_exceeded' };
         }
-        else if (this.currentState === circuit_breaker_types_1.CircuitState.HALF_OPEN) {
-            this.transitionTo(circuit_breaker_types_1.CircuitState.OPEN);
+        else if (this.currentState === CircuitState.HALF_OPEN) {
+            this.transitionTo(CircuitState.OPEN);
             this.nextAttemptTime = currentTime + this.config.openTimeout;
-            return { transition: true, to: circuit_breaker_types_1.CircuitState.OPEN, reason: 'threshold_exceeded' };
+            return { transition: true, to: CircuitState.OPEN, reason: 'threshold_exceeded' };
         }
         return { transition: false };
     }
@@ -130,7 +127,7 @@ class CircuitStateStorage {
      * Used for manual recovery.
      */
     reset() {
-        this.currentState = circuit_breaker_types_1.CircuitState.CLOSED;
+        this.currentState = CircuitState.CLOSED;
         this.failureCount = 0;
         this.successCount = 0;
         this.halfOpenCalls = 0;
@@ -179,4 +176,3 @@ class CircuitStateStorage {
         };
     }
 }
-exports.CircuitStateStorage = CircuitStateStorage;

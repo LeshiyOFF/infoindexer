@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Audit Log Query SQL
  *
@@ -8,19 +7,13 @@
  *
  * Iteration 12: Audit Logging
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAuditLogSelectByUser = createAuditLogSelectByUser;
-exports.createAuditLogSelectByResource = createAuditLogSelectByResource;
-exports.createAuditLogSelectByType = createAuditLogSelectByType;
-exports.createAuditLogCountByUser = createAuditLogCountByUser;
-exports.createAuditLogStats = createAuditLogStats;
 /**
  * Query audit events by user
  *
  * @remarks
  * Fetches all audit events for a specific user within a time range.
  */
-function createAuditLogSelectByUser(database, tableName = 'audit_log') {
+export function createAuditLogSelectByUser(database, tableName = 'audit_log') {
     return `
 SELECT
   event_time,
@@ -44,7 +37,7 @@ LIMIT {limit:UInt32}
  * @remarks
  * Fetches all audit events for a specific resource.
  */
-function createAuditLogSelectByResource(database, tableName = 'audit_log') {
+export function createAuditLogSelectByResource(database, tableName = 'audit_log') {
     return `
 SELECT
   event_time,
@@ -66,7 +59,7 @@ LIMIT {limit:UInt32}
  * @remarks
  * Fetches audit events filtered by event type.
  */
-function createAuditLogSelectByType(database, tableName = 'audit_log') {
+export function createAuditLogSelectByType(database, tableName = 'audit_log') {
     return `
 SELECT
   event_time,
@@ -88,7 +81,7 @@ LIMIT {limit:UInt32}
  * @remarks
  * Returns count of audit events for a user within time range.
  */
-function createAuditLogCountByUser(database, tableName = 'audit_log') {
+export function createAuditLogCountByUser(database, tableName = 'audit_log') {
     return `
 SELECT count() as total
 FROM ${database}.${tableName}
@@ -103,7 +96,7 @@ WHERE user_id = {user_id:String}
  * @remarks
  * Aggregates audit events by type for reporting.
  */
-function createAuditLogStats(database, tableName = 'audit_log') {
+export function createAuditLogStats(database, tableName = 'audit_log') {
     return `
 SELECT
   event_type,

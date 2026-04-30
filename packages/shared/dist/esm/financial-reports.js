@@ -1,10 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCreationDate = getCreationDate;
-exports.getDissolutionDate = getDissolutionDate;
-exports.getOkved = getOkved;
-exports.getStringField = getStringField;
-exports.getNumberField = getNumberField;
 /**
  * Типобезопасные утилиты для работы с FinancialReport
  *
@@ -15,7 +8,7 @@ exports.getNumberField = getNumberField;
  * Извлекает дату регистрации из отчёта
  * @returns строка даты или undefined
  */
-function getCreationDate(report) {
+export function getCreationDate(report) {
     const value = report.creation_date;
     if (value === undefined || value === null)
         return undefined;
@@ -24,7 +17,7 @@ function getCreationDate(report) {
 /**
  * Извлекает дату ликвидации из отчёта
  */
-function getDissolutionDate(report) {
+export function getDissolutionDate(report) {
     const value = report.dissolution_date;
     if (value === undefined || value === null)
         return undefined;
@@ -33,7 +26,7 @@ function getDissolutionDate(report) {
 /**
  * Извлекает OKVED из отчёта
  */
-function getOkved(report) {
+export function getOkved(report) {
     const value = report.okved;
     if (value === undefined || value === null)
         return undefined;
@@ -42,7 +35,7 @@ function getOkved(report) {
 /**
  * Типизированное получение строкового поля
  */
-function getStringField(report, key) {
+export function getStringField(report, key) {
     const value = report[key];
     if (value === undefined || value === null || value === 0)
         return undefined;
@@ -51,7 +44,7 @@ function getStringField(report, key) {
 /**
  * Типизированное получение числового поля
  */
-function getNumberField(report, key) {
+export function getNumberField(report, key) {
     const value = report[key];
     if (value === undefined || value === null)
         return undefined;

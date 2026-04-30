@@ -1,4 +1,3 @@
-"use strict";
 /**
  * GDPR Deletion Port
  *
@@ -13,4 +12,4 @@
  *
  * Iteration 13: GDPR Right-to-Delete
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+export {};

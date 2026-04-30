@@ -1,13 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MigrationError = void 0;
 /**
  * Базовая ошибка миграции
  *
  * @remarks
  * Содержит контекст (category, version) для идентификации проблемы.
  */
-class MigrationError extends Error {
+export class MigrationError extends Error {
     category;
     version;
     cause;
@@ -30,4 +27,3 @@ class MigrationError extends Error {
         return `${this.category}/${this.version}: ${this.message}${causeMsg}`;
     }
 }
-exports.MigrationError = MigrationError;

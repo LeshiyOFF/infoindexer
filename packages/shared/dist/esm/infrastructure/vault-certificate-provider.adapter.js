@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Vault Certificate Provider Adapter
  *
@@ -8,12 +7,9 @@
  *
  * Iteration 11: Secrets Management
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.VaultCertificateProvider = void 0;
-exports.createVaultCertificateProvider = createVaultCertificateProvider;
 const DEFAULT_SECRET_PATH = 'secret/infoindexer';
 const CERT_KEY = 'ca-cert';
-class VaultCertificateProvider {
+export class VaultCertificateProvider {
     vault;
     secretPath;
     cachedCert;
@@ -59,7 +55,6 @@ class VaultCertificateProvider {
         await this.preload();
     }
 }
-exports.VaultCertificateProvider = VaultCertificateProvider;
-function createVaultCertificateProvider(options) {
+export function createVaultCertificateProvider(options) {
     return new VaultCertificateProvider(options);
 }

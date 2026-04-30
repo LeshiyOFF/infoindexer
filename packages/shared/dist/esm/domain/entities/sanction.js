@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Sanction Aggregate Root
  *
@@ -8,18 +7,16 @@
  * @remarks
  * Sanction является корнем aggregate. Все изменения проходят через него.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Sanction = void 0;
-const result_1 = require("../../result");
-const errors_1 = require("../errors");
-const value_objects_1 = require("../value-objects");
+import { Result } from '../../result';
+import { InvalidSanctionProgramError } from '../errors';
+import { Authority, CountryCode, SanctionProgram, SanctionPeriod, SecureUrl } from '../value-objects';
 /**
  * Sanction Aggregate Root
  *
  * Представляет санкцию наложенную на компанию.
  * Является корнем агрегата, координирует Value Objects.
  */
-class Sanction {
+export class Sanction {
     id;
     inn;
     program;
@@ -58,10 +55,10 @@ class Sanction {
      */
     static create(data) {
         try {
-            return result_1.Result.ok(Sanction.createUnsafe(data));
+            return Result.ok(Sanction.createUnsafe(data));
         }
         catch (error) {
-            return result_1.Result.error(error);
+            return Result.error(error);
         }
     }
     /**
@@ -73,20 +70,20 @@ class Sanction {
      */
     static createUnsafe(data) {
         // Валидация и создание Value Objects
-        const authority = value_objects_1.Authority.create(data.authority, data.country);
-        const country = value_objects_1.CountryCode.create(data.country);
-        const program = value_objects_1.SanctionProgram.create(data.program, data.programId, authority, country);
-        const period = value_objects_1.SanctionPeriod.create(new Date(data.startDate), data.endDate ? new Date(data.endDate) : null);
-        const url = value_objects_1.SecureUrl.create(data.sourceUrl);
+        const authority = Authority.create(data.authority, data.country);
+        const country = CountryCode.create(data.country);
+        const program = SanctionProgram.create(data.program, data.programId, authority, country);
+        const period = SanctionPeriod.create(new Date(data.startDate), data.endDate ? new Date(data.endDate) : null);
+        const url = SecureUrl.create(data.sourceUrl);
         // Валидация id и inn
         if (!data.id || data.id.trim().length === 0) {
-            throw new errors_1.InvalidSanctionProgramError('Sanction ID cannot be empty', {
+            throw new InvalidSanctionProgramError('Sanction ID cannot be empty', {
                 id: data.id
             });
         }
         const inn = data.inn.trim();
         if (inn.length === 0) {
-            throw new errors_1.InvalidSanctionProgramError('INN cannot be empty', {
+            throw new InvalidSanctionProgramError('INN cannot be empty', {
                 inn: data.inn
             });
         }
@@ -130,12 +127,11 @@ class Sanction {
      */
     withEndDate(endDate) {
         try {
-            const newPeriod = value_objects_1.SanctionPeriod.create(this.period.startDate, endDate);
-            return result_1.Result.ok(new Sanction(this.id, this.inn, this.program, newPeriod, this.sourceUrl, this.createdAt, new Date()));
+            const newPeriod = SanctionPeriod.create(this.period.startDate, endDate);
+            return Result.ok(new Sanction(this.id, this.inn, this.program, newPeriod, this.sourceUrl, this.createdAt, new Date()));
         }
         catch (error) {
-            return result_1.Result.error(error);
+            return Result.error(error);
         }
     }
 }
-exports.Sanction = Sanction;

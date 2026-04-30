@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Sanction Program Value Object
  *
@@ -14,10 +13,8 @@
  * );
  * ```
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SanctionProgram = void 0;
-const errors_1 = require("../errors");
-class SanctionProgram {
+import { InvalidSanctionProgramError } from '../errors';
+export class SanctionProgram {
     name;
     id;
     authority;
@@ -32,13 +29,13 @@ class SanctionProgram {
         const trimmedName = name.trim();
         const trimmedId = id.trim();
         if (trimmedName.length === 0) {
-            throw new errors_1.InvalidSanctionProgramError('Program name cannot be empty', {
+            throw new InvalidSanctionProgramError('Program name cannot be empty', {
                 name,
                 id
             });
         }
         if (trimmedId.length === 0) {
-            throw new errors_1.InvalidSanctionProgramError('Program ID cannot be empty', {
+            throw new InvalidSanctionProgramError('Program ID cannot be empty', {
                 name,
                 id
             });
@@ -55,4 +52,3 @@ class SanctionProgram {
         return `${this.name} (${this.id})`;
     }
 }
-exports.SanctionProgram = SanctionProgram;

@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MigrationMetadataParser = void 0;
-const strategies_1 = require("./strategies");
+import { StripeMetadataParser, NumericMetadataParser, DecorativeMetadataParser, FallbackMetadataParser } from './strategies';
 /**
  * Сервис парсинга метаданных миграций
  *
@@ -10,7 +7,7 @@ const strategies_1 = require("./strategies");
  * Проверяет каждую стратегию по очереди, использует первую подошедшую.
  * Гарантирует успешный парсинг за счёт Fallback стратегии.
  */
-class MigrationMetadataParser {
+export class MigrationMetadataParser {
     strategies;
     constructor(params) {
         // Внедряем зависимости с возможностью переопределения (testing)
@@ -59,10 +56,10 @@ class MigrationMetadataParser {
      */
     getDefaultStrategies() {
         return [
-            new strategies_1.StripeMetadataParser(),
-            new strategies_1.NumericMetadataParser(),
-            new strategies_1.DecorativeMetadataParser(),
-            new strategies_1.FallbackMetadataParser()
+            new StripeMetadataParser(),
+            new NumericMetadataParser(),
+            new DecorativeMetadataParser(),
+            new FallbackMetadataParser()
         ];
     }
     /**
@@ -75,4 +72,3 @@ class MigrationMetadataParser {
         return new MigrationMetadataParser({ strategies });
     }
 }
-exports.MigrationMetadataParser = MigrationMetadataParser;

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * SQL Constants для Refresh Summary
  *
@@ -6,12 +5,10 @@
  * Infrastructure Layer: SQL запросы для refresh.
  * Вынесены в отдельный файл для соблюдения лимита 200 строк.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.COUNT_SQL = exports.OPTIMIZE_SQL = exports.POPULATE_SQL = exports.CREATE_TABLE_SQL = exports.TARGET_TABLE = void 0;
 /** Имя целевой таблицы */
-exports.TARGET_TABLE = 'financial_reports_summary';
+export const TARGET_TABLE = 'financial_reports_summary';
 /** SQL для создания таблицы (с параметризованным именем) */
-exports.CREATE_TABLE_SQL = `
+export const CREATE_TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS {table:Identifier} (
     inn String,
     ogrn String,
@@ -48,7 +45,7 @@ exports.CREATE_TABLE_SQL = `
   DELETE ON TTL expired
 `;
 /** SQL для заполнения таблицы данными (с параметризованным именем) */
-exports.POPULATE_SQL = `
+export const POPULATE_SQL = `
   INSERT INTO {table:Identifier}
   SELECT
     fr.inn,
@@ -99,6 +96,6 @@ exports.POPULATE_SQL = `
   ) cm ON fr.inn = cm.inn
 `;
 /** SQL для оптимизации */
-exports.OPTIMIZE_SQL = 'OPTIMIZE TABLE {table:Identifier} FINAL';
+export const OPTIMIZE_SQL = 'OPTIMIZE TABLE {table:Identifier} FINAL';
 /** SQL для подсчёта строк */
-exports.COUNT_SQL = 'SELECT count() as c FROM {table:Identifier}';
+export const COUNT_SQL = 'SELECT count() as c FROM {table:Identifier}';

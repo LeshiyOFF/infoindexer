@@ -1,25 +1,19 @@
-"use strict";
 /**
  * API Response Types
  *
  * Type-safe API responses с discriminated unions.
  * Используется для всех API endpoints.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ApiErrorCode = void 0;
-exports.apiSuccess = apiSuccess;
-exports.apiError = apiError;
-exports.apiPaginated = apiPaginated;
 /**
  * Создаёт успешный ответ
  */
-function apiSuccess(data) {
+export function apiSuccess(data) {
     return { success: true, data };
 }
 /**
  * Создаёт ошибочный ответ
  */
-function apiError(code, message, details) {
+export function apiError(code, message, details) {
     return {
         success: false,
         error: { code, message, details, timestamp: new Date().toISOString() }
@@ -28,7 +22,7 @@ function apiError(code, message, details) {
 /**
  * Коды ошибок API
  */
-var ApiErrorCode;
+export var ApiErrorCode;
 (function (ApiErrorCode) {
     // Общие ошибки (4xx)
     ApiErrorCode["BAD_REQUEST"] = "BAD_REQUEST";
@@ -51,10 +45,10 @@ var ApiErrorCode;
     ApiErrorCode["SYNC_ALREADY_RUNNING"] = "SYNC_ALREADY_RUNNING";
     ApiErrorCode["SYNC_START_FAILED"] = "SYNC_START_FAILED";
     ApiErrorCode["SYNC_TIMEOUT"] = "SYNC_TIMEOUT";
-})(ApiErrorCode || (exports.ApiErrorCode = ApiErrorCode = {}));
+})(ApiErrorCode || (ApiErrorCode = {}));
 /**
  * Создаёт успешный ответ с пагинацией
  */
-function apiPaginated(items, pagination) {
+export function apiPaginated(items, pagination) {
     return apiSuccess({ items, pagination });
 }

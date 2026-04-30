@@ -1,12 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ConfigProfileSelectorAdapter = void 0;
-const config_profile_utils_1 = require("../../domain/value-objects/config-profile.utils");
-const config_profile_constants_1 = require("../../domain/value-objects/config-profile.constants");
+import { selectConfigProfile } from '../../domain/value-objects/config-profile.utils';
+import { LOW, STANDARD, HIGH } from '../../domain/value-objects/config-profile.constants';
 /**
  * Config Profile Selector Adapter
  */
-class ConfigProfileSelectorAdapter {
+export class ConfigProfileSelectorAdapter {
     envOverride;
     constructor() {
         this.envOverride = process.env.CONFIG_PROFILE;
@@ -18,7 +15,7 @@ class ConfigProfileSelectorAdapter {
         if (this.envOverride) {
             return this.selectOverride(this.envOverride);
         }
-        return (0, config_profile_utils_1.selectConfigProfile)(resources.totalMemoryGB);
+        return selectConfigProfile(resources.totalMemoryGB);
     }
     /**
      * Select profile by environment override
@@ -28,16 +25,16 @@ class ConfigProfileSelectorAdapter {
         switch (normalized) {
             case 'low':
             case 'low-memory':
-                return config_profile_constants_1.LOW;
+                return LOW;
             case 'standard':
             case 'default':
-                return config_profile_constants_1.STANDARD;
+                return STANDARD;
             case 'high':
             case 'high-memory':
-                return config_profile_constants_1.HIGH;
+                return HIGH;
             default:
                 console.warn(`Unknown CONFIG_PROFILE: ${profile}, using auto-selection`);
-                return config_profile_constants_1.STANDARD;
+                return STANDARD;
         }
     }
     /**
@@ -59,4 +56,3 @@ class ConfigProfileSelectorAdapter {
         return this.envOverride;
     }
 }
-exports.ConfigProfileSelectorAdapter = ConfigProfileSelectorAdapter;

@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CompaniesMetaSyncWorker = void 0;
 /**
  * Companies Meta Sync Worker
  *
@@ -22,18 +19,18 @@ exports.CompaniesMetaSyncWorker = void 0;
  *
  * Fault Tolerance: Использует Circuit Breaker для защиты ClickHouse операций.
  */
-const clickhouse_1 = require("../../clickhouse");
-const circuit_breaker_factory_1 = require("../circuit-breaker/factories/circuit-breaker.factory");
+import { clickhouseClient } from '../../clickhouse';
+import { createCircuitBreakerForClickHouse } from '../circuit-breaker/factories/circuit-breaker.factory';
 const CHUNK_SIZE = 10000;
 const SYNC_INTERVAL_MS = 300000; // 5 минут
-class CompaniesMetaSyncWorker {
+export class CompaniesMetaSyncWorker {
     metrics;
     running = false;
     timer;
     breaker;
     constructor(metrics, breaker) {
         this.metrics = metrics;
-        this.breaker = breaker ?? (0, circuit_breaker_factory_1.createCircuitBreakerForClickHouse)('companies-meta-sync');
+        this.breaker = breaker ?? createCircuitBreakerForClickHouse('companies-meta-sync');
     }
     /**
      * Запустить периодическую синхронизацию
@@ -96,7 +93,7 @@ class CompaniesMetaSyncWorker {
         }, SYNC_INTERVAL_MS);
     }
     async getSyncState() {
-        const result = await clickhouse_1.clickhouseClient.query({
+        const result = await clickhouseClient.query({
             query: `
         SELECT last_sync_at, rows_processed
         FROM companies_meta_sync_state
@@ -108,7 +105,7 @@ class CompaniesMetaSyncWorker {
         const rows = await result.json();
         if (rows.length === 0) {
             // Инициализируем состояние
-            await clickhouse_1.clickhouseClient.command({
+            await clickhouseClient.command({
                 query: `INSERT INTO companies_meta_sync_state VALUES ('companies_meta', now(), 0)`
             });
             return { lastSyncAt: new Date(0), rowsProcessed: 0 };
@@ -119,7 +116,7 @@ class CompaniesMetaSyncWorker {
         };
     }
     async getPendingInns(since, limit) {
-        const result = await clickhouse_1.clickhouseClient.query({
+        const result = await clickhouseClient.query({
             query: `
         SELECT DISTINCT inn
         FROM companies_meta
@@ -139,7 +136,7 @@ class CompaniesMetaSyncWorker {
     async syncInns(inns) {
         const startTime = Date.now();
         await this.breaker.execute(async () => {
-            await clickhouse_1.clickhouseClient.command({
+            await clickhouseClient.command({
                 query: `
           INSERT INTO financial_reports_summary_mv
           SELECT
@@ -171,7 +168,7 @@ class CompaniesMetaSyncWorker {
         this.metrics.recordQuery('sync_inns', duration, inns.length);
     }
     async updateSyncState(rowsProcessed) {
-        await clickhouse_1.clickhouseClient.command({
+        await clickhouseClient.command({
             query: `
         ALTER TABLE companies_meta_sync_state
         UPDATE last_sync_at = now(), rows_processed = rows_processed + {rows:UInt64}
@@ -181,4 +178,3 @@ class CompaniesMetaSyncWorker {
         });
     }
 }
-exports.CompaniesMetaSyncWorker = CompaniesMetaSyncWorker;

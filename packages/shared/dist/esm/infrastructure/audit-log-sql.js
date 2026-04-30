@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Audit Log SQL DDL
  *
@@ -8,11 +7,6 @@
  *
  * Iteration 12: Audit Logging
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AUDIT_LOG_DEFAULTS = void 0;
-exports.createAuditLogDDL = createAuditLogDDL;
-exports.validateTableName = validateTableName;
-exports.validateDatabaseName = validateDatabaseName;
 /**
  * Audit log table DDL
  *
@@ -20,7 +14,7 @@ exports.validateDatabaseName = validateDatabaseName;
  * Creates the audit_log table in the specified database.
  * Uses MergeTree for performance with partitioning and TTL.
  */
-function createAuditLogDDL(database, tableName = 'audit_log') {
+export function createAuditLogDDL(database, tableName = 'audit_log') {
     return `
 CREATE TABLE IF NOT EXISTS ${database}.${tableName}
 ON CLUSTER '{cluster}' (
@@ -57,7 +51,7 @@ SETTINGS
 /**
  * Default options for audit log
  */
-exports.AUDIT_LOG_DEFAULTS = {
+export const AUDIT_LOG_DEFAULTS = {
     tableName: 'audit_log',
     defaultLimit: 1000,
     maxLimit: 10000,
@@ -69,7 +63,7 @@ exports.AUDIT_LOG_DEFAULTS = {
  * @remarks
  * Prevents SQL injection in table name.
  */
-function validateTableName(name) {
+export function validateTableName(name) {
     return /^[a-z_][a-z0-9_]{0,60}$/.test(name);
 }
 /**
@@ -78,6 +72,6 @@ function validateTableName(name) {
  * @remarks
  * Prevents SQL injection in database name.
  */
-function validateDatabaseName(name) {
+export function validateDatabaseName(name) {
     return /^[a-z_][a-z0-9_]{0,60}$/.test(name);
 }

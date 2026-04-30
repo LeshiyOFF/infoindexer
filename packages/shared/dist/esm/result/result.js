@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Result Type — Functional Error Handling
  *
@@ -15,15 +14,13 @@
  * });
  * ```
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Result = void 0;
 /**
  * Result type для операций которые могут завершиться ошибкой
  *
  * @typeParam T — тип успешного значения
  * @typeParam E — тип ошибки, должен наследовать Error
  */
-class Result {
+export class Result {
     _value;
     _error;
     constructor(_value, _error) {
@@ -139,4 +136,3 @@ class Result {
             : Result.error(fn(this._error));
     }
 }
-exports.Result = Result;

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Migration Descriptor Value Object
  *
@@ -6,8 +5,6 @@
  * Value Object: неизменяемое описание миграции.
  * Следует иммутабельности: readonly свойства.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createMigrationDescriptor = createMigrationDescriptor;
 /**
  * Создаёт дескриптор миграции
  *
@@ -21,7 +18,7 @@ exports.createMigrationDescriptor = createMigrationDescriptor;
  * Factory function для создания MigrationDescriptor.
  * Обеспечивает типобезопасность.
  */
-function createMigrationDescriptor(version, file, description, category) {
+export function createMigrationDescriptor(version, file, description, category) {
     return {
         version,
         file,

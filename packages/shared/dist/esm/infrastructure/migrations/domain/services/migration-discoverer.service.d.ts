@@ -61,7 +61,15 @@ export declare class MigrationDiscovererService implements IMigrationDiscoverer 
      */
     private extractVersion;
     /**
-     * Сортирует дескрипторы по версии
+     * Сортирует дескрипторы по версии и категории
+     *
+     * @remarks
+     * Двухуровневая сортировка:
+     * 1. По версии (числовой префикс)
+     * 2. При равных версиях — по категории (shared → sync-worker → egrul-sync-worker)
+     *
+     * Это гарантирует предсказуемый порядок миграций и решает проблему
+     * cross-service зависимостей (например, shared/001 зависит от sync-worker/001).
      *
      * @param descriptors - Дескрипторы
      * @returns Отсортированные дескрипторы

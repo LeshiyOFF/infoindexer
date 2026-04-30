@@ -1,14 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ClickHouseConfigAdapter = void 0;
-exports.createClickHouseConfig = createClickHouseConfig;
-const clickhouse_constants_1 = require("./clickhouse.constants");
-const file_certificate_provider_adapter_1 = require("./file-certificate-provider.adapter");
+import { CLICKHOUSE_DEFAULTS } from './clickhouse.constants';
+import { createCertificateProvider } from './file-certificate-provider.adapter';
 /**
  * ClickHouse configuration adapter (Hexagonal / Ports & Adapters)
  * Infrastructure Layer: Implements IClickHouseConfig port from Domain.
  */
-class ClickHouseConfigAdapter {
+export class ClickHouseConfigAdapter {
     certProvider;
     // ============================================
     // CONNECTION SETTINGS
@@ -50,9 +46,9 @@ class ClickHouseConfigAdapter {
         // 360s > 120s * 3 = 360s ✓
         this.request_timeout = 360000;
         // Connection pool settings from constants (DRY)
-        this.max_open_connections = clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_OPEN_CONNECTIONS;
-        this.max_idle_connections = clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_IDLE_CONNECTIONS;
-        this.connection_idle_timeout = clickhouse_constants_1.CLICKHOUSE_DEFAULTS.CONNECTION_IDLE_TIMEOUT;
+        this.max_open_connections = CLICKHOUSE_DEFAULTS.MAX_OPEN_CONNECTIONS;
+        this.max_idle_connections = CLICKHOUSE_DEFAULTS.MAX_IDLE_CONNECTIONS;
+        this.connection_idle_timeout = CLICKHOUSE_DEFAULTS.CONNECTION_IDLE_TIMEOUT;
         // ClickHouse session settings from constants (DRY)
         this.clickhouse_settings = this.buildSettings();
         // TLS settings from environment (optional) - Iteration 9.1
@@ -100,15 +96,15 @@ class ClickHouseConfigAdapter {
      */
     buildSettings() {
         return {
-            async_insert: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.ASYNC_INSERT,
-            wait_for_async_insert: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.WAIT_FOR_ASYNC_INSERT,
-            max_insert_block_size: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_INSERT_BLOCK_SIZE,
-            max_execution_time: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_EXECUTION_TIME,
-            max_memory_usage: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_MEMORY_USAGE,
-            max_rows_to_read: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_ROWS_TO_READ,
-            max_bytes_to_read: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_BYTES_TO_READ,
-            optimize_read_in_order: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.OPTIMIZE_READ_IN_ORDER,
-            max_threads: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_THREADS,
+            async_insert: CLICKHOUSE_DEFAULTS.ASYNC_INSERT,
+            wait_for_async_insert: CLICKHOUSE_DEFAULTS.WAIT_FOR_ASYNC_INSERT,
+            max_insert_block_size: CLICKHOUSE_DEFAULTS.MAX_INSERT_BLOCK_SIZE,
+            max_execution_time: CLICKHOUSE_DEFAULTS.MAX_EXECUTION_TIME,
+            max_memory_usage: CLICKHOUSE_DEFAULTS.MAX_MEMORY_USAGE,
+            max_rows_to_read: CLICKHOUSE_DEFAULTS.MAX_ROWS_TO_READ,
+            max_bytes_to_read: CLICKHOUSE_DEFAULTS.MAX_BYTES_TO_READ,
+            optimize_read_in_order: CLICKHOUSE_DEFAULTS.OPTIMIZE_READ_IN_ORDER,
+            max_threads: CLICKHOUSE_DEFAULTS.MAX_THREADS,
         };
     }
     /**
@@ -122,7 +118,7 @@ class ClickHouseConfigAdapter {
             return undefined;
         }
         // Use injected provider or create default (FileSystem)
-        const provider = this.certProvider || (0, file_certificate_provider_adapter_1.createCertificateProvider)();
+        const provider = this.certProvider || createCertificateProvider();
         try {
             const caCert = provider.getCACert();
             return {
@@ -134,11 +130,10 @@ class ClickHouseConfigAdapter {
         }
     }
 }
-exports.ClickHouseConfigAdapter = ClickHouseConfigAdapter;
 /**
  * Factory function for creating ClickHouse configuration.
  * Returns IClickHouseConfig interface (not concrete class).
  */
-function createClickHouseConfig() {
+export function createClickHouseConfig() {
     return new ClickHouseConfigAdapter();
 }

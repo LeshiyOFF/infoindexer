@@ -1,15 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SANCTION_LEVEL_WEIGHT = exports.ALL_SANCTION_LEVELS = exports.SanctionLevel = void 0;
-exports.compareSanctionLevels = compareSanctionLevels;
-exports.maxSanctionLevel = maxSanctionLevel;
 /**
  * Уровень риска санкционной метки
  *
  * Используется для классификации степени риска
  * связанной с конкретным topic или их комбинацией
  */
-var SanctionLevel;
+export var SanctionLevel;
 (function (SanctionLevel) {
     /**
      * Высокий риск
@@ -31,16 +26,16 @@ var SanctionLevel;
      * Нет санкционных меток
      */
     SanctionLevel["NONE"] = "none";
-})(SanctionLevel || (exports.SanctionLevel = SanctionLevel = {}));
+})(SanctionLevel || (SanctionLevel = {}));
 /**
  * Все уровни риска
  */
-exports.ALL_SANCTION_LEVELS = Object.values(SanctionLevel);
+export const ALL_SANCTION_LEVELS = Object.values(SanctionLevel);
 /**
  * Числовое значение уровня риска для сортировки
  * Чем выше значение — тем выше риск
  */
-exports.SANCTION_LEVEL_WEIGHT = {
+export const SANCTION_LEVEL_WEIGHT = {
     [SanctionLevel.NONE]: 0,
     [SanctionLevel.LOW]: 1,
     [SanctionLevel.MEDIUM]: 2,
@@ -50,12 +45,12 @@ exports.SANCTION_LEVEL_WEIGHT = {
  * Сравнивает два уровня риска
  * @returns положительное число если a > b, отрицательное если a < b, 0 если равны
  */
-function compareSanctionLevels(a, b) {
-    return exports.SANCTION_LEVEL_WEIGHT[a] - exports.SANCTION_LEVEL_WEIGHT[b];
+export function compareSanctionLevels(a, b) {
+    return SANCTION_LEVEL_WEIGHT[a] - SANCTION_LEVEL_WEIGHT[b];
 }
 /**
  * Возвращает максимальный уровень риска из двух
  */
-function maxSanctionLevel(a, b) {
+export function maxSanctionLevel(a, b) {
     return compareSanctionLevels(a, b) >= 0 ? a : b;
 }

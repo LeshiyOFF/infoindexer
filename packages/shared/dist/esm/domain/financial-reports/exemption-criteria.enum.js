@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Exemption Criteria Enum
  *
@@ -21,9 +20,6 @@
  *
  * @see https://clickhouse.com/docs/en/sql-reference/data-types/enum
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ALL_EXEMPTION_CRITERIA = exports.ExemptionCriteria = void 0;
-exports.isValidExemptionCriteria = isValidExemptionCriteria;
 /**
  * Exemption Criteria
  *
@@ -31,7 +27,7 @@ exports.isValidExemptionCriteria = isValidExemptionCriteria;
  * Критерий освобождения от обязательной сдачи финансовой отчётности.
  * Значения соответствуют классификации ФНС России.
  */
-var ExemptionCriteria;
+export var ExemptionCriteria;
 (function (ExemptionCriteria) {
     /**
      * Не освобождён
@@ -54,7 +50,7 @@ var ExemptionCriteria;
      * Религиозная организация
      */
     ExemptionCriteria["RELIGIOUS"] = "religious";
-})(ExemptionCriteria || (exports.ExemptionCriteria = ExemptionCriteria = {}));
+})(ExemptionCriteria || (ExemptionCriteria = {}));
 /**
  * Все возможные значения ExemptionCriteria
  *
@@ -62,7 +58,7 @@ var ExemptionCriteria;
  * Используется для валидации и итерации.
  * Readonly для иммутабельности.
  */
-exports.ALL_EXEMPTION_CRITERIA = Object.values(ExemptionCriteria);
+export const ALL_EXEMPTION_CRITERIA = Object.values(ExemptionCriteria);
 /**
  * Проверяет является ли строка валидным ExemptionCriteria
  *
@@ -75,6 +71,6 @@ exports.ALL_EXEMPTION_CRITERIA = Object.values(ExemptionCriteria);
  * isValidExemptionCriteria('unknown') // false
  * ```
  */
-function isValidExemptionCriteria(value) {
-    return exports.ALL_EXEMPTION_CRITERIA.includes(value);
+export function isValidExemptionCriteria(value) {
+    return ALL_EXEMPTION_CRITERIA.includes(value);
 }

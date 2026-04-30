@@ -1,10 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createMigrationServices = createMigrationServices;
-exports.createMigrationServicesForTesting = createMigrationServicesForTesting;
-const parsers_1 = require("../../domain/services/parsers");
-const factories_1 = require("../factories");
-const adapters_1 = require("../adapters");
+import { MigrationMetadataParser } from '../../domain/services/parsers';
+import { MigrationParserFactory } from '../factories';
+import { FileSystemMigrationReaderAdapter } from '../adapters';
 /**
  * Создаёт сервисы миграций с настройками по умолчанию
  *
@@ -14,14 +10,14 @@ const adapters_1 = require("../adapters");
  * @remarks
  * Factory method для создания всей цепочки зависимостей.
  */
-function createMigrationServices(config) {
+export function createMigrationServices(config) {
     // Infrastructure Layer
-    const fileReader = new adapters_1.FileSystemMigrationReaderAdapter({
+    const fileReader = new FileSystemMigrationReaderAdapter({
         migrationsBaseDir: config.migrationsBaseDir
     });
     // Domain Layer
-    const parserFactory = new factories_1.MigrationParserFactory();
-    const metadataParser = new parsers_1.MigrationMetadataParser({
+    const parserFactory = new MigrationParserFactory();
+    const metadataParser = new MigrationMetadataParser({
         strategies: parserFactory.createAll()
     });
     return {
@@ -39,11 +35,11 @@ function createMigrationServices(config) {
  * @remarks
  * Позволяет подменять стратегии в тестах.
  */
-function createMigrationServicesForTesting(config, customStrategies) {
-    const fileReader = new adapters_1.FileSystemMigrationReaderAdapter({
+export function createMigrationServicesForTesting(config, customStrategies) {
+    const fileReader = new FileSystemMigrationReaderAdapter({
         migrationsBaseDir: config.migrationsBaseDir
     });
-    const metadataParser = new parsers_1.MigrationMetadataParser({
+    const metadataParser = new MigrationMetadataParser({
         strategies: customStrategies
     });
     return {

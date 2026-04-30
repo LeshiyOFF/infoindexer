@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Circuit Breaker Factory
  *
@@ -8,15 +7,9 @@
  *
  * Provides factory methods for common use cases.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CircuitBreakerFactory = void 0;
-exports.createCircuitBreaker = createCircuitBreaker;
-exports.createCircuitBreakerForClickHouse = createCircuitBreakerForClickHouse;
-exports.createCircuitBreakerForAPI = createCircuitBreakerForAPI;
-exports.createNullCircuitBreaker = createNullCircuitBreaker;
-const circuit_breaker_config_vo_1 = require("../domain/value-objects/circuit-breaker-config.vo");
-const circuit_breaker_adapter_1 = require("../adapters/circuit-breaker.adapter");
-const null_circuit_breaker_adapter_1 = require("../adapters/null-circuit-breaker.adapter");
+import { CircuitBreakerConfigVO } from '../domain/value-objects/circuit-breaker-config.vo';
+import { CircuitBreakerAdapter } from '../adapters/circuit-breaker.adapter';
+import { NullCircuitBreakerAdapter } from '../adapters/null-circuit-breaker.adapter';
 /**
  * Circuit Breaker Factory
  *
@@ -24,7 +17,7 @@ const null_circuit_breaker_adapter_1 = require("../adapters/null-circuit-breaker
  * Creates configured Circuit Breaker instances.
  * Use factory methods for specific use cases.
  */
-class CircuitBreakerFactory {
+export class CircuitBreakerFactory {
     /**
      * Create Circuit Breaker with custom config
      *
@@ -35,12 +28,12 @@ class CircuitBreakerFactory {
      * @returns Circuit breaker instance
      */
     static create(name, config, enableMetrics = true, events) {
-        const defaultConfig = circuit_breaker_config_vo_1.CircuitBreakerConfigVO.default();
+        const defaultConfig = CircuitBreakerConfigVO.default();
         if (config) {
-            const merged = new circuit_breaker_config_vo_1.CircuitBreakerConfigVO(config.failureThreshold ?? defaultConfig.failureThreshold, config.openTimeout ?? defaultConfig.openTimeout, config.halfOpenTimeout ?? defaultConfig.halfOpenTimeout, config.slidingWindowSize ?? defaultConfig.slidingWindowSize, config.halfOpenMaxCalls ?? defaultConfig.halfOpenMaxCalls, config.successThreshold ?? defaultConfig.successThreshold);
-            return new circuit_breaker_adapter_1.CircuitBreakerAdapter(name, merged, enableMetrics, events);
+            const merged = new CircuitBreakerConfigVO(config.failureThreshold ?? defaultConfig.failureThreshold, config.openTimeout ?? defaultConfig.openTimeout, config.halfOpenTimeout ?? defaultConfig.halfOpenTimeout, config.slidingWindowSize ?? defaultConfig.slidingWindowSize, config.halfOpenMaxCalls ?? defaultConfig.halfOpenMaxCalls, config.successThreshold ?? defaultConfig.successThreshold);
+            return new CircuitBreakerAdapter(name, merged, enableMetrics, events);
         }
-        return new circuit_breaker_adapter_1.CircuitBreakerAdapter(name, defaultConfig, enableMetrics, events);
+        return new CircuitBreakerAdapter(name, defaultConfig, enableMetrics, events);
     }
     /**
      * Create Circuit Breaker for ClickHouse operations
@@ -56,7 +49,7 @@ class CircuitBreakerFactory {
      * - Shorter timeouts (30s open, 15s half-open)
      */
     static forClickHouse(name, enableMetrics = true, events) {
-        return new circuit_breaker_adapter_1.CircuitBreakerAdapter(name, circuit_breaker_config_vo_1.CircuitBreakerConfigVO.forClickHouse(), enableMetrics, events);
+        return new CircuitBreakerAdapter(name, CircuitBreakerConfigVO.forClickHouse(), enableMetrics, events);
     }
     /**
      * Create Circuit Breaker for API endpoints
@@ -73,7 +66,7 @@ class CircuitBreakerFactory {
      * - Larger sliding window (2 min)
      */
     static forAPI(name, enableMetrics = true, events) {
-        return new circuit_breaker_adapter_1.CircuitBreakerAdapter(name, circuit_breaker_config_vo_1.CircuitBreakerConfigVO.forAPI(), enableMetrics, events);
+        return new CircuitBreakerAdapter(name, CircuitBreakerConfigVO.forAPI(), enableMetrics, events);
     }
     /**
      * Create Circuit Breaker for testing
@@ -89,7 +82,7 @@ class CircuitBreakerFactory {
      * - Metrics disabled by default
      */
     static forTesting(name, events) {
-        return new circuit_breaker_adapter_1.CircuitBreakerAdapter(name, circuit_breaker_config_vo_1.CircuitBreakerConfigVO.forTesting(), false, events);
+        return new CircuitBreakerAdapter(name, CircuitBreakerConfigVO.forTesting(), false, events);
     }
     /**
      * Create Null Circuit Breaker (no protection)
@@ -102,32 +95,31 @@ class CircuitBreakerFactory {
      * Useful for testing and development.
      */
     static null(name = 'null-circuit-breaker') {
-        return new null_circuit_breaker_adapter_1.NullCircuitBreakerAdapter(name);
+        return new NullCircuitBreakerAdapter(name);
     }
 }
-exports.CircuitBreakerFactory = CircuitBreakerFactory;
 // Convenience functions for direct usage
 /**
  * Create Circuit Breaker with default config
  */
-function createCircuitBreaker(name, config) {
+export function createCircuitBreaker(name, config) {
     return CircuitBreakerFactory.create(name, config);
 }
 /**
  * Create Circuit Breaker for ClickHouse
  */
-function createCircuitBreakerForClickHouse(name) {
+export function createCircuitBreakerForClickHouse(name) {
     return CircuitBreakerFactory.forClickHouse(name);
 }
 /**
  * Create Circuit Breaker for API
  */
-function createCircuitBreakerForAPI(name) {
+export function createCircuitBreakerForAPI(name) {
     return CircuitBreakerFactory.forAPI(name);
 }
 /**
  * Create Null Circuit Breaker
  */
-function createNullCircuitBreaker(name) {
+export function createNullCircuitBreaker(name) {
     return CircuitBreakerFactory.null(name);
 }

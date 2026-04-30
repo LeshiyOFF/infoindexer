@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Circuit Breaker Configuration Value Object
  *
@@ -14,8 +13,6 @@
  * const withTimeout = config.withOpenTimeout(120000);
  * ```
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CBConfig = exports.CircuitBreakerConfigVO = void 0;
 /**
  * Circuit Breaker Configuration Value Object
  *
@@ -24,7 +21,7 @@ exports.CBConfig = exports.CircuitBreakerConfigVO = void 0;
  * Validates values in constructor.
  * Provides withXxx methods for immutable modification.
  */
-class CircuitBreakerConfigVO {
+export class CircuitBreakerConfigVO {
     failureThreshold;
     openTimeout;
     halfOpenTimeout;
@@ -165,8 +162,7 @@ class CircuitBreakerConfigVO {
         }
     }
 }
-exports.CircuitBreakerConfigVO = CircuitBreakerConfigVO;
 /**
  * Alias for brevity
  */
-exports.CBConfig = CircuitBreakerConfigVO;
+export const CBConfig = CircuitBreakerConfigVO;

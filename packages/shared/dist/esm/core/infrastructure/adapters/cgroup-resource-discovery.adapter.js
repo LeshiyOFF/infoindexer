@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CgroupResourceDiscoveryAdapter = void 0;
 /**
  * Cgroup Resource Discovery Adapter
  *
@@ -14,12 +11,12 @@ exports.CgroupResourceDiscoveryAdapter = void 0;
  *
  * Implements IResourceDiscoveryPort following Dependency Inversion.
  */
-const fs_1 = require("fs");
-const resource_info_vo_1 = require("../../domain/value-objects/resource-info.vo");
+import { readFileSync } from 'fs';
+import { ResourceInfo } from '../../domain/value-objects/resource-info.vo';
 /**
  * Cgroup Resource Discovery Adapter
  */
-class CgroupResourceDiscoveryAdapter {
+export class CgroupResourceDiscoveryAdapter {
     CGROUP_V1_PATH = '/sys/fs/cgroup/memory/memory.limit_in_bytes';
     CGROUP_V2_PATH = '/sys/fs/cgroup/memory.max';
     /**
@@ -50,7 +47,7 @@ class CgroupResourceDiscoveryAdapter {
             if (isNaN(bytes) || bytes <= 0) {
                 return null;
             }
-            return resource_info_vo_1.ResourceInfo.fromCgroup(bytes, 2);
+            return ResourceInfo.fromCgroup(bytes, 2);
         }
         catch {
             return null;
@@ -66,7 +63,7 @@ class CgroupResourceDiscoveryAdapter {
             if (isNaN(bytes) || bytes <= 0) {
                 return null;
             }
-            return resource_info_vo_1.ResourceInfo.fromCgroup(bytes, 1);
+            return ResourceInfo.fromCgroup(bytes, 1);
         }
         catch {
             return null;
@@ -76,7 +73,7 @@ class CgroupResourceDiscoveryAdapter {
      * Safely read file content
      */
     readFile(path) {
-        return (0, fs_1.readFileSync)(path, 'utf-8');
+        return readFileSync(path, 'utf-8');
     }
     /**
      * Check if running in container
@@ -115,4 +112,3 @@ class CgroupResourceDiscoveryAdapter {
         }
     }
 }
-exports.CgroupResourceDiscoveryAdapter = CgroupResourceDiscoveryAdapter;

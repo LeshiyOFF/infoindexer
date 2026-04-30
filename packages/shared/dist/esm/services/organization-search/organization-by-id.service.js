@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.OrganizationByIdService = void 0;
 /**
  * Service для получения организации по ID
  *
@@ -8,7 +5,7 @@ exports.OrganizationByIdService = void 0;
  * Реализует бизнес-логику для работы с отдельной организацией.
  * Использует IOrganizationById порт через Dependency Inversion.
  */
-class OrganizationByIdService {
+export class OrganizationByIdService {
     organizationById;
     constructor(organizationById) {
         this.organizationById = organizationById;
@@ -24,4 +21,3 @@ class OrganizationByIdService {
         return result.summary ?? null;
     }
 }
-exports.OrganizationByIdService = OrganizationByIdService;

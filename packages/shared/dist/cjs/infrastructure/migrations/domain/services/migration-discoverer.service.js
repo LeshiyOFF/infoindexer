@@ -25,6 +25,18 @@ const MIGRATION_CATEGORIES = [
     'egrul-sync-worker'
 ];
 /**
+ * Порядок категорий для вторичной сортировки (при равных версиях)
+ *
+ * @remarks
+ * Shared миграции должны идти первыми, затем app-specific.
+ * Это гарантирует что shared инфраструктура готова до запуска domain логики.
+ */
+const CATEGORY_ORDER = {
+    'shared': 0,
+    'sync-worker': 1,
+    'egrul-sync-worker': 2
+};
+/**
  * Сервис обнаружения миграций
  *
  * @remarks
@@ -138,7 +150,15 @@ class MigrationDiscovererService {
         return filename.split('_')[0];
     }
     /**
-     * Сортирует дескрипторы по версии
+     * Сортирует дескрипторы по версии и категории
+     *
+     * @remarks
+     * Двухуровневая сортировка:
+     * 1. По версии (числовой префикс)
+     * 2. При равных версиях — по категории (shared → sync-worker → egrul-sync-worker)
+     *
+     * Это гарантирует предсказуемый порядок миграций и решает проблему
+     * cross-service зависимостей (например, shared/001 зависит от sync-worker/001).
      *
      * @param descriptors - Дескрипторы
      * @returns Отсортированные дескрипторы
@@ -147,7 +167,12 @@ class MigrationDiscovererService {
         return [...descriptors].sort((a, b) => {
             const versionA = parseInt(a.version, 10);
             const versionB = parseInt(b.version, 10);
-            return versionA - versionB;
+            // Первичная сортировка по версии
+            if (versionA !== versionB) {
+                return versionA - versionB;
+            }
+            // Вторичная сортировка по категории (детерминированный порядок)
+            return CATEGORY_ORDER[a.category] - CATEGORY_ORDER[b.category];
         });
     }
 }

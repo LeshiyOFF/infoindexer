@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.StripeMetadataParser = void 0;
-const value_objects_1 = require("../../../value-objects");
+import { MetadataFormat } from '../../../value-objects';
 /**
  * Stripe-style парсер метаданных
  *
@@ -13,7 +10,7 @@ const value_objects_1 = require("../../../value-objects");
  * -- Author: LeshiyOFF
  * -- Created: 2026-04-29
  */
-class StripeMetadataParser {
+export class StripeMetadataParser {
     /**
      * Проверяет поддерживается ли формат
      *
@@ -40,7 +37,7 @@ class StripeMetadataParser {
                 metadata: {
                     version,
                     description: metadata.description || this.extractDescriptionFromFilename(filename),
-                    format: value_objects_1.MetadataFormat.STRIPE,
+                    format: MetadataFormat.STRIPE,
                     author: metadata.author,
                     created: metadata.created,
                     isValid: () => true,
@@ -115,4 +112,3 @@ class StripeMetadataParser {
         return parts.join(' ').replace(/_/g, ' ') || 'Migration';
     }
 }
-exports.StripeMetadataParser = StripeMetadataParser;

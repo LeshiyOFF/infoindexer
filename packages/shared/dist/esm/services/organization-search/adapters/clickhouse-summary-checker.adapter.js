@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ClickHouseSummaryChecker = void 0;
 /**
  * Adapter для проверки готовности таблицы через ClickHouse
  */
-class ClickHouseSummaryChecker {
+export class ClickHouseSummaryChecker {
     client;
     constructor(client) {
         this.client = client;
@@ -54,4 +51,3 @@ class ClickHouseSummaryChecker {
         };
     }
 }
-exports.ClickHouseSummaryChecker = ClickHouseSummaryChecker;

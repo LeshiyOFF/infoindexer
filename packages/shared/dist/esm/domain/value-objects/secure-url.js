@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Secure URL Value Object
  *
@@ -10,10 +9,8 @@
  * url.hostname  // 'eur-lex.europa.eu'
  * ```
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SecureUrl = void 0;
-const errors_1 = require("../errors");
-class SecureUrl {
+import { InvalidUrlError, UnsafeUrlError } from '../errors';
+export class SecureUrl {
     url;
     hostname;
     static ALLOWED_HOSTS = new Set([
@@ -32,18 +29,18 @@ class SecureUrl {
     static create(url) {
         const trimmed = url.trim();
         if (trimmed.length === 0) {
-            throw new errors_1.InvalidUrlError('URL cannot be empty', { url });
+            throw new InvalidUrlError('URL cannot be empty', { url });
         }
         try {
             const parsed = new URL(trimmed);
             if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-                throw new errors_1.InvalidUrlError('Only HTTP/HTTPS protocols allowed', {
+                throw new InvalidUrlError('Only HTTP/HTTPS protocols allowed', {
                     url: trimmed,
                     protocol: parsed.protocol
                 });
             }
             if (!SecureUrl.ALLOWED_HOSTS.has(parsed.hostname)) {
-                throw new errors_1.UnsafeUrlError('URL hostname not in whitelist', {
+                throw new UnsafeUrlError('URL hostname not in whitelist', {
                     url: trimmed,
                     hostname: parsed.hostname,
                     allowedHosts: Array.from(SecureUrl.ALLOWED_HOSTS)
@@ -52,10 +49,10 @@ class SecureUrl {
             return new SecureUrl(trimmed, parsed.hostname);
         }
         catch (error) {
-            if (error instanceof errors_1.UnsafeUrlError || error instanceof errors_1.InvalidUrlError) {
+            if (error instanceof UnsafeUrlError || error instanceof InvalidUrlError) {
                 throw error;
             }
-            throw new errors_1.InvalidUrlError('Invalid URL format', { url: trimmed, error });
+            throw new InvalidUrlError('Invalid URL format', { url: trimmed, error });
         }
     }
     get value() {
@@ -68,4 +65,3 @@ class SecureUrl {
         return this.url;
     }
 }
-exports.SecureUrl = SecureUrl;

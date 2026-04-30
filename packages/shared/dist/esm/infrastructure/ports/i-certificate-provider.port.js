@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Certificate Provider Port
  *
@@ -15,4 +14,4 @@
  *
  * @see https://clickhouse.com/docs/en/interfaces/tcp/
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+export {};

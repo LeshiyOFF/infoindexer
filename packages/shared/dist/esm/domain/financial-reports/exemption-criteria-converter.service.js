@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Exemption Criteria Converter Service
  *
@@ -15,10 +14,8 @@
  * - Parquet (VARCHAR) → ClickHouse (Enum8 string)
  * - Strict validation: unknown values logged, not defaulted
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.exemptionCriteriaConverter = exports.ExemptionCriteriaConverter = void 0;
-const exemption_criteria_enum_1 = require("./exemption-criteria.enum");
-const exemption_criteria_error_1 = require("./exemption-criteria-error");
+import { ExemptionCriteria, ALL_EXEMPTION_CRITERIA, isValidExemptionCriteria } from './exemption-criteria.enum';
+import { ExemptionCriteriaError } from './exemption-criteria-error';
 /**
  * Сервис для конвертации exemption_criteria
  *
@@ -33,9 +30,9 @@ const exemption_criteria_error_1 = require("./exemption-criteria-error");
  * // { success: true, value: 'none' }
  * ```
  */
-class ExemptionCriteriaConverter {
+export class ExemptionCriteriaConverter {
     onInvalidValue;
-    static DEFAULT_VALUE = exemption_criteria_enum_1.ExemptionCriteria.NONE;
+    static DEFAULT_VALUE = ExemptionCriteria.NONE;
     constructor(onInvalidValue) {
         this.onInvalidValue = onInvalidValue;
     }
@@ -74,7 +71,7 @@ class ExemptionCriteriaConverter {
             };
         }
         // Валидация
-        if (!(0, exemption_criteria_enum_1.isValidExemptionCriteria)(trimmed)) {
+        if (!isValidExemptionCriteria(trimmed)) {
             this.reportInvalid(trimmed);
             return {
                 success: true,
@@ -96,7 +93,7 @@ class ExemptionCriteriaConverter {
     convertOrThrow(value) {
         const result = this.convert(value);
         if (!result.success || !result.value) {
-            throw result.error || new exemption_criteria_error_1.ExemptionCriteriaError(String(value), exemption_criteria_enum_1.ALL_EXEMPTION_CRITERIA);
+            throw result.error || new ExemptionCriteriaError(String(value), ALL_EXEMPTION_CRITERIA);
         }
         return result.value;
     }
@@ -115,8 +112,7 @@ class ExemptionCriteriaConverter {
         }
     }
 }
-exports.ExemptionCriteriaConverter = ExemptionCriteriaConverter;
 /**
  * Singleton instance без логирования
  */
-exports.exemptionCriteriaConverter = new ExemptionCriteriaConverter();
+export const exemptionCriteriaConverter = new ExemptionCriteriaConverter();

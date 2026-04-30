@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Migration Stats Value Object
  *
@@ -6,16 +5,12 @@
  * Value Object: статистика выполнения миграций.
  * Следует иммутабельности: readonly свойства.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createInitialStats = createInitialStats;
-exports.updateStats = updateStats;
-exports.mergeStats = mergeStats;
 /**
  * Создаёт начальную статистику
  *
  * @returns Пустая статистика
  */
-function createInitialStats() {
+export function createInitialStats() {
     return {
         total: 0,
         applied: 0,
@@ -31,7 +26,7 @@ function createInitialStats() {
  * @param result - Результат миграции
  * @returns Обновлённая статистика
  */
-function updateStats(stats, result) {
+export function updateStats(stats, result) {
     return {
         total: stats.total + 1,
         applied: result.success && !result.skipped ? stats.applied + 1 : stats.applied,
@@ -47,7 +42,7 @@ function updateStats(stats, result) {
  * @param b - Вторая статистика
  * @returns Объединённая статистика
  */
-function mergeStats(a, b) {
+export function mergeStats(a, b) {
     return {
         total: a.total + b.total,
         applied: a.applied + b.applied,

@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.InvalidMetadataError = void 0;
-const migration_error_1 = require("./migration-error");
+import { MigrationError } from './migration-error';
 /**
  * Ошибка некорректных метаданных
  *
@@ -11,7 +8,7 @@ const migration_error_1 = require("./migration-error");
  * - Отсутствии обязательных полей
  * - Несоответствии имени файла и метаданных
  */
-class InvalidMetadataError extends migration_error_1.MigrationError {
+export class InvalidMetadataError extends MigrationError {
     metadataField;
     constructor(category, version, metadataField, message, cause) {
         const defaultMsg = metadataField
@@ -25,4 +22,3 @@ class InvalidMetadataError extends migration_error_1.MigrationError {
         }
     }
 }
-exports.InvalidMetadataError = InvalidMetadataError;

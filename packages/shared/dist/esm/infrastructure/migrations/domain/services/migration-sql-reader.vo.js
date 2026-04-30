@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MigrationSqlReader = void 0;
 /**
  * Migration SQL Reader
  *
@@ -11,15 +8,15 @@ exports.MigrationSqlReader = void 0;
  * @pattern Value Object
  * @pattern Single Responsibility Principle
  */
-const fs_1 = require("fs");
-const path_1 = require("path");
+import { readFileSync } from 'fs';
+import { join } from 'path';
 /**
  * Читатель SQL файлов миграций
  *
  * @remarks
  * VO для чтения SQL файлов из файловой системы.
  */
-class MigrationSqlReader {
+export class MigrationSqlReader {
     migrationsBaseDir;
     constructor(migrationsBaseDir) {
         this.migrationsBaseDir = migrationsBaseDir;
@@ -32,8 +29,8 @@ class MigrationSqlReader {
      */
     read(descriptor) {
         const categoryDir = this.getCategoryDir(descriptor.category);
-        const filepath = (0, path_1.join)(categoryDir, descriptor.file);
-        return (0, fs_1.readFileSync)(filepath, 'utf-8');
+        const filepath = join(categoryDir, descriptor.file);
+        return readFileSync(filepath, 'utf-8');
     }
     /**
      * Получает директорию категории
@@ -42,7 +39,6 @@ class MigrationSqlReader {
      * @returns Путь к директории
      */
     getCategoryDir(category) {
-        return (0, path_1.join)(this.migrationsBaseDir, category);
+        return join(this.migrationsBaseDir, category);
     }
 }
-exports.MigrationSqlReader = MigrationSqlReader;

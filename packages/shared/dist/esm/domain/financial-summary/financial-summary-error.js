@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Financial Summary Domain Errors
  *
@@ -13,13 +12,11 @@
  *
  * Iteration 2: Domain Layer (VOs + DTOs)
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FinancialSummaryValidationError = exports.FinancialSummaryNotFoundError = exports.InvalidMoneyError = void 0;
-const domain_error_1 = require("../domain-error");
+import { DomainError } from '../domain-error';
 /**
  * Ошибка валидации Money
  */
-class InvalidMoneyError extends domain_error_1.DomainError {
+export class InvalidMoneyError extends DomainError {
     context;
     constructor(amount, currency, reason) {
         const messages = {
@@ -32,11 +29,10 @@ class InvalidMoneyError extends domain_error_1.DomainError {
         this.context = { amount, currency, reason };
     }
 }
-exports.InvalidMoneyError = InvalidMoneyError;
 /**
  * Ошибка: Financial Summary не найден
  */
-class FinancialSummaryNotFoundError extends domain_error_1.DomainError {
+export class FinancialSummaryNotFoundError extends DomainError {
     context;
     constructor(inn, source = 'financial_reports_summary') {
         super(`Financial summary not found for INN: ${inn}`, { inn, source });
@@ -44,11 +40,10 @@ class FinancialSummaryNotFoundError extends domain_error_1.DomainError {
         this.context = { inn, source };
     }
 }
-exports.FinancialSummaryNotFoundError = FinancialSummaryNotFoundError;
 /**
  * Ошибка валидации FinancialSummary
  */
-class FinancialSummaryValidationError extends domain_error_1.DomainError {
+export class FinancialSummaryValidationError extends DomainError {
     context;
     constructor(field, reason, value) {
         super(`Financial summary validation failed: ${field} - ${reason}`, { field, reason, value });
@@ -62,4 +57,3 @@ class FinancialSummaryValidationError extends domain_error_1.DomainError {
         return new FinancialSummaryValidationError(field, error.context.reason, { amount: error.context.amount, currency: error.context.currency });
     }
 }
-exports.FinancialSummaryValidationError = FinancialSummaryValidationError;

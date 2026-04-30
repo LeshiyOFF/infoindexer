@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FileSystemMigrationReaderAdapter = void 0;
 /**
  * File System Migration Reader Adapter
  *
@@ -11,8 +8,8 @@ exports.FileSystemMigrationReaderAdapter = void 0;
  * @pattern Hexagonal/Ports & Adapters
  * @pattern Single Responsibility Principle
  */
-const fs_1 = require("fs");
-const path_1 = require("path");
+import { readdirSync, readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 /**
  * Адаптер для чтения миграционных файлов из файловой системы
  *
@@ -20,7 +17,7 @@ const path_1 = require("path");
  * Реализует Port IMigrationFileReader используя Node.js fs API.
  * Отвечает только за работу с файловой системой.
  */
-class FileSystemMigrationReaderAdapter {
+export class FileSystemMigrationReaderAdapter {
     migrationsBaseDir;
     categoryDirs;
     constructor(params) {
@@ -40,10 +37,10 @@ class FileSystemMigrationReaderAdapter {
      */
     async listFiles(category) {
         const categoryDir = this.getCategoryDir(category);
-        if (!(0, fs_1.existsSync)(categoryDir)) {
+        if (!existsSync(categoryDir)) {
             return [];
         }
-        const files = (0, fs_1.readdirSync)(categoryDir)
+        const files = readdirSync(categoryDir)
             .filter(file => this.isValidMigrationFile(file))
             .sort(); // Alphabetical sort = chronological for zero-padded numbers
         return files;
@@ -58,10 +55,10 @@ class FileSystemMigrationReaderAdapter {
      */
     async readFile(category, filename) {
         const filepath = this.getFilepath(category, filename);
-        if (!(0, fs_1.existsSync)(filepath)) {
+        if (!existsSync(filepath)) {
             throw new Error(`Migration file not found: ${filepath}`);
         }
-        const content = (0, fs_1.readFileSync)(filepath, 'utf-8');
+        const content = readFileSync(filepath, 'utf-8');
         return {
             content,
             filepath
@@ -76,7 +73,7 @@ class FileSystemMigrationReaderAdapter {
      */
     async exists(category, filename) {
         const filepath = this.getFilepath(category, filename);
-        return (0, fs_1.existsSync)(filepath);
+        return existsSync(filepath);
     }
     /**
      * Проверяет валидность имени файла миграции
@@ -99,7 +96,7 @@ class FileSystemMigrationReaderAdapter {
      */
     getFilepath(category, filename) {
         const categoryDir = this.getCategoryDir(category);
-        return (0, path_1.join)(categoryDir, filename);
+        return join(categoryDir, filename);
     }
     /**
      * Получает директорию для категории
@@ -109,7 +106,7 @@ class FileSystemMigrationReaderAdapter {
      */
     getCategoryDir(category) {
         const subdir = this.categoryDirs[category];
-        return (0, path_1.join)(this.migrationsBaseDir, subdir);
+        return join(this.migrationsBaseDir, subdir);
     }
     /**
      * Получает соответствие категорий к директориям по умолчанию
@@ -124,4 +121,3 @@ class FileSystemMigrationReaderAdapter {
         };
     }
 }
-exports.FileSystemMigrationReaderAdapter = FileSystemMigrationReaderAdapter;

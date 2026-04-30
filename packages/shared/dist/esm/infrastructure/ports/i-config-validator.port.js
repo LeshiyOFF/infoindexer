@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Config Validator Port
  *
@@ -17,4 +16,4 @@
  *
  * Iteration 10.2: Config Validation
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+export {};

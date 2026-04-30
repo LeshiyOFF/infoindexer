@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Certificate Generator Service
  *
@@ -15,15 +14,10 @@
  * - Uses openssl binary (must be installed)
  * - Async/await for child process spawning
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CertificateGenerator = void 0;
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const child_process_1 = require("child_process");
-class CertificateGenerator {
+import fs from 'fs';
+import path from 'path';
+import { spawn } from 'child_process';
+export class CertificateGenerator {
     /**
      * Generate certificates if they don't exist
      *
@@ -37,23 +31,23 @@ class CertificateGenerator {
      */
     static async generate(options = {}) {
         const { outputDir = './docker/certs', validityDays = 365, caSubject = '/CN=InfoIndexer CA', serverSubject = '/CN=localhost', silent = false } = options;
-        const caCertPath = path_1.default.join(outputDir, 'ca-cert.pem');
+        const caCertPath = path.join(outputDir, 'ca-cert.pem');
         // Check if already exists
-        if (fs_1.default.existsSync(caCertPath)) {
+        if (fs.existsSync(caCertPath)) {
             if (!silent) {
                 console.log('✅ TLS certificates already exist');
             }
             return false;
         }
         // Create directory
-        fs_1.default.mkdirSync(outputDir, { recursive: true });
+        fs.mkdirSync(outputDir, { recursive: true });
         if (!silent) {
             console.log('🔐 Generating TLS certificates...');
         }
         // Generate CA certificate
         await this.runOpenSSL([
             'req', '-x509', '-newkey', 'rsa:4096',
-            '-keyout', path_1.default.join(outputDir, 'ca-key.pem'),
+            '-keyout', path.join(outputDir, 'ca-key.pem'),
             '-out', caCertPath,
             '-days', String(validityDays),
             '-nodes',
@@ -62,25 +56,25 @@ class CertificateGenerator {
         // Generate server certificate request
         await this.runOpenSSL([
             'req', '-newkey', 'rsa:4096',
-            '-keyout', path_1.default.join(outputDir, 'server-key.pem'),
-            '-out', path_1.default.join(outputDir, 'server-req.pem'),
+            '-keyout', path.join(outputDir, 'server-key.pem'),
+            '-out', path.join(outputDir, 'server-req.pem'),
             '-nodes',
             '-subj', serverSubject
         ], silent);
         // Sign server certificate with CA
         await this.runOpenSSL([
             'x509', '-req',
-            '-in', path_1.default.join(outputDir, 'server-req.pem'),
+            '-in', path.join(outputDir, 'server-req.pem'),
             '-CA', caCertPath,
-            '-CAkey', path_1.default.join(outputDir, 'ca-key.pem'),
+            '-CAkey', path.join(outputDir, 'ca-key.pem'),
             '-CAcreateserial',
-            '-out', path_1.default.join(outputDir, 'server-cert.pem'),
+            '-out', path.join(outputDir, 'server-cert.pem'),
             '-days', String(validityDays)
         ], silent);
         // Cleanup temporary file
-        const reqPath = path_1.default.join(outputDir, 'server-req.pem');
-        if (fs_1.default.existsSync(reqPath)) {
-            fs_1.default.unlinkSync(reqPath);
+        const reqPath = path.join(outputDir, 'server-req.pem');
+        if (fs.existsSync(reqPath)) {
+            fs.unlinkSync(reqPath);
         }
         if (!silent) {
             console.log('✅ TLS certificates generated successfully');
@@ -103,7 +97,7 @@ class CertificateGenerator {
         return new Promise((resolve, reject) => {
             // Cross-platform openssl command
             const openssl = process.platform === 'win32' ? 'openssl.exe' : 'openssl';
-            const child = (0, child_process_1.spawn)(openssl, args, {
+            const child = spawn(openssl, args, {
                 stdio: silent ? 'pipe' : 'inherit'
             });
             child.on('error', (error) => {
@@ -137,12 +131,11 @@ class CertificateGenerator {
      * Checks for CA cert, server cert, and server key.
      */
     static exists(outputDir = './docker/certs') {
-        const caCert = path_1.default.join(outputDir, 'ca-cert.pem');
-        const serverCert = path_1.default.join(outputDir, 'server-cert.pem');
-        const serverKey = path_1.default.join(outputDir, 'server-key.pem');
-        return (fs_1.default.existsSync(caCert) &&
-            fs_1.default.existsSync(serverCert) &&
-            fs_1.default.existsSync(serverKey));
+        const caCert = path.join(outputDir, 'ca-cert.pem');
+        const serverCert = path.join(outputDir, 'server-cert.pem');
+        const serverKey = path.join(outputDir, 'server-key.pem');
+        return (fs.existsSync(caCert) &&
+            fs.existsSync(serverCert) &&
+            fs.existsSync(serverKey));
     }
 }
-exports.CertificateGenerator = CertificateGenerator;

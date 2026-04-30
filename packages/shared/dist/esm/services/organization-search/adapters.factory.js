@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ClickHouseAdapterFactory = void 0;
-const adapters_1 = require("./adapters");
-const organization_search_service_1 = require("./organization-search.service");
+import { ClickHouseConnections, ClickHouseOrganizationById, ClickHouseQueryExecutor, ClickHouseSummaryChecker } from './adapters';
+import { OrganizationSearchService } from './organization-search.service';
 /**
  * Factory для создания адаптеров ClickHouse
  *
@@ -10,7 +7,7 @@ const organization_search_service_1 = require("./organization-search.service");
  * Централизует создание зависимостей.
  * Упрощает тестирование через подмену зависимостей.
  */
-class ClickHouseAdapterFactory {
+export class ClickHouseAdapterFactory {
     client;
     constructor(client) {
         this.client = client;
@@ -19,31 +16,30 @@ class ClickHouseAdapterFactory {
      * Создаёт checker для summary таблицы
      */
     createSummaryChecker() {
-        return new adapters_1.ClickHouseSummaryChecker(this.client);
+        return new ClickHouseSummaryChecker(this.client);
     }
     /**
      * Создаёт executor для запросов
      */
     createQueryExecutor() {
-        return new adapters_1.ClickHouseQueryExecutor(this.client);
+        return new ClickHouseQueryExecutor(this.client);
     }
     /**
      * Создаёт сервис поиска связей
      */
     createConnections() {
-        return new adapters_1.ClickHouseConnections(this.client);
+        return new ClickHouseConnections(this.client);
     }
     /**
      * Создаёт порт для поиска организаций
      */
     createOrganizationSearch() {
-        return new organization_search_service_1.OrganizationSearchService(this.createSummaryChecker(), this.createQueryExecutor());
+        return new OrganizationSearchService(this.createSummaryChecker(), this.createQueryExecutor());
     }
     /**
      * Создаёт порт для получения организации по ID
      */
     createOrganizationById() {
-        return new adapters_1.ClickHouseOrganizationById(this.client, this.createConnections());
+        return new ClickHouseOrganizationById(this.client, this.createConnections());
     }
 }
-exports.ClickHouseAdapterFactory = ClickHouseAdapterFactory;

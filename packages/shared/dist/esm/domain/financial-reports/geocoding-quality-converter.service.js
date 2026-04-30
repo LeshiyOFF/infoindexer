@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Geocoding Quality Converter Service
  *
@@ -13,9 +12,7 @@
  * Source data (RFSD Parquet): VARCHAR with values "house", "street", "city", NULL
  * Target data (ClickHouse): LowCardinality(Nullable(String))
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.geocodingQualityConverter = exports.GeocodingQualityConverter = void 0;
-const geocoding_quality_enum_1 = require("./geocoding-quality.enum");
+import { normalizeGeocodingQuality } from './geocoding-quality.enum';
 /**
  * Geocoding Quality Converter
  *
@@ -35,7 +32,7 @@ const geocoding_quality_enum_1 = require("./geocoding-quality.enum");
  * // { value: null, wasNormalized: false }
  * ```
  */
-class GeocodingQualityConverter {
+export class GeocodingQualityConverter {
     stats = {
         total: 0,
         normalized: 0,
@@ -53,7 +50,7 @@ class GeocodingQualityConverter {
             this.stats.nulls++;
             return { value: null, wasNormalized: false };
         }
-        const normalized = (0, geocoding_quality_enum_1.normalizeGeocodingQuality)(val);
+        const normalized = normalizeGeocodingQuality(val);
         // Track if value was normalized to 'unknown'
         if (normalized === 'unknown' && val !== 'unknown') {
             this.stats.normalized++;
@@ -76,8 +73,7 @@ class GeocodingQualityConverter {
         this.stats.nulls = 0;
     }
 }
-exports.GeocodingQualityConverter = GeocodingQualityConverter;
 /**
  * Singleton instance for application-wide use
  */
-exports.geocodingQualityConverter = new GeocodingQualityConverter();
+export const geocodingQualityConverter = new GeocodingQualityConverter();

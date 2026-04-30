@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Sanction Repository Interface
  *
@@ -9,4 +8,4 @@
  * Repository работает с SanctionRow (внутренний формат) и SanctionDTO (API формат),
  * но НЕ с Domain Entities. Это следует Separation of Concerns.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+export {};

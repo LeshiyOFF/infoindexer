@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.NumericMetadataParser = void 0;
-const value_objects_1 = require("../../../value-objects");
+import { MetadataFormat } from '../../../value-objects';
 /**
  * Numeric-style парсер метаданных
  *
@@ -11,7 +8,7 @@ const value_objects_1 = require("../../../value-objects");
  * -- Purpose: Store HTTP download state for Range resume support
  * -- Architecture: ReplacingMergeTree with TTL for auto-cleanup
  */
-class NumericMetadataParser {
+export class NumericMetadataParser {
     /**
      * Проверяет поддерживается ли формат
      *
@@ -37,7 +34,7 @@ class NumericMetadataParser {
                 metadata: {
                     version,
                     description: description || this.extractDescriptionFromFilename(filename),
-                    format: value_objects_1.MetadataFormat.NUMERIC,
+                    format: MetadataFormat.NUMERIC,
                     isValid: () => true,
                     hasExtendedMetadata: () => false
                 }
@@ -86,4 +83,3 @@ class NumericMetadataParser {
         return parts.join(' ').replace(/_/g, ' ') || 'Migration';
     }
 }
-exports.NumericMetadataParser = NumericMetadataParser;

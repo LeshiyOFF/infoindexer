@@ -1,18 +1,13 @@
-"use strict";
 /**
  * DTO для команды отмены операции
  *
  * @remarks
  * Value Object для передачи команды отмены через Redis Pub/Sub.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAbortCommand = createAbortCommand;
-exports.serializeAbortCommand = serializeAbortCommand;
-exports.deserializeAbortCommand = deserializeAbortCommand;
 /**
  * Создаёт команду отмены
  */
-function createAbortCommand(operationId, operationType, userId) {
+export function createAbortCommand(operationId, operationType, userId) {
     return {
         operationId,
         operationType,
@@ -23,13 +18,13 @@ function createAbortCommand(operationId, operationType, userId) {
 /**
  * Сериализует команду в JSON
  */
-function serializeAbortCommand(command) {
+export function serializeAbortCommand(command) {
     return JSON.stringify(command);
 }
 /**
  * Десериализует команду из JSON
  */
-function deserializeAbortCommand(data) {
+export function deserializeAbortCommand(data) {
     try {
         const parsed = JSON.parse(data);
         return validateAbortCommand(parsed);

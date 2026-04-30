@@ -1,4 +1,3 @@
-"use strict";
 /**
  * ClickHouse Audit Logger Adapter
  *
@@ -22,10 +21,8 @@
  *
  * Iteration 12: Audit Logging
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ClickHouseAuditLoggerAdapter = void 0;
-const audit_log_sql_1 = require("./audit-log-sql");
-const audit_logger_helpers_1 = require("./audit-logger.helpers");
+import { createAuditLogDDL, AUDIT_LOG_DEFAULTS } from './audit-log-sql';
+import { extractErrorMessage, isRecoverableError, logToConsole, validateAuditLoggerConfig, generateLogId } from './audit-logger.helpers';
 /** Default options for ClickHouse audit logger */
 const DEFAULT_OPTIONS = {
     sync: false,
@@ -39,7 +36,7 @@ const DEFAULT_OPTIONS = {
  * Writes audit events to ClickHouse audit_log table.
  * Falls back to console logging on failure.
  */
-class ClickHouseAuditLoggerAdapter {
+export class ClickHouseAuditLoggerAdapter {
     client;
     tableName;
     database;
@@ -49,9 +46,9 @@ class ClickHouseAuditLoggerAdapter {
     constructor(client, config = {}) {
         this.client = client;
         this.database = config.database || 'infoindexer';
-        this.tableName = config.tableName || audit_log_sql_1.AUDIT_LOG_DEFAULTS.tableName;
+        this.tableName = config.tableName || AUDIT_LOG_DEFAULTS.tableName;
         this.options = { ...DEFAULT_OPTIONS, ...config.options };
-        (0, audit_logger_helpers_1.validateAuditLoggerConfig)(this.database, this.tableName);
+        validateAuditLoggerConfig(this.database, this.tableName);
     }
     async logEvent(event, options) {
         const opts = { ...this.options, ...options };
@@ -77,13 +74,13 @@ class ClickHouseAuditLoggerAdapter {
             });
             this.stats.logged++;
             this.stats.pending--;
-            return { success: true, id: (0, audit_logger_helpers_1.generateLogId)() };
+            return { success: true, id: generateLogId() };
         }
         catch (error) {
             this.stats.failed++;
-            this.healthy = (0, audit_logger_helpers_1.isRecoverableError)(error);
-            (0, audit_logger_helpers_1.logToConsole)(event, error);
-            return { success: false, error: (0, audit_logger_helpers_1.extractErrorMessage)(error) };
+            this.healthy = isRecoverableError(error);
+            logToConsole(event, error);
+            return { success: false, error: extractErrorMessage(error) };
         }
     }
     isHealthy() {
@@ -98,15 +95,14 @@ class ClickHouseAuditLoggerAdapter {
     async initialize() {
         try {
             await this.client.command({
-                query: (0, audit_log_sql_1.createAuditLogDDL)(this.database, this.tableName)
+                query: createAuditLogDDL(this.database, this.tableName)
             });
         }
         catch (error) {
-            const msg = (0, audit_logger_helpers_1.extractErrorMessage)(error);
+            const msg = extractErrorMessage(error);
             if (!msg.includes('already exists')) {
                 throw error;
             }
         }
     }
 }
-exports.ClickHouseAuditLoggerAdapter = ClickHouseAuditLoggerAdapter;

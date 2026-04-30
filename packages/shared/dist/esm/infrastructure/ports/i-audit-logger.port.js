@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Audit Logger Port
  *
@@ -23,4 +22,4 @@
  *
  * Iteration 12: Audit Logging
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+export {};

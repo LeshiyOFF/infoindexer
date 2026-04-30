@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Null Circuit Breaker Adapter
  *
@@ -9,9 +8,7 @@
  * Follows SRP: Always allows execution.
  * Follows LSP: Substitutable with any ICircuitBreakerPort.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.NullCircuitBreakerAdapter = void 0;
-const circuit_breaker_types_1 = require("../domain/types/circuit-breaker.types");
+import { CircuitState } from '../domain/types/circuit-breaker.types';
 /**
  * Null Circuit Breaker Adapter
  *
@@ -24,7 +21,7 @@ const circuit_breaker_types_1 = require("../domain/types/circuit-breaker.types")
  * - Development
  * - When Circuit Breaker is disabled
  */
-class NullCircuitBreakerAdapter {
+export class NullCircuitBreakerAdapter {
     breakerName;
     constructor(breakerName = 'null-circuit-breaker') {
         this.breakerName = breakerName;
@@ -34,14 +31,14 @@ class NullCircuitBreakerAdapter {
             const value = await fn();
             return {
                 success: true,
-                state: circuit_breaker_types_1.CircuitState.CLOSED,
+                state: CircuitState.CLOSED,
                 value
             };
         }
         catch (error) {
             return {
                 success: false,
-                state: circuit_breaker_types_1.CircuitState.CLOSED,
+                state: CircuitState.CLOSED,
                 error: 'execution_failed'
             };
         }
@@ -54,11 +51,11 @@ class NullCircuitBreakerAdapter {
         return fallback(result.error);
     }
     getState() {
-        return circuit_breaker_types_1.CircuitState.CLOSED;
+        return CircuitState.CLOSED;
     }
     getStats() {
         return {
-            state: circuit_breaker_types_1.CircuitState.CLOSED,
+            state: CircuitState.CLOSED,
             failureCount: 0,
             successCount: 0,
             failuresInWindow: 0,
@@ -74,4 +71,3 @@ class NullCircuitBreakerAdapter {
         return true;
     }
 }
-exports.NullCircuitBreakerAdapter = NullCircuitBreakerAdapter;

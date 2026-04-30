@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MigrationDiscovererService = void 0;
 /**
  * Migration Discoverer Service
  *
@@ -13,9 +10,9 @@ exports.MigrationDiscovererService = void 0;
  * @pattern Single Responsibility Principle (только обнаружение)
  * @pattern Dependency Inversion Principle (зависит от MetadataParser)
  */
-const fs_1 = require("fs");
-const path_1 = require("path");
-const legacy_1 = require("./legacy");
+import { readFileSync, existsSync, readdirSync } from 'fs';
+import { join } from 'path';
+import { LEGACY_MIGRATION_DESCRIPTORS } from './legacy';
 /**
  * Категории миграций для сканирования
  */
@@ -25,13 +22,25 @@ const MIGRATION_CATEGORIES = [
     'egrul-sync-worker'
 ];
 /**
+ * Порядок категорий для вторичной сортировки (при равных версиях)
+ *
+ * @remarks
+ * Shared миграции должны идти первыми, затем app-specific.
+ * Это гарантирует что shared инфраструктура готова до запуска domain логики.
+ */
+const CATEGORY_ORDER = {
+    'shared': 0,
+    'sync-worker': 1,
+    'egrul-sync-worker': 2
+};
+/**
  * Сервис обнаружения миграций
  *
  * @remarks
  * Отвечает только за сканирование файловой системы
  * и построение дескрипторов миграций.
  */
-class MigrationDiscovererService {
+export class MigrationDiscovererService {
     metadataParser;
     migrationsBaseDir;
     categories = MIGRATION_CATEGORIES;
@@ -56,7 +65,7 @@ class MigrationDiscovererService {
         const discovered = this.scanFilesystem();
         if (discovered.length === 0) {
             console.warn('[MigrationDiscoverer] No migrations discovered, using LEGACY fallback');
-            return this.sortByVersion(legacy_1.LEGACY_MIGRATION_DESCRIPTORS);
+            return this.sortByVersion(LEGACY_MIGRATION_DESCRIPTORS);
         }
         console.log(`[MigrationDiscoverer] Discovered ${discovered.length} migrations`);
         return this.sortByVersion(discovered);
@@ -82,8 +91,8 @@ class MigrationDiscovererService {
      */
     scanCategory(category) {
         const descriptors = [];
-        const categoryDir = (0, path_1.join)(this.migrationsBaseDir, category);
-        if (!(0, fs_1.existsSync)(categoryDir)) {
+        const categoryDir = join(this.migrationsBaseDir, category);
+        if (!existsSync(categoryDir)) {
             return descriptors;
         }
         try {
@@ -105,7 +114,7 @@ class MigrationDiscovererService {
      * @returns Отсортированный список файлов
      */
     listSqlFiles(dir) {
-        return (0, fs_1.readdirSync)(dir)
+        return readdirSync(dir)
             .filter((file) => /^\d{3}_.+\.sql$/.test(file))
             .sort();
     }
@@ -117,8 +126,8 @@ class MigrationDiscovererService {
      * @returns Дескриптор миграции
      */
     parseFile(category, filename) {
-        const filepath = (0, path_1.join)(this.migrationsBaseDir, category, filename);
-        const content = (0, fs_1.readFileSync)(filepath, 'utf-8');
+        const filepath = join(this.migrationsBaseDir, category, filename);
+        const content = readFileSync(filepath, 'utf-8');
         const metadata = this.metadataParser.parse(content, filename);
         const version = this.extractVersion(filename);
         return {
@@ -138,7 +147,15 @@ class MigrationDiscovererService {
         return filename.split('_')[0];
     }
     /**
-     * Сортирует дескрипторы по версии
+     * Сортирует дескрипторы по версии и категории
+     *
+     * @remarks
+     * Двухуровневая сортировка:
+     * 1. По версии (числовой префикс)
+     * 2. При равных версиях — по категории (shared → sync-worker → egrul-sync-worker)
+     *
+     * Это гарантирует предсказуемый порядок миграций и решает проблему
+     * cross-service зависимостей (например, shared/001 зависит от sync-worker/001).
      *
      * @param descriptors - Дескрипторы
      * @returns Отсортированные дескрипторы
@@ -147,8 +164,12 @@ class MigrationDiscovererService {
         return [...descriptors].sort((a, b) => {
             const versionA = parseInt(a.version, 10);
             const versionB = parseInt(b.version, 10);
-            return versionA - versionB;
+            // Первичная сортировка по версии
+            if (versionA !== versionB) {
+                return versionA - versionB;
+            }
+            // Вторичная сортировка по категории (детерминированный порядок)
+            return CATEGORY_ORDER[a.category] - CATEGORY_ORDER[b.category];
         });
     }
 }
-exports.MigrationDiscovererService = MigrationDiscovererService;

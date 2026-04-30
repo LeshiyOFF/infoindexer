@@ -1,14 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MigrationApplierMetrics = void 0;
-exports.createMigrationApplierMetrics = createMigrationApplierMetrics;
 /**
  * Метрики применения миграций
  *
  * @remarks
  * VO для логирования и создания результатов.
  */
-class MigrationApplierMetrics {
+export class MigrationApplierMetrics {
     /**
      * Логирует начало применения
      */
@@ -110,12 +106,11 @@ class MigrationApplierMetrics {
         };
     }
 }
-exports.MigrationApplierMetrics = MigrationApplierMetrics;
 /**
  * Создаёт метрики применения
  *
  * @returns Метрики
  */
-function createMigrationApplierMetrics() {
+export function createMigrationApplierMetrics() {
     return new MigrationApplierMetrics();
 }

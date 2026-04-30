@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.OrganizationService = void 0;
-const adapters_factory_1 = require("./organization-search/adapters.factory");
+import { ClickHouseAdapterFactory } from './organization-search/adapters.factory';
 const CACHE_NOT_READY_ERROR = 'Кэш не готов. Обновите кэш в настройках.';
 /**
  * Facade для работы с организациями
@@ -10,11 +7,11 @@ const CACHE_NOT_READY_ERROR = 'Кэш не готов. Обновите кэш �
  * Оркестратор, который использует Ports через Factory.
  * Обеспечивает обратную совместимость с существующим API.
  */
-class OrganizationService {
+export class OrganizationService {
     organizationSearch;
     organizationById;
     constructor(client) {
-        const factory = new adapters_factory_1.ClickHouseAdapterFactory(client);
+        const factory = new ClickHouseAdapterFactory(client);
         this.organizationSearch = factory.createOrganizationSearch();
         this.organizationById = factory.createOrganizationById();
     }
@@ -48,4 +45,3 @@ class OrganizationService {
         return this.organizationById.findById(id);
     }
 }
-exports.OrganizationService = OrganizationService;

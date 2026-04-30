@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Migration Orchestrator Port
  *
@@ -12,4 +11,4 @@
  * Следует ISP: Интерфейс сегрегирован, содержит только
  * необходимые методы для оркестрации.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+export {};

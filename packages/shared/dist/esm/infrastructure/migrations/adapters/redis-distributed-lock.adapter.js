@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Redis Distributed Lock Adapter
  *
@@ -6,8 +5,6 @@
  * Infrastructure Layer: реализует IDistributedLock через Redis.
  * Использует SET NX (SET if Not eXists) для атомарного захвата.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RedisDistributedLockAdapter = void 0;
 /**
  * Значения по умолчанию
  */
@@ -21,7 +18,7 @@ const LOCK_PREFIX = 'lock:';
  * Реализует распределённую блокировку через Redis SET NX.
  * Использует уникальный токен для безопасного освобождения.
  */
-class RedisDistributedLockAdapter {
+export class RedisDistributedLockAdapter {
     redis;
     constructor(redis) {
         this.redis = redis;
@@ -138,4 +135,3 @@ class RedisDistributedLockAdapter {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 }
-exports.RedisDistributedLockAdapter = RedisDistributedLockAdapter;

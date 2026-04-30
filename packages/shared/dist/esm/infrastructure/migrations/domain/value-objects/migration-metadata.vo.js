@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Migration Metadata Value Object
  *
@@ -9,15 +8,13 @@
  * @pattern Value Object
  * @pattern Single Responsibility Principle
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MigrationMetadata = exports.MetadataFormat = void 0;
 /**
  * Формат метаданных в SQL файле
  *
  * @remarks
  * Enum для определения стратегии парсинга.
  */
-var MetadataFormat;
+export var MetadataFormat;
 (function (MetadataFormat) {
     /** Stripe-style: -- Migration: XXX_description */
     MetadataFormat["STRIPE"] = "stripe";
@@ -27,7 +24,7 @@ var MetadataFormat;
     MetadataFormat["DECORATIVE"] = "decorative";
     /** Формат не определён */
     MetadataFormat["UNKNOWN"] = "unknown";
-})(MetadataFormat || (exports.MetadataFormat = MetadataFormat = {}));
+})(MetadataFormat || (MetadataFormat = {}));
 /**
  * Метаданные миграции
  *
@@ -35,7 +32,7 @@ var MetadataFormat;
  * Value Object с readonly свойствами.
  * Содержит извлечённые из SQL комментариев метаданные.
  */
-class MigrationMetadata {
+export class MigrationMetadata {
     version;
     description;
     author;
@@ -89,4 +86,3 @@ class MigrationMetadata {
             this.created !== undefined);
     }
 }
-exports.MigrationMetadata = MigrationMetadata;

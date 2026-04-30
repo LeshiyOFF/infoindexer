@@ -1,8 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ConsoleQueryMetricsCollector = void 0;
-exports.createQueryMetricsService = createQueryMetricsService;
-class ConsoleQueryMetricsCollector {
+export class ConsoleQueryMetricsCollector {
     totalQueries = 0;
     totalErrors = 0;
     totalDurationMs = 0;
@@ -38,10 +34,9 @@ class ConsoleQueryMetricsCollector {
         this.totalRows = 0;
     }
 }
-exports.ConsoleQueryMetricsCollector = ConsoleQueryMetricsCollector;
 /**
  * Factory функция для создания ConsoleQueryMetricsCollector
  */
-function createQueryMetricsService() {
+export function createQueryMetricsService() {
     return new ConsoleQueryMetricsCollector();
 }

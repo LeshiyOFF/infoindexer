@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DecorativeMetadataParser = void 0;
-const value_objects_1 = require("../../../value-objects");
+import { MetadataFormat } from '../../../value-objects';
 /**
  * Decorative-style парсер метаданных
  *
@@ -11,7 +8,7 @@ const value_objects_1 = require("../../../value-objects");
  * -- Migration 017: Backup and Drop Problematic Materialized Views
  * -- ═════════════════════════════════
  */
-class DecorativeMetadataParser {
+export class DecorativeMetadataParser {
     static DECORATIVE_PATTERN = /^─+|═+$/;
     /**
      * Проверяет поддерживается ли формат
@@ -42,7 +39,7 @@ class DecorativeMetadataParser {
                 metadata: {
                     version,
                     description: description || this.extractDescriptionFromFilename(filename),
-                    format: value_objects_1.MetadataFormat.DECORATIVE,
+                    format: MetadataFormat.DECORATIVE,
                     isValid: () => true,
                     hasExtendedMetadata: () => false
                 }
@@ -109,4 +106,3 @@ class DecorativeMetadataParser {
         return parts.join(' ').replace(/_/g, ' ') || 'Migration';
     }
 }
-exports.DecorativeMetadataParser = DecorativeMetadataParser;

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Migration Lock Adapter — реализация distributed lock через Redis
  *
@@ -6,10 +5,7 @@
  * Infrastructure Adapter: реализует Port IMigrationLock.
  * Redlock algorithm: https://redis.io/docs/manual/patterns/distributed-locks/
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MigrationLock = void 0;
-exports.createMigrationLock = createMigrationLock;
-const crypto_1 = require("crypto");
+import { randomBytes } from 'crypto';
 /** Lua script для безопасного удаления lock (atomically check + delete) */
 const RELEASE_LOCK_SCRIPT = `
   if redis.call("get", KEYS[1]) == ARGV[1] then
@@ -28,7 +24,7 @@ const RETRY_DELAY_MAX = 500;
  * SRP: Только управление distributed lock
  * DIP: Зависит от абстракции Redis
  */
-class MigrationLock {
+export class MigrationLock {
     redis;
     constructor(redis) {
         this.redis = redis;
@@ -79,7 +75,7 @@ class MigrationLock {
         }
     }
     generateToken() {
-        const random = (0, crypto_1.randomBytes)(16).toString('hex');
+        const random = randomBytes(16).toString('hex');
         const timestamp = Date.now();
         return `${timestamp}-${random}`;
     }
@@ -90,8 +86,7 @@ class MigrationLock {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 }
-exports.MigrationLock = MigrationLock;
 /** Factory для создания MigrationLock */
-function createMigrationLock(redis) {
+export function createMigrationLock(redis) {
     return new MigrationLock(redis);
 }

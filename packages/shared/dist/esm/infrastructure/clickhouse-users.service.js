@@ -1,4 +1,3 @@
-"use strict";
 /**
  * ClickHouse Users Initialization Service
  *
@@ -18,9 +17,6 @@
  *
  * Iteration 10: RBAC + Users
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ClickHouseUsersService = void 0;
-exports.createClickHouseUsersService = createClickHouseUsersService;
 /**
  * Required usernames for application
  */
@@ -48,7 +44,7 @@ const REQUIRED_USERS = {
  * });
  * ```
  */
-class ClickHouseUsersService {
+export class ClickHouseUsersService {
     rbac;
     logger;
     constructor(rbac, logger) {
@@ -188,7 +184,6 @@ class ClickHouseUsersService {
         return hasAdmin && hasWorker && hasApi;
     }
 }
-exports.ClickHouseUsersService = ClickHouseUsersService;
 /**
  * Factory function to create users service
  *
@@ -196,6 +191,6 @@ exports.ClickHouseUsersService = ClickHouseUsersService;
  * @param logger - Logger instance
  * @returns Configured users service
  */
-function createClickHouseUsersService(rbac, logger) {
+export function createClickHouseUsersService(rbac, logger) {
     return new ClickHouseUsersService(rbac, logger);
 }

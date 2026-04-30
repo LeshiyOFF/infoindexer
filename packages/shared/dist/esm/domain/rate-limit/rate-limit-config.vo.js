@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Rate Limit Configuration
  *
@@ -13,8 +12,6 @@
  *
  * Iteration 14: Rate Limiting
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RATE_LIMITS = exports.RateLimitConfig = void 0;
 /**
  * Rate Limit Configuration
  *
@@ -22,7 +19,7 @@ exports.RATE_LIMITS = exports.RateLimitConfig = void 0;
  * Value Object с readonly полями.
  * Содержит лимиты для всех типов запросов.
  */
-class RateLimitConfig {
+export class RateLimitConfig {
     type;
     config;
     static CONFIGS = {
@@ -85,8 +82,7 @@ class RateLimitConfig {
         return this.config;
     }
 }
-exports.RateLimitConfig = RateLimitConfig;
 /**
  * Синглтон с константами для удобства импорта
  */
-exports.RATE_LIMITS = RateLimitConfig.getAll();
+export const RATE_LIMITS = RateLimitConfig.getAll();

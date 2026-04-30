@@ -1,11 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SanctionTopicsRegistry = void 0;
-const sanctions_entries_1 = require("./registry/sanctions-entries");
-const political_entries_1 = require("./registry/political-entries");
-const crime_entries_1 = require("./registry/crime-entries");
-const financing_entries_1 = require("./registry/financing-entries");
-const special_entries_1 = require("./registry/special-entries");
+import { sanctionsEntries } from './registry/sanctions-entries';
+import { politicalEntries } from './registry/political-entries';
+import { crimeEntries } from './registry/crime-entries';
+import { financingEntries } from './registry/financing-entries';
+import { specialEntries } from './registry/special-entries';
 /**
  * Реестр маппинга topics → метаданные
  *
@@ -14,13 +11,13 @@ const special_entries_1 = require("./registry/special-entries");
  *
  * @implements Single Responsibility Principle
  */
-class SanctionTopicsRegistry {
+export class SanctionTopicsRegistry {
     static entries = Object.freeze([
-        ...sanctions_entries_1.sanctionsEntries,
-        ...political_entries_1.politicalEntries,
-        ...crime_entries_1.crimeEntries,
-        ...financing_entries_1.financingEntries,
-        ...special_entries_1.specialEntries,
+        ...sanctionsEntries,
+        ...politicalEntries,
+        ...crimeEntries,
+        ...financingEntries,
+        ...specialEntries,
     ]);
     /**
      * Возвращает Map для быстрого поиска topic → info
@@ -45,4 +42,3 @@ class SanctionTopicsRegistry {
         return SanctionTopicsRegistry.entries.length;
     }
 }
-exports.SanctionTopicsRegistry = SanctionTopicsRegistry;

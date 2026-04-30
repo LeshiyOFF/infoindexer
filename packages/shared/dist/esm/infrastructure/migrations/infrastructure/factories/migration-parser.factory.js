@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MigrationParserFactory = void 0;
-const parsers_1 = require("../../domain/services/parsers");
+import { StripeMetadataParser, NumericMetadataParser, DecorativeMetadataParser, FallbackMetadataParser } from '../../domain/services/parsers';
 /**
  * Factory для создания парсеров метаданных
  *
@@ -9,14 +6,14 @@ const parsers_1 = require("../../domain/services/parsers");
  * Централизует создание стратегий парсинга.
  * Упрощает тестирование через переопределение.
  */
-class MigrationParserFactory {
+export class MigrationParserFactory {
     /**
      * Создаёт Stripe-style парсер
      *
      * @returns StripeMetadataParser
      */
     createStripeParser() {
-        return new parsers_1.StripeMetadataParser();
+        return new StripeMetadataParser();
     }
     /**
      * Создаёт Numeric-style парсер
@@ -24,7 +21,7 @@ class MigrationParserFactory {
      * @returns NumericMetadataParser
      */
     createNumericParser() {
-        return new parsers_1.NumericMetadataParser();
+        return new NumericMetadataParser();
     }
     /**
      * Создаёт Decorative-style парсер
@@ -32,7 +29,7 @@ class MigrationParserFactory {
      * @returns DecorativeMetadataParser
      */
     createDecorativeParser() {
-        return new parsers_1.DecorativeMetadataParser();
+        return new DecorativeMetadataParser();
     }
     /**
      * Создаёт Fallback парсер
@@ -40,7 +37,7 @@ class MigrationParserFactory {
      * @returns FallbackMetadataParser
      */
     createFallbackParser() {
-        return new parsers_1.FallbackMetadataParser();
+        return new FallbackMetadataParser();
     }
     /**
      * Создаёт все стратегии в порядке приоритета
@@ -67,4 +64,3 @@ class MigrationParserFactory {
         return new MigrationParserFactory();
     }
 }
-exports.MigrationParserFactory = MigrationParserFactory;

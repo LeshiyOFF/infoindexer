@@ -1,4 +1,3 @@
-"use strict";
 /**
  * GDPR Deletion Factory
  *
@@ -8,12 +7,8 @@
  *
  * Iteration 13: GDPR Right-to-Delete
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createClickHouseGdprDeletion = void 0;
-exports.createGdprDeletionService = createGdprDeletionService;
-const clickhouse_gdpr_deletion_adapter_1 = require("./clickhouse-gdpr-deletion.adapter");
-Object.defineProperty(exports, "createClickHouseGdprDeletion", { enumerable: true, get: function () { return clickhouse_gdpr_deletion_adapter_1.createClickHouseGdprDeletion; } });
-const audit_event_dto_1 = require("../../domain/audit-event.dto");
+import { createClickHouseGdprDeletion } from './clickhouse-gdpr-deletion.adapter';
+import { AuditEventType, AuditActionType, AuditEvent } from '../../domain/audit-event.dto';
 /**
  * Audit-enabled GDPR deletion service
  *
@@ -30,13 +25,13 @@ class AuditedGdprDeletionService {
     async confirm(inn) {
         const result = await this.base.confirm(inn);
         if (this.auditLogger) {
-            await this.auditLogger.logEvent(new audit_event_dto_1.AuditEvent(audit_event_dto_1.AuditEventType.DATA_ACCESS, audit_event_dto_1.AuditActionType.READ, 'system', 'organization', inn, { action: 'GDPR_CONFIRM', counts: JSON.stringify(result.counts) }));
+            await this.auditLogger.logEvent(new AuditEvent(AuditEventType.DATA_ACCESS, AuditActionType.READ, 'system', 'organization', inn, { action: 'GDPR_CONFIRM', counts: JSON.stringify(result.counts) }));
         }
         return result;
     }
     async execute(request) {
         if (this.auditLogger) {
-            await this.auditLogger.logEvent(new audit_event_dto_1.AuditEvent(audit_event_dto_1.AuditEventType.DATA_MODIFICATION, audit_event_dto_1.AuditActionType.DELETE, request.requestedBy, 'organization', request.inn, { action: 'GDPR_DELETE', requestDate: request.requestDate.toISOString() }));
+            await this.auditLogger.logEvent(new AuditEvent(AuditEventType.DATA_MODIFICATION, AuditActionType.DELETE, request.requestedBy, 'organization', request.inn, { action: 'GDPR_DELETE', requestDate: request.requestDate.toISOString() }));
         }
         const result = await this.base.execute(request);
         if (this.auditLogger) {
@@ -48,7 +43,7 @@ class AuditedGdprDeletionService {
             if (result.errors.length > 0) {
                 metadata.errors = JSON.stringify(result.errors);
             }
-            await this.auditLogger.logEvent(new audit_event_dto_1.AuditEvent(result.success ? audit_event_dto_1.AuditEventType.DATA_MODIFICATION : audit_event_dto_1.AuditEventType.ERROR, audit_event_dto_1.AuditActionType.DELETE, request.requestedBy, 'organization', request.inn, metadata));
+            await this.auditLogger.logEvent(new AuditEvent(result.success ? AuditEventType.DATA_MODIFICATION : AuditEventType.ERROR, AuditActionType.DELETE, request.requestedBy, 'organization', request.inn, metadata));
         }
         return result;
     }
@@ -64,7 +59,11 @@ class AuditedGdprDeletionService {
  * @param config - Optional configuration
  * @returns IGdprDeletion instance with optional audit
  */
-function createGdprDeletionService(client, auditLogger, config) {
-    const base = (0, clickhouse_gdpr_deletion_adapter_1.createClickHouseGdprDeletion)(client, config);
+export function createGdprDeletionService(client, auditLogger, config) {
+    const base = createClickHouseGdprDeletion(client, config);
     return auditLogger ? new AuditedGdprDeletionService(base, auditLogger) : base;
 }
+/**
+ * Re-export base factory for testing
+ */
+export { createClickHouseGdprDeletion };

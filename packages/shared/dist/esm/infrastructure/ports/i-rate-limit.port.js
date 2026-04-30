@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Rate Limit Port
  *
@@ -21,4 +20,4 @@
  *
  * Iteration 14: Rate Limiting
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+export {};

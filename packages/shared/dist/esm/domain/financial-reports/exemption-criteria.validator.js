@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Exemption Criteria Validator
  *
@@ -15,10 +14,8 @@
  * - ФЗ-152: корректная классификация exemption_criteria
  * - ClickHouse Enum8: только валидные значения
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.exemptionCriteriaValidator = exports.ExemptionCriteriaValidator = void 0;
-const exemption_criteria_enum_1 = require("./exemption-criteria.enum");
-const exemption_criteria_error_1 = require("./exemption-criteria-error");
+import { ALL_EXEMPTION_CRITERIA, isValidExemptionCriteria } from './exemption-criteria.enum';
+import { ExemptionCriteriaError } from './exemption-criteria-error';
 /**
  * Validator для exemption_criteria
  *
@@ -36,8 +33,8 @@ const exemption_criteria_error_1 = require("./exemption-criteria-error");
  * // { isValid: false, error: ExemptionCriteriaError }
  * ```
  */
-class ExemptionCriteriaValidator {
-    static VALID_VALUES = exemption_criteria_enum_1.ALL_EXEMPTION_CRITERIA;
+export class ExemptionCriteriaValidator {
+    static VALID_VALUES = ALL_EXEMPTION_CRITERIA;
     /**
      * Валидирует exemption_criteria
      *
@@ -48,14 +45,14 @@ class ExemptionCriteriaValidator {
         if (!value || typeof value !== 'string') {
             return {
                 isValid: false,
-                error: new exemption_criteria_error_1.ExemptionCriteriaError(String(value ?? 'null'), ExemptionCriteriaValidator.VALID_VALUES)
+                error: new ExemptionCriteriaError(String(value ?? 'null'), ExemptionCriteriaValidator.VALID_VALUES)
             };
         }
         const trimmed = value.trim();
-        if (!(0, exemption_criteria_enum_1.isValidExemptionCriteria)(trimmed)) {
+        if (!isValidExemptionCriteria(trimmed)) {
             return {
                 isValid: false,
-                error: new exemption_criteria_error_1.ExemptionCriteriaError(trimmed, ExemptionCriteriaValidator.VALID_VALUES)
+                error: new ExemptionCriteriaError(trimmed, ExemptionCriteriaValidator.VALID_VALUES)
             };
         }
         return {
@@ -86,8 +83,7 @@ class ExemptionCriteriaValidator {
         return ExemptionCriteriaValidator.VALID_VALUES;
     }
 }
-exports.ExemptionCriteriaValidator = ExemptionCriteriaValidator;
 /**
  * Singleton instance для удобства импорта
  */
-exports.exemptionCriteriaValidator = new ExemptionCriteriaValidator();
+export const exemptionCriteriaValidator = new ExemptionCriteriaValidator();

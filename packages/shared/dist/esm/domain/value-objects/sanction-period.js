@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Sanction Period Value Object
  *
@@ -16,10 +15,8 @@
  * lifted.isActive  // false
  * ```
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SanctionPeriod = void 0;
-const errors_1 = require("../errors");
-class SanctionPeriod {
+import { InvalidPeriodError } from '../errors';
+export class SanctionPeriod {
     startDate;
     endDate;
     constructor(startDate, endDate) {
@@ -27,7 +24,7 @@ class SanctionPeriod {
         this.endDate = endDate;
         // Валидация в конструкторе (нельзя создать невалидный Period)
         if (endDate && endDate < startDate) {
-            throw new errors_1.InvalidPeriodError('End date cannot be before start date', {
+            throw new InvalidPeriodError('End date cannot be before start date', {
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString()
             });
@@ -35,10 +32,10 @@ class SanctionPeriod {
     }
     static create(startDate, endDate) {
         if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
-            throw new errors_1.InvalidPeriodError('Invalid start date', { startDate });
+            throw new InvalidPeriodError('Invalid start date', { startDate });
         }
         if (endDate !== null && (!(endDate instanceof Date) || isNaN(endDate.getTime()))) {
-            throw new errors_1.InvalidPeriodError('Invalid end date', { endDate });
+            throw new InvalidPeriodError('Invalid end date', { endDate });
         }
         return new SanctionPeriod(startDate, endDate);
     }
@@ -77,4 +74,3 @@ class SanctionPeriod {
         return this.format();
     }
 }
-exports.SanctionPeriod = SanctionPeriod;

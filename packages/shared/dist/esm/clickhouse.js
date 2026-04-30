@@ -1,9 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.clickhouseClient = void 0;
-exports.createClickHouseClient = createClickHouseClient;
-const client_1 = require("@clickhouse/client");
-const clickhouse_config_adapter_1 = require("./infrastructure/clickhouse-config.adapter");
+import { createClient } from '@clickhouse/client';
+import { createClickHouseConfig } from './infrastructure/clickhouse-config.adapter';
 /**
  * ClickHouse client with async insert, connection pool tuning, and TLS support
  *
@@ -50,7 +46,7 @@ const clickhouse_config_adapter_1 = require("./infrastructure/clickhouse-config.
  * Uses environment-based configuration.
  * For custom config, use createClickHouseClient() factory.
  */
-exports.clickhouseClient = (0, client_1.createClient)((0, clickhouse_config_adapter_1.createClickHouseConfig)());
+export const clickhouseClient = createClient(createClickHouseConfig());
 /**
  * Create ClickHouse client with custom configuration
  *
@@ -69,6 +65,6 @@ exports.clickhouseClient = (0, client_1.createClient)((0, clickhouse_config_adap
  * await client.close();
  * ```
  */
-function createClickHouseClient(config) {
-    return (0, client_1.createClient)(config ?? (0, clickhouse_config_adapter_1.createClickHouseConfig)());
+export function createClickHouseClient(config) {
+    return createClient(config ?? createClickHouseConfig());
 }

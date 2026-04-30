@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createClickHouseConfigAsync = createClickHouseConfigAsync;
-const clickhouse_constants_1 = require("./clickhouse.constants");
-const file_certificate_provider_adapter_1 = require("./file-certificate-provider.adapter");
+import { CLICKHOUSE_DEFAULTS } from './clickhouse.constants';
+import { createCertificateProvider } from './file-certificate-provider.adapter';
 /**
  * Resource-aware ClickHouse configuration adapter
  */
@@ -27,9 +24,9 @@ class ResourceAwareClickHouseConfig {
         this.password = this.getPassword();
         this.database = process.env.CLICKHOUSE_DB || 'default';
         this.request_timeout = this.calculateRequestTimeout();
-        this.max_open_connections = clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_OPEN_CONNECTIONS;
-        this.max_idle_connections = clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_IDLE_CONNECTIONS;
-        this.connection_idle_timeout = clickhouse_constants_1.CLICKHOUSE_DEFAULTS.CONNECTION_IDLE_TIMEOUT;
+        this.max_open_connections = CLICKHOUSE_DEFAULTS.MAX_OPEN_CONNECTIONS;
+        this.max_idle_connections = CLICKHOUSE_DEFAULTS.MAX_IDLE_CONNECTIONS;
+        this.connection_idle_timeout = CLICKHOUSE_DEFAULTS.CONNECTION_IDLE_TIMEOUT;
         this.clickhouse_settings = this.buildSettings();
         this.tls = this.buildTLSSettings();
     }
@@ -61,7 +58,7 @@ class ResourceAwareClickHouseConfig {
      * Formula: HTTP_timeout > SQL_execution_time * safety_margin (3x)
      */
     calculateRequestTimeout() {
-        const maxExecutionTime = this.calculatedConfig?.maxExecutionTime ?? clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_EXECUTION_TIME;
+        const maxExecutionTime = this.calculatedConfig?.maxExecutionTime ?? CLICKHOUSE_DEFAULTS.MAX_EXECUTION_TIME;
         return maxExecutionTime * 3 * 1000;
     }
     /**
@@ -70,22 +67,22 @@ class ResourceAwareClickHouseConfig {
     buildSettings() {
         const config = this.calculatedConfig;
         return {
-            async_insert: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.ASYNC_INSERT,
-            wait_for_async_insert: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.WAIT_FOR_ASYNC_INSERT,
-            max_insert_block_size: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_INSERT_BLOCK_SIZE,
-            max_execution_time: config?.maxExecutionTime ?? clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_EXECUTION_TIME,
-            max_memory_usage: config?.maxMemoryUsage ?? clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_MEMORY_USAGE,
-            max_rows_to_read: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_ROWS_TO_READ,
-            max_bytes_to_read: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_BYTES_TO_READ,
-            optimize_read_in_order: clickhouse_constants_1.CLICKHOUSE_DEFAULTS.OPTIMIZE_READ_IN_ORDER,
-            max_threads: config?.maxThreads ?? clickhouse_constants_1.CLICKHOUSE_DEFAULTS.MAX_THREADS,
+            async_insert: CLICKHOUSE_DEFAULTS.ASYNC_INSERT,
+            wait_for_async_insert: CLICKHOUSE_DEFAULTS.WAIT_FOR_ASYNC_INSERT,
+            max_insert_block_size: CLICKHOUSE_DEFAULTS.MAX_INSERT_BLOCK_SIZE,
+            max_execution_time: config?.maxExecutionTime ?? CLICKHOUSE_DEFAULTS.MAX_EXECUTION_TIME,
+            max_memory_usage: config?.maxMemoryUsage ?? CLICKHOUSE_DEFAULTS.MAX_MEMORY_USAGE,
+            max_rows_to_read: CLICKHOUSE_DEFAULTS.MAX_ROWS_TO_READ,
+            max_bytes_to_read: CLICKHOUSE_DEFAULTS.MAX_BYTES_TO_READ,
+            optimize_read_in_order: CLICKHOUSE_DEFAULTS.OPTIMIZE_READ_IN_ORDER,
+            max_threads: config?.maxThreads ?? CLICKHOUSE_DEFAULTS.MAX_THREADS,
         };
     }
     buildTLSSettings() {
         if (process.env.CLICKHOUSE_SECURE !== 'true') {
             return undefined;
         }
-        const provider = this.certProvider || (0, file_certificate_provider_adapter_1.createCertificateProvider)();
+        const provider = this.certProvider || createCertificateProvider();
         try {
             const caCert = provider.getCACert();
             return { ca_cert: caCert };
@@ -109,6 +106,6 @@ class ResourceAwareClickHouseConfig {
  * const config = await createClickHouseConfigAsync(result.config);
  * ```
  */
-async function createClickHouseConfigAsync(calculatedConfig = null, certProvider) {
+export async function createClickHouseConfigAsync(calculatedConfig = null, certProvider) {
     return new ResourceAwareClickHouseConfig(calculatedConfig, certProvider);
 }

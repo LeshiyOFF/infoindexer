@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Money Value Object
  *
@@ -26,10 +25,8 @@
  *
  * Iteration 2: Domain Layer (VOs + DTOs)
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Money = void 0;
-const result_1 = require("../../result");
-const financial_summary_error_1 = require("./financial-summary-error");
+import { Result } from '../../result';
+import { InvalidMoneyError } from './financial-summary-error';
 /**
  * Поддерживаемые валюты
  *
@@ -44,7 +41,7 @@ const ALLOWED_CURRENCIES = new Set(['RUB']);
  * Представляет денежную сумму в определённой валюте.
  * Immutable: все операции возвращают новый экземпляр.
  */
-class Money {
+export class Money {
     amount;
     currency;
     constructor(amount, currency) {
@@ -66,17 +63,17 @@ class Money {
         const { amount, currency } = data;
         // Валидация amount
         if (typeof amount !== 'number' || isNaN(amount)) {
-            return result_1.Result.error(new financial_summary_error_1.InvalidMoneyError(amount ?? 0, currency ?? 'RUB', 'missing_field'));
+            return Result.error(new InvalidMoneyError(amount ?? 0, currency ?? 'RUB', 'missing_field'));
         }
         if (amount < 0) {
-            return result_1.Result.error(new financial_summary_error_1.InvalidMoneyError(amount, currency, 'negative_amount'));
+            return Result.error(new InvalidMoneyError(amount, currency, 'negative_amount'));
         }
         // Валидация currency
         const normalizedCurrency = (currency ?? 'RUB').toUpperCase().trim();
         if (!ALLOWED_CURRENCIES.has(normalizedCurrency)) {
-            return result_1.Result.error(new financial_summary_error_1.InvalidMoneyError(amount, currency, 'invalid_currency'));
+            return Result.error(new InvalidMoneyError(amount, currency, 'invalid_currency'));
         }
-        return result_1.Result.ok(new Money(amount, normalizedCurrency));
+        return Result.ok(new Money(amount, normalizedCurrency));
     }
     /**
      * Проверяет, что сумма равна нулю
@@ -112,7 +109,7 @@ class Money {
      */
     add(other) {
         if (this.currency !== other.currency) {
-            return result_1.Result.error(new financial_summary_error_1.InvalidMoneyError(this.amount, `${this.currency}/${other.currency}`, 'invalid_currency'));
+            return Result.error(new InvalidMoneyError(this.amount, `${this.currency}/${other.currency}`, 'invalid_currency'));
         }
         return Money.create({
             amount: this.amount + other.amount,
@@ -148,4 +145,3 @@ class Money {
         return `${this.amount} ${this.currency}`;
     }
 }
-exports.Money = Money;

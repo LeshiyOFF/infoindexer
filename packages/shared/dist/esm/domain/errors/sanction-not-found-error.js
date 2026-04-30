@@ -1,14 +1,10 @@
-"use strict";
 /**
  * Ошибка: санкция не найдена
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SanctionNotFoundError = void 0;
-const domain_error_1 = require("../domain-error");
-class SanctionNotFoundError extends domain_error_1.DomainError {
+import { DomainError } from '../domain-error';
+export class SanctionNotFoundError extends DomainError {
     constructor(message, context) {
         super(message, context);
         this.name = 'SanctionNotFoundError';
     }
 }
-exports.SanctionNotFoundError = SanctionNotFoundError;

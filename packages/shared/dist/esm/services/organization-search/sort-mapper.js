@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SortMapper = void 0;
 /**
  * Маппер для валидации и преобразования параметров сортировки
  */
-class SortMapper {
+export class SortMapper {
     static ALLOWED_FIELDS = [
         'inn',
         'ogrn',
@@ -43,4 +40,3 @@ class SortMapper {
         return this.COLUMN_MAP[sortBy] || sortBy;
     }
 }
-exports.SortMapper = SortMapper;

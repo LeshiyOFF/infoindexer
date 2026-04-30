@@ -1,4 +1,3 @@
-"use strict";
 /**
  * File System Certificate Provider Adapter
  *
@@ -12,14 +11,8 @@
  *
  * Iteration 9.1: TLS Certificate Automation
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FileSystemCertificateProvider = void 0;
-exports.createCertificateProvider = createCertificateProvider;
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
+import fs from 'fs';
+import path from 'path';
 /**
  * Default certificate paths
  *
@@ -40,7 +33,7 @@ const DEFAULT_CERT_PATH = './docker/certs/ca-cert.pem';
  * const cert = provider.getCACert();
  * ```
  */
-class FileSystemCertificateProvider {
+export class FileSystemCertificateProvider {
     certPath;
     /**
      * Create file system certificate provider
@@ -52,7 +45,7 @@ class FileSystemCertificateProvider {
      * Can be overridden for testing or custom paths.
      */
     constructor(certPath) {
-        this.certPath = certPath || path_1.default.resolve(process.cwd(), DEFAULT_CERT_PATH);
+        this.certPath = certPath || path.resolve(process.cwd(), DEFAULT_CERT_PATH);
     }
     /**
      * Get CA certificate content
@@ -66,7 +59,7 @@ class FileSystemCertificateProvider {
      */
     getCACert() {
         try {
-            return fs_1.default.readFileSync(this.certPath);
+            return fs.readFileSync(this.certPath);
         }
         catch (error) {
             if (error.code === 'ENOENT') {
@@ -88,10 +81,9 @@ class FileSystemCertificateProvider {
      * Useful for pre-flight checks.
      */
     exists() {
-        return fs_1.default.existsSync(this.certPath);
+        return fs.existsSync(this.certPath);
     }
 }
-exports.FileSystemCertificateProvider = FileSystemCertificateProvider;
 /**
  * Factory function for creating file system certificate provider
  *
@@ -110,6 +102,6 @@ exports.FileSystemCertificateProvider = FileSystemCertificateProvider;
  * const cert = provider.getCACert();
  * ```
  */
-function createCertificateProvider(certPath) {
+export function createCertificateProvider(certPath) {
     return new FileSystemCertificateProvider(certPath);
 }

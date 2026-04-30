@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Migration Result Value Object
  *
@@ -9,9 +8,6 @@
  * MigrationResult импортируется из ports/i-migration-runner.port.ts
  * чтобы избежать дублирования экспорта.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSuccessResult = createSuccessResult;
-exports.createFailureResult = createFailureResult;
 /**
  * Создаёт успешный результат миграции
  *
@@ -19,7 +15,7 @@ exports.createFailureResult = createFailureResult;
  * @param durationMs - Время выполнения
  * @returns Успешный результат
  */
-function createSuccessResult(version, durationMs) {
+export function createSuccessResult(version, durationMs) {
     return {
         success: true,
         version,
@@ -35,7 +31,7 @@ function createSuccessResult(version, durationMs) {
  * @param error - Ошибка
  * @returns Неуспешный результат
  */
-function createFailureResult(version, durationMs, error) {
+export function createFailureResult(version, durationMs, error) {
     return {
         success: false,
         version,

@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Circuit Breaker Metrics Recorder
  *
@@ -12,9 +11,7 @@
  * Simple console-based implementation. For production, replace with
  * Prometheus/Datadog adapter.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CircuitBreakerMetricsRecorder = void 0;
-const circuit_breaker_types_1 = require("../domain/types/circuit-breaker.types");
+import { CircuitState } from '../domain/types/circuit-breaker.types';
 /**
  * Circuit Breaker Metrics Recorder
  *
@@ -24,7 +21,7 @@ const circuit_breaker_types_1 = require("../domain/types/circuit-breaker.types")
  *
  * For production, implement with Prometheus/StatsD.
  */
-class CircuitBreakerMetricsRecorder {
+export class CircuitBreakerMetricsRecorder {
     enabled;
     constructor(enabled = true) {
         this.enabled = enabled;
@@ -106,15 +103,14 @@ class CircuitBreakerMetricsRecorder {
      */
     stateToValue(state) {
         switch (state) {
-            case circuit_breaker_types_1.CircuitState.CLOSED:
+            case CircuitState.CLOSED:
                 return 0;
-            case circuit_breaker_types_1.CircuitState.HALF_OPEN:
+            case CircuitState.HALF_OPEN:
                 return 0.5;
-            case circuit_breaker_types_1.CircuitState.OPEN:
+            case CircuitState.OPEN:
                 return 1;
             default:
                 return 0;
         }
     }
 }
-exports.CircuitBreakerMetricsRecorder = CircuitBreakerMetricsRecorder;

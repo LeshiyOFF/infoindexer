@@ -1,7 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ALL_SANCTION_TOPICS = exports.SanctionTopic = void 0;
-exports.isValidSanctionTopic = isValidSanctionTopic;
 /**
  * Перечисление всех санкционных topics из OpenSanctions
  *
@@ -11,7 +7,7 @@ exports.isValidSanctionTopic = isValidSanctionTopic;
  *
  * @see https://www.opensanctions.org/docs/topics/
  */
-var SanctionTopic;
+export var SanctionTopic;
 (function (SanctionTopic) {
     // === Санкции ===
     /**
@@ -133,15 +129,15 @@ var SanctionTopic;
      * Мёртвая душа / неактивная сущность
      */
     SanctionTopic["SPECIAL_INACTIVE"] = "special.inactive";
-})(SanctionTopic || (exports.SanctionTopic = SanctionTopic = {}));
+})(SanctionTopic || (SanctionTopic = {}));
 /**
  * Все возможные значения topics
  * Используется для валидации и итерации
  */
-exports.ALL_SANCTION_TOPICS = Object.values(SanctionTopic);
+export const ALL_SANCTION_TOPICS = Object.values(SanctionTopic);
 /**
  * Проверяет является ли строка валидным SanctionTopic
  */
-function isValidSanctionTopic(value) {
-    return exports.ALL_SANCTION_TOPICS.includes(value);
+export function isValidSanctionTopic(value) {
+    return ALL_SANCTION_TOPICS.includes(value);
 }

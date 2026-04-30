@@ -1,11 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SanctionCategory = void 0;
-exports.createSanctionTopicInfo = createSanctionTopicInfo;
 /**
  * Категория санкционной метки для группировки в UI
  */
-var SanctionCategory;
+export var SanctionCategory;
 (function (SanctionCategory) {
     /** Международные санкции */
     SanctionCategory["SANCTIONS"] = "sanctions";
@@ -17,10 +13,10 @@ var SanctionCategory;
     SanctionCategory["FINANCING"] = "financing";
     /** Специальные метки */
     SanctionCategory["SPECIAL"] = "special";
-})(SanctionCategory || (exports.SanctionCategory = SanctionCategory = {}));
+})(SanctionCategory || (SanctionCategory = {}));
 /**
  * Factory для создания SanctionTopicInfo
  */
-function createSanctionTopicInfo(params) {
+export function createSanctionTopicInfo(params) {
     return { ...params };
 }

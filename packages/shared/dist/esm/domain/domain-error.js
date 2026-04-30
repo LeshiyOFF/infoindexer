@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Domain Error Base Class
  *
@@ -10,12 +9,10 @@
  * throw new InvalidCountryCodeError('Invalid code', { code: 'XX', normalized: 'xx' });
  * ```
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DomainError = void 0;
 /**
  * Базовый класс для всех domain ошибок
  */
-class DomainError extends Error {
+export class DomainError extends Error {
     context;
     constructor(message, context) {
         super(message);
@@ -30,4 +27,3 @@ class DomainError extends Error {
         return `${this.name}: ${this.message} | Context: ${JSON.stringify(this.context)}`;
     }
 }
-exports.DomainError = DomainError;
