@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "npm run dev --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "start": "npm run start --workspaces --if-present"
+    "start": "npm run start --workspaces --if-present",
+    "postinstall": "node scripts/clean-lockfile.js"
   },
   "devDependencies": {
     "@types/stream-json": "^1.7.8",
