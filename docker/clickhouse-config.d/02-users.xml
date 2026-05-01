@@ -1,0 +1,62 @@
+<!--
+  ClickHouse Users Configuration
+
+  Architecture: RBAC - separate users for each service type
+  Priority: 02 (loaded after 01-profiles.xml)
+  Version: 1.0
+
+  Users:
+  - infoindexer_worker: for background workers (egrul-sync, sync-worker, migration-worker)
+  - infoindexer_api: for admin-ui backend API calls
+  - infoindexer_monitoring: for healthcheck and monitoring
+
+  Security notes:
+  - Passwords stored as SHA256 hashes (plaintext passwords NOT in repository)
+  - Each user restricted to specific databases via allow_databases
+  - No access_management for non-admin users
+
+  Source: RBAC implementation for quota management
+-->
+<clickhouse>
+  <users>
+    <!-- Worker user for background jobs -->
+    <infoindexer_worker>
+      <password_sha256_hex>65685198d6ffc4dc7571c0caf68421b50d9d33411d33b676dc153f70cb00e032</password_sha256_hex>
+      <profile>workers</profile>
+      <quota>worker_quota</quota>
+      <networks>
+        <ip>::/0</ip>
+      </networks>
+      <allow_databases>
+        <database>infoindexer</database>
+        <database>system</database>
+      </allow_databases>
+    </infoindexer_worker>
+
+    <!-- API user for admin-ui backend -->
+    <infoindexer_api>
+      <password_sha256_hex>1d896a5a27802f1778d9d1ef7600f6726ac92ea8b04365217ad57feae0aa1497</password_sha256_hex>
+      <profile>api</profile>
+      <quota>api_quota</quota>
+      <networks>
+        <ip>::/0</ip>
+      </networks>
+      <allow_databases>
+        <database>infoindexer</database>
+      </allow_databases>
+    </infoindexer_api>
+
+    <!-- Monitoring user for healthcheck and metrics -->
+    <infoindexer_monitoring>
+      <password_sha256_hex>3b218391b8b97fe8f18d8ba090367dc493c7698fdd296b4a74fedd3e10f7f97e</password_sha256_hex>
+      <profile>readonly</profile>
+      <quota>monitoring_quota</quota>
+      <networks>
+        <ip>::/0</ip>
+      </networks>
+      <allow_databases>
+        <database>system</database>
+      </allow_databases>
+    </infoindexer_monitoring>
+  </users>
+</clickhouse>

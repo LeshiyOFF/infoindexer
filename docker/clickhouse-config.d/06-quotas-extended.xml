@@ -1,0 +1,49 @@
+<!--
+  ClickHouse Extended Quotas Configuration
+
+  Architecture: Per-service quotas for granular control
+  Priority: 06 (loaded after 05-quotas.xml)
+  Version: 1.0
+
+  Quotas:
+  - worker_quota: unlimited queries for background workers
+  - api_quota: 10000 queries/hour for admin-ui API
+  - monitoring_quota: unlimited queries for healthcheck/metrics
+
+  Note: queries=0 means unlimited in ClickHouse quota semantics
+
+  Source: RBAC implementation for quota management
+-->
+<clickhouse>
+  <quotas>
+    <!-- Worker quota - unlimited for background processing -->
+    <worker_quota>
+      <interval>
+        <duration>3600</duration>
+        <queries>0</queries>
+        <errors>1000</errors>
+      </interval>
+    </worker_quota>
+
+    <!-- API quota - 10000 queries/hour for admin-ui -->
+    <api_quota>
+      <interval>
+        <duration>3600</duration>
+        <queries>10000</queries>
+        <errors>500</errors>
+        <result_rows>10000000</result_rows>
+        <read_rows>1000000000</read_rows>
+        <execution_time>6000</execution_time>
+      </interval>
+    </api_quota>
+
+    <!-- Monitoring quota - unlimited for healthcheck/metrics -->
+    <monitoring_quota>
+      <interval>
+        <duration>3600</duration>
+        <queries>0</queries>
+        <errors>0</errors>
+      </interval>
+    </monitoring_quota>
+  </quotas>
+</clickhouse>

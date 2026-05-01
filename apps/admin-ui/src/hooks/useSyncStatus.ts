@@ -19,7 +19,7 @@ import type {
 } from '@/types/settings.types';
 
 const YEARS = Array.from({ length: 14 }, (_, i) => 2011 + i);
-const POLL_INTERVAL_MS = 3000;
+const POLL_INTERVAL_MS = 10000;
 
 /**
  * Хук для управления статусами синхронизации
@@ -106,14 +106,18 @@ export function useSyncStatus() {
 
   /**
    * Периодически обновляет данные
+   * Останавливает polling когда вкладка скрыта (Page Visibility API)
    */
   useEffect(() => {
     void fetchStats();
     void fetchStatuses();
 
     const interval = setInterval(() => {
-      void fetchStats();
-      void fetchStatuses();
+      // Polling только когда вкладка видима
+      if (document.visibilityState === 'visible') {
+        void fetchStats();
+        void fetchStatuses();
+      }
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(interval);

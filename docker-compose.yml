@@ -31,17 +31,19 @@ services:
       - ./docker/clickhouse-config.d/merge-tree-broken-parts.xml:/etc/clickhouse-server/config.d/06-broken-parts.xml:ro
       # ClickHouse users.d (user profiles, quotas) - loaded after config.d
       - ./docker/clickhouse-config.d/01-base-profiles.xml:/etc/clickhouse-server/users.d/01-profiles.xml:ro
+      - ./docker/clickhouse-config.d/02-users.xml:/etc/clickhouse-server/users.d/03-users.xml:ro
       - ./docker/clickhouse-config.d/05-quotas.xml:/etc/clickhouse-server/users.d/02-quotas.xml:ro
+      - ./docker/clickhouse-config.d/06-quotas-extended.xml:/etc/clickhouse-server/users.d/04-quotas-extended.xml:ro
     networks:
       - infoindexer_net
     ports:
       - "8123:8123"
       # Note: 8443 port excluded - SSL not configured
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
-      interval: 5s
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://infoindexer_monitoring:monitoring123@localhost:8123/ping"]
+      interval: 10s
       timeout: 3s
-      retries: 10
+      retries: 3
       start_period: 30s
 
   redis:

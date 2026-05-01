@@ -37,6 +37,15 @@
       <max_result_bytes>1000000000</max_result_bytes>
     </readonly>
 
+    <!-- API profile - readonly=2 allows SETTINGS changes, protects data -->
+    <api>
+      <readonly>2</readonly>
+      <max_memory_usage>2000000000</max_memory_usage>
+      <max_result_rows>100000</max_result_rows>
+      <max_result_bytes>1000000000</max_result_bytes>
+      <max_threads>2</max_threads>
+    </api>
+
     <!-- Worker profile for background jobs -->
     <workers>
       <readonly>0</readonly>

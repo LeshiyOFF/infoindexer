@@ -2,11 +2,38 @@
  * Retry Policy
  *
  * Политика повторных попыток с экспоненциальным backoff.
+ * Special handling for ClickHouse quota errors.
  */
 
 import { DEFAULT_RETRY_CONFIG, type RetryConfig } from './retry-config';
 import { BackoffCalculator } from './retry-backoff';
 import type { RetryResult, AttemptContext } from './retry-types';
+
+/**
+ * Проверяет является ли ошибка ClickHouse quota error
+ *
+ * ClickHouse error codes:
+ * - 201 = QUOTA_EXCEEDED
+ * - 202 = TOO_MANY_SIMULTANEOUS_QUERIES
+ *
+ * @remarks
+ * Также проверяет текст сообщения потому что разные драйверы
+ * по-разному прокидывают код ошибки.
+ */
+function isQuotaError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+
+  const msg = error.message.toLowerCase();
+  const code = (error as { code?: number | string }).code;
+
+  // Check by error code
+  if (code === 201 || code === '201' || code === 202 || code === '202') {
+    return true;
+  }
+
+  // Check by message text
+  return /quota.*exceed/i.test(msg) || /too many simultaneous queries/i.test(msg);
+}
 
 /**
  * Retry Policy с экспоненциальным backoff
@@ -22,18 +49,27 @@ export class RetryPolicy {
     fn: (context: AttemptContext) => Promise<T>
   ): Promise<RetryResult<T>> {
     let lastError: Error | null = null;
+    let attempt = 1;
 
-    for (let attempt = 1; attempt <= this.config.maxAttempts; attempt++) {
+    while (attempt <= this.config.maxAttempts) {
       try {
         const value = await fn(this.createContext(attempt, lastError ?? undefined));
         return { success: true, value, attempts: attempt };
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
 
+        // Quota error - special handling: wait 60s, don't count as attempt
+        if (isQuotaError(lastError)) {
+          await this.sleep(60_000);
+          // Не инкрементируем attempt, просто продолжаем
+          continue;
+        }
+
         if (this.shouldStopAttempt(attempt, lastError)) {
           break;
         }
 
+        attempt++;
         await this.sleep(this.calculateDelay(attempt));
       }
     }
