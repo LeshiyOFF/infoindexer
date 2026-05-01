@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { OrganizationService } from 'shared/client';
-import { CompanyMeta, ApiResponse, clickhouseClient, createRateLimitService } from 'shared';
+import { CompanyMeta, ApiResponse, createRateLimitService } from 'shared';
+import { clickhouseClient } from 'shared/clickhouse';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 import { createRateLimitWrapper } from '@/lib/middleware/rate-limit-wrapper';
 

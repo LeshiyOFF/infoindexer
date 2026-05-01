@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { redisPub, redisClient, getSubscriberCount } from 'shared';
+import { redisPub, redisClient, getSubscriberCount } from 'shared/redis';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 
 const SANCTIONS_SYNC_CHANNEL = 'sync:sanctions:start';

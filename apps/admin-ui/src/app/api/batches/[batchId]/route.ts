@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { redisClient } from 'shared';
+import { redisClient } from 'shared/redis';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 
 interface BatchInnItem {

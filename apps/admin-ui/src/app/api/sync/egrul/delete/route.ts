@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { redisClient, clickhouseClient } from 'shared';
+import { redisClient } from 'shared/redis';
+import { clickhouseClient } from 'shared/clickhouse';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 
 /**

@@ -18,7 +18,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import { clickhouseClient, createGdprDeletionService } from 'shared';
+import { clickhouseClient } from 'shared/clickhouse';
+import { createGdprDeletionService } from 'shared';
 import { GdprDeleteRequest, innValidator, type IGdprDeletion } from 'shared/client';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 

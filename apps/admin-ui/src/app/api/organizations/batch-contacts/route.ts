@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { redisPub, redisClient } from 'shared';
+import { redisPub, redisClient } from 'shared/redis';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 
 const BATCH_LIMIT = 50;

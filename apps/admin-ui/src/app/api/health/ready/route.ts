@@ -29,8 +29,8 @@
  *   }
  */
 
-import { createClickHouseConfig, createClickHouseClient } from 'shared';
-import { createClickHouseConfigValidator, createLogger, LogLevel } from 'shared';
+import { createClickHouseConfig, createClickHouseConfigValidator, createLogger, LogLevel } from 'shared';
+import { createClickHouseClient } from 'shared/clickhouse';
 
 /**
  * Health check result

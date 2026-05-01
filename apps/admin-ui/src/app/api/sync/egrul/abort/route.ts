@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { redisPub } from 'shared';
+import { redisPub } from 'shared/redis';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';

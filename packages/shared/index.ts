@@ -5,9 +5,9 @@
 // Core types
 export * from './interfaces';
 
-// Infrastructure clients
-export * from './redis';
-export * from './clickhouse';
+// Infrastructure clients (explicit named exports for tree-shaking compatibility)
+export { redisPub, redisSub, redisClient, getSubscriberCount } from './redis';
+export { clickhouseClient, createClickHouseClient } from './clickhouse';
 
 // Domain Layer
 export * from './domain';
@@ -106,7 +106,7 @@ export { CLICKHOUSE_DEFAULTS } from './infrastructure/clickhouse.constants';
 export type { IClickHouseConfig, ClickHouseSettings } from './infrastructure/ports/i-clickhouse-config.port';
 
 // ClickHouse Client (Iteration 10: Added factory function)
-export { clickhouseClient, createClickHouseClient } from './clickhouse';
+// Exported above with Infrastructure clients
 
 // Logger (Iteration 10: RBAC + Config Validation)
 export { createLogger, StructuredLoggerAdapter } from './infrastructure/structured-logger.adapter';

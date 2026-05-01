@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { redisClient } from 'shared';
+import { redisClient } from 'shared/redis';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 import { SyncStage, type SyncStatus } from 'shared/client';
 import type { SyncAllStatusData } from '../types';

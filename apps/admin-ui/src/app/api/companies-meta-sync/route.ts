@@ -42,7 +42,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const { clickhouseClient } = await import('shared');
+    const { clickhouseClient } = await import('shared/clickhouse');
 
     const result = await clickhouseClient.query({
       query: `

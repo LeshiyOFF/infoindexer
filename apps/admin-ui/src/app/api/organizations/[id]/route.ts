@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { OrganizationService } from 'shared/client';
-import { clickhouseClient } from 'shared';
+import { clickhouseClient } from 'shared/clickhouse';
 import { checkAuth, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';

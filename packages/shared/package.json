@@ -1,7 +1,7 @@
 {
   "name": "shared",
   "version": "1.0.0",
-  "sideEffects": ["redis.ts"],
+  "sideEffects": ["redis.js", "redis.ts", "clickhouse.js", "clickhouse.ts"],
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -20,6 +20,16 @@
       "import": "./dist/esm/infrastructure/migrations/index.js",
       "require": "./dist/cjs/infrastructure/migrations/index.js",
       "types": "./dist/types/infrastructure/migrations/index.d.ts"
+    },
+    "./redis": {
+      "types": "./dist/types/redis.d.ts",
+      "import": "./dist/esm/redis.js",
+      "require": "./dist/cjs/redis.js"
+    },
+    "./clickhouse": {
+      "types": "./dist/types/clickhouse.d.ts",
+      "import": "./dist/esm/clickhouse.js",
+      "require": "./dist/cjs/clickhouse.js"
     }
   },
   "scripts": {

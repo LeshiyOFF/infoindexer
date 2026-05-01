@@ -26,7 +26,7 @@ type PubSubNumSubResult = [string, string];
  * @param channel - имя канала
  * @returns количество подписчиков
  */
-export async function getSubscriberCount(channel: string): Promise<number> {
+export const getSubscriberCount = async (channel: string): Promise<number> => {
   const result = await redisClient.call('PUBSUB', 'NUMSUB', channel) as PubSubNumSubResult;
 
   if (result && Array.isArray(result) && result.length >= 2) {
@@ -34,4 +34,4 @@ export async function getSubscriberCount(channel: string): Promise<number> {
   }
 
   return 0;
-}
+};

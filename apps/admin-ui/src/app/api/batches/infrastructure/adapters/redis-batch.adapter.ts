@@ -11,7 +11,7 @@
  * - OCP: Легко заменить на другой адаптер
  */
 
-import { redisClient } from 'shared';
+import { redisClient } from 'shared/redis';
 import type {
   IBatchRepositoryPort,
   BatchMeta,
