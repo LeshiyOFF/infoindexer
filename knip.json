@@ -25,6 +25,7 @@
     "**/*.spec.ts",
     "**/*.test.ts",
     "**/__tests__/**",
+    "**/vitest.config.mjs",
     "packages/shared/**/*.js",
     "packages/shared/**/*.d.ts",
     "**/domain/index.ts",
