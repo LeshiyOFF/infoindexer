@@ -16,7 +16,7 @@ COPY packages/shared ./packages/shared
 COPY apps/migration-worker ./apps/migration-worker
 
 # Install dependencies and build
-RUN npm ci --ignore-scripts
+RUN npm ci --ignore-scripts --os=linux --cpu=x64
 RUN npm run build --workspace=packages/shared
 RUN npm run build --workspace=apps/migration-worker
 

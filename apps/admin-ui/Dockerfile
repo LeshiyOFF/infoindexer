@@ -10,7 +10,7 @@ COPY packages/shared/package*.json ./packages/shared/
 COPY apps/admin-ui/package*.json ./apps/admin-ui/
 
 # Install all workspace dependencies (prod + dev for build)
-RUN npm ci --legacy-peer-deps --ignore-scripts
+RUN npm ci --legacy-peer-deps --ignore-scripts --os=linux --cpu=x64
 
 # Stage 2: Build
 FROM node:20-alpine AS builder

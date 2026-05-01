@@ -7,7 +7,7 @@ COPY packages/shared packages/shared
 COPY apps/egrul-sync-worker apps/egrul-sync-worker
 COPY scripts scripts/
 
-RUN npm ci --ignore-scripts
+RUN npm ci --ignore-scripts --os=linux --cpu=x64
 RUN npm rebuild duckdb
 
 RUN npm run build --workspace=packages/shared
