@@ -16,7 +16,7 @@ COPY apps/contacts-parser/package.json apps/contacts-parser/
 # --ignore-scripts: postinstall пытается создать сертификаты до копирования кода
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --ignore-scripts --os=linux --cpu=x64
+    npm ci --ignore-scripts
 # Rebuild DuckDB native module (required after --ignore-scripts)
 RUN npm rebuild duckdb
 
