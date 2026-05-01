@@ -1,8 +1,7 @@
-import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-export default defineConfig({
+export default {
   plugins: [react()],
   test: {
     include: ['__tests__/**/*.test.ts', '**/*.test.tsx'],
@@ -17,4 +16,4 @@ export default defineConfig({
       'shared': path.resolve(__dirname, '../../packages/shared'),
     },
   },
-});
+};
