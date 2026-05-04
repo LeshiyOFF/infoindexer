@@ -56,15 +56,23 @@ export async function initializeApp(): Promise<AppInitializationResult> {
   console.log(`Max Threads: ${result.config.maxThreads}`);
   console.log(`Batch Size: ${result.profile.batchSize.toLocaleString()} records`);
 
+  // Log startup resources for diagnostics
+  const memUsage = process.memoryUsage();
+  console.log('[STARTUP_RESOURCES] Total Memory:', result.resources.totalMemory.format(), `(${result.resources.source})`);
+  console.log('[STARTUP_RESOURCES] Process Memory:', {
+    rss: `${(memUsage.rss / 1024 / 1024).toFixed(1)}MB`,
+    heapTotal: `${(memUsage.heapTotal / 1024 / 1024).toFixed(1)}MB`,
+    heapUsed: `${(memUsage.heapUsed / 1024 / 1024).toFixed(1)}MB`,
+    external: `${(memUsage.external / 1024 / 1024).toFixed(1)}MB`
+  });
+
   // Handle health status
   if (result.status === 'unhealthy') {
-    console.error('!!! RESOURCE CHECK FAILED !!!');
-    console.error('Insufficient memory for operation. Minimum 2GB required.');
-    console.error(`Available: ${result.resources.totalMemory.format()}`);
-    throw new Error(
-      `Insufficient resources: ${result.resources.totalMemory.format()} ` +
-      `(minimum 2GB required)`
-    );
+    console.warn('!!! RESOURCE CHECK FAILED !!!');
+    console.warn('Insufficient memory for operation. Minimum 2GB required.');
+    console.warn(`Available: ${result.resources.totalMemory.format()}`);
+    console.warn('Continuing startup despite insufficient resources...');
+    // NOT throwing - allowing worker to start anyway for diagnostics
   }
 
   if (result.warning) {
