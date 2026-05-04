@@ -24,9 +24,9 @@ export interface StagingCompanyRow {
   /** Company legal address */
   readonly address: string;
 
-  /** First appearance in source (from FTM first_seen) */
-  readonly first_seen?: Date;
+  /** First appearance in source (from FTM first_seen). Format: YYYY-MM-DD HH:mm:ss.SSS */
+  readonly first_seen?: string;
 
-  /** Last modification date (from FTM last_change) */
-  readonly last_changed?: Date;
+  /** Last modification date (from FTM last_change). Format: YYYY-MM-DD HH:mm:ss.SSS */
+  readonly last_changed?: string;
 }

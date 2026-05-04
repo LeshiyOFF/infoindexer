@@ -11,8 +11,8 @@ export interface EgrulCompanyRow {
   name: string;
   status: string;
   address: string;
-  /** Время первого появления в источнике (из FTM first_seen) */
-  first_seen?: Date;
-  /** Время последнего изменения (из FTM last_change) */
-  last_changed?: Date;
+  /** Время первого появления в источнике (из FTM first_seen). Формат: YYYY-MM-DD HH:mm:ss.SSS */
+  first_seen?: string;
+  /** Время последнего изменения (из FTM last_change). Формат: YYYY-MM-DD HH:mm:ss.SSS */
+  last_changed?: string;
 }

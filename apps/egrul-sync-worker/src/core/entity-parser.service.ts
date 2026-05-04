@@ -172,20 +172,26 @@ export class EntityParserService {
    *
    * @remarks
    * DRY compliance: единый метод для извлечения временных меток.
+   * Возвращает даты в формате ClickHouse DateTime64: YYYY-MM-DD HH:mm:ss.SSS
    */
   private extractTemporalMetadata(entity: FTMEntity): {
-    first_seen?: Date;
-    last_changed?: Date;
+    first_seen?: string;
+    last_changed?: string;
   } {
+    const formatForClickHouse = (date: Date): string =>
+      date.toISOString().replace('T', ' ').replace('Z', '');
+
     if (!entity.first_seen) {
       return {};
     }
 
     return {
-      first_seen: new Date(entity.first_seen),
-      last_changed: entity.last_change
-        ? new Date(entity.last_change)
-        : new Date(entity.first_seen)
+      first_seen: formatForClickHouse(new Date(entity.first_seen)),
+      last_changed: formatForClickHouse(
+        entity.last_change
+          ? new Date(entity.last_change)
+          : new Date(entity.first_seen)
+      )
     };
   }
 

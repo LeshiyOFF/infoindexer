@@ -100,7 +100,7 @@ export class ClickHouseStagingAdapter implements IStagingStoragePort {
    * Maps EgrulCompanyRow → StagingCompanyRow and inserts into staging.
    *
    * Mapping:
-   * - Date → DateTime64(3, 'UTC') conversion
+   * - Passthrough temporal fields (already in ClickHouse format)
    * - Optional fields handling (first_seen, last_changed)
    */
   async insertCompaniesForTransform(records: readonly EgrulCompanyRow[]): Promise<number> {
@@ -112,8 +112,8 @@ export class ClickHouseStagingAdapter implements IStagingStoragePort {
       name: r.name,
       status: r.status,
       address: r.address,
-      first_seen: r.first_seen ? new Date(r.first_seen) : undefined,
-      last_changed: r.last_changed ? new Date(r.last_changed) : undefined
+      first_seen: r.first_seen,
+      last_changed: r.last_changed
     }));
 
     return this.insertCompanies(stagingRows);
