@@ -1,3 +1,30 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════
+ * ARCHITECTURE NOTE: Identity Mapping Data Source
+ * ═══════════════════════════════════════════════════════════════════
+ * Identity mapping reads from egrul_staging_companies for all
+ * entity types. The legacy egrul_companies_raw table was
+ * deprecated in migration 015 (id column removed) and the
+ * system was switched to staging+transform pattern in
+ * migration 021.
+ *
+ * The Person method was migrated to staging during 021.
+ * Company methods migrated 2026-05-04 (this fix).
+ *
+ * The legacy egrul_companies_raw table should be dropped
+ * in a future migration.
+ *
+ * Architectural note: egrul_staging_companies contains all
+ * entities with INN (legal entities AND individuals such as
+ * ИП, нотариусы, адвокаты). All three identity-mapping methods
+ * (Person, CompanyEntity, CompanyInn) read from this single
+ * source. Records are differentiated downstream by id_type
+ * column ('person_entity' / 'company_entity' / 'company_inn'),
+ * not by source or entity_type. This means all three methods
+ * legitimately read the same source rows but create distinct
+ * mapping records for different resolution contexts.
+ * ═══════════════════════════════════════════════════════════════════
+ */
 import type { ClickHouseClient } from '@clickhouse/client';
 import type { IBatchProcessorPort } from './ports/i-batch-processor.port';
 import type { BatchConfig } from '../domain/value-objects/batch-config.vo';
@@ -201,7 +228,7 @@ export class IdentityMappingService {
           1.0 as confidence,
           now() as created_at,
           now() as updated_at
-        FROM egrul_companies_raw
+        FROM egrul_staging_companies
         ORDER BY id
         LIMIT {limit:UInt32}
         OFFSET {offset}
@@ -247,7 +274,7 @@ export class IdentityMappingService {
           1.0 as confidence,
           now() as created_at,
           now() as updated_at
-        FROM egrul_companies_raw
+        FROM egrul_staging_companies
         ORDER BY inn
         LIMIT {limit:UInt32}
         OFFSET {offset}
