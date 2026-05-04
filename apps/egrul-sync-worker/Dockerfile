@@ -25,5 +25,6 @@ COPY --from=builder /app/apps/egrul-sync-worker/dist ./apps/egrul-sync-worker/di
 COPY --from=builder /app/apps/egrul-sync-worker/src/core/infrastructure/migrations ./apps/egrul-sync-worker/dist/src/core/infrastructure/migrations
 
 ENV NODE_ENV=production
+ENV NODE_OPTIONS=--max-old-space-size=512
 
 CMD ["node", "apps/egrul-sync-worker/dist/src/index.js"]
