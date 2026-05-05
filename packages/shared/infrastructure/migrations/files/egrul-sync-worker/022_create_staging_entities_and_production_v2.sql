@@ -53,7 +53,7 @@ CREATE TABLE directors_production (
     director_name  Nullable(String),
     director_inn   Nullable(String),
     updated_at     DateTime64(3, 'UTC') DEFAULT now64(),
-    INDEX director_name_idx director_name TYPE tokenbf_v1(4096, 3, 0) GRANULARITY 1
+    INDEX director_name_idx director_name TYPE bloom_filter GRANULARITY 1
 ) ENGINE = ReplacingMergeTree(updated_at)
 ORDER BY (inn_company, director_id)
 SETTINGS index_granularity = 8192;
@@ -65,7 +65,7 @@ CREATE TABLE founders_production (
     founder_name   Nullable(String),
     founder_inn    Nullable(String),
     updated_at     DateTime64(3, 'UTC') DEFAULT now64(),
-    INDEX founder_name_idx founder_name TYPE tokenbf_v1(4096, 3, 0) GRANULARITY 1
+    INDEX founder_name_idx founder_name TYPE bloom_filter GRANULARITY 1
 ) ENGINE = ReplacingMergeTree(updated_at)
 ORDER BY (inn_company, founder_id)
 SETTINGS index_granularity = 8192;
