@@ -39,7 +39,12 @@ export class TransformAggregatorService {
         FROM egrul_staging_entities e
         WHERE e.schema IN ('Company', 'Organization', 'LegalEntity')
           AND e.inn IS NOT NULL
-        SETTINGS max_threads = 4
+        SETTINGS
+          max_memory_usage = 2147483648,
+          max_bytes_before_external_group_by = 1073741824,
+          max_bytes_before_external_sort = 1073741824,
+          join_algorithm = 'auto',
+          max_threads = 1
       `
     });
 
@@ -68,7 +73,12 @@ export class TransformAggregatorService {
         FROM egrul_staging_directorships d
         LEFT JOIN egrul_staging_entities e
           ON d.director_id = e.id
-        SETTINGS max_threads = 4
+        SETTINGS
+          max_memory_usage = 2147483648,
+          max_bytes_before_external_group_by = 1073741824,
+          max_bytes_before_external_sort = 1073741824,
+          join_algorithm = 'auto',
+          max_threads = 1
       `
     });
 
@@ -97,7 +107,12 @@ export class TransformAggregatorService {
         FROM egrul_staging_ownerships o
         LEFT JOIN egrul_staging_entities e
           ON o.owner_id = e.id
-        SETTINGS max_threads = 4
+        SETTINGS
+          max_memory_usage = 2147483648,
+          max_bytes_before_external_group_by = 1073741824,
+          max_bytes_before_external_sort = 1073741824,
+          join_algorithm = 'auto',
+          max_threads = 1
       `
     });
 
