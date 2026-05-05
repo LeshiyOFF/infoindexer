@@ -13,7 +13,7 @@ interface OSINTContacts {
 
 interface ContactsSectionProps {
   readonly organizationId: string;
-  readonly director: string;
+  readonly director: string | null;
   readonly onStatusChange?: (status: 'idle' | 'running' | 'completed' | 'error') => void;
   readonly onContactsChange?: (contacts: OSINTContacts | null) => void;
 }

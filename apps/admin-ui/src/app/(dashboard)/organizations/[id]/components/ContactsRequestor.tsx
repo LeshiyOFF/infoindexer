@@ -4,7 +4,7 @@ import { Loader2, DownloadCloud } from 'lucide-react';
 interface ContactsRequestorProps {
   readonly status: 'idle' | 'running' | 'completed' | 'error';
   readonly stage: string;
-  readonly director: string;
+  readonly director: string | null;
   readonly onRequest: () => void;
 }
 
@@ -27,7 +27,7 @@ export const ContactsRequestor = memo(function ContactsRequestor({ status, stage
           <Loader2 className="w-4 h-4 animate-spin text-gray-400 shrink-0 mt-0.5" />
           <div>
             <p className="text-xs font-bold text-white leading-tight">{stage || 'Инициализация...'}</p>
-            <p className="text-[9px] text-gray-500 mt-1 uppercase tracking-tighter">Поиск по ФИО «{director}». LinkedIn, VK — личные контакты</p>
+            <p className="text-[9px] text-gray-500 mt-1 uppercase tracking-tighter">Поиск по ФИО «{director ?? 'Не указан'}». LinkedIn, VK — личные контакты</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-1 opacity-60">

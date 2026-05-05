@@ -122,7 +122,7 @@ export default function OrganizationDashboardPage({ params }: { readonly params:
 
       <ContactsSection
         organizationId={params.id}
-        director={meta?.director || 'Нет данных'}
+        director={meta?.director ?? 'Нет данных'}
         onContactsChange={setContacts}
       />
 

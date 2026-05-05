@@ -1,7 +1,7 @@
 export interface CompanyMeta {
   inn: string;
   name: string;
-  director: string;
+  director: string | null;
   status: string;
   address: string;
   founders: string[];
