@@ -1,7 +1,6 @@
 export * from './adapters';
 export * from './clickhouse.repository';
 export * from './company-merger.service';
-export * from './denormalized-relations.repository';
 export * from './identity-mapping.service';
 export * from './identity-query-builder.service';
 export * from './enrichment-mapping.repository';

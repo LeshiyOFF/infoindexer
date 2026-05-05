@@ -10,8 +10,6 @@ import type { FTMHttpClient } from './core/infrastructure/http-client';
 import type { ClickHouseRepository } from './core/repositories/clickhouse.repository';
 import type { ClickHouseBatchAdapter } from './core/repositories/adapters/clickhouse-batch.adapter';
 import type { IdentityMappingService } from './core/repositories/identity-mapping.service';
-import type { DenormalizedRelationsRepository } from './core/repositories/denormalized-relations.repository';
-import type { DenormalizationService } from './core/services/denormalization.service';
 import type { EntityParserService } from './core/entity-parser.service';
 import type { SanctionParserService } from './core/parsers/sanction-parser.service';
 import type { ProgressReporter } from './core/infrastructure/progress-reporter';
@@ -22,7 +20,6 @@ import type { IGracefulShutdown } from './core/ports';
 import type { ICircuitBreakerManagerPort } from './core/ports';
 import type { CircuitBreakerManager } from './core/domain/circuit-breaker-manager.service';
 import type { HealthCheckService } from './core/domain/health-check.service';
-import type { TransformPollingWorker } from './core/workers/transform-polling.worker';
 
 export interface AppState {
   clickhouseClient: ClickHouseClient;
@@ -30,8 +27,6 @@ export interface AppState {
   repository: ClickHouseRepository;
   batchProcessor: ClickHouseBatchAdapter;
   identityMapping: IdentityMappingService;
-  denormalizedRelationsRepo: DenormalizedRelationsRepository;
-  denormalization: DenormalizationService;
   parser: EntityParserService;
   sanctionParser: SanctionParserService;
   progressReporter: ProgressReporter;
@@ -41,7 +36,6 @@ export interface AppState {
   gracefulShutdownService: IGracefulShutdown;
   circuitBreakerManager: CircuitBreakerManager;
   healthCheckService: HealthCheckService;
-  transformPollingWorker: TransformPollingWorker;
 }
 
 /**

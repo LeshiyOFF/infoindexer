@@ -18,21 +18,14 @@ import { ClickHouseIncrementalAdapter } from './core/repositories/adapters/click
 import { ClickHouseSyncStateAdapter } from './core/repositories/adapters/clickhouse-sync-state.adapter';
 import { BatchConfig } from './core/domain/value-objects/batch-config.vo';
 import { IdentityMappingService } from './core/repositories/identity-mapping.service';
-import { DenormalizedRelationsRepository } from './core/repositories/denormalized-relations.repository';
-import { DenormalizationService } from './core/services/denormalization.service';
 import { EntityParserService } from './core/entity-parser.service';
 import { SanctionParserService } from './core/parsers/sanction-parser.service';
 import { ProgressReporterFactory } from './core/infrastructure/progress-reporter';
 import { ExternalEnrichmentService } from './core/services/external-enrichment.service';
 import { StagingSyncService } from './core/services/staging-sync.service';
-import { StagingTransformService } from './core/services/staging-transform.service';
 import { EgrulTransformService } from './core/services/egrul-transform.service';
 import { ClickHouseStagingAdapter } from './core/infrastructure/adapters/clickhouse-staging.adapter';
-import { ClickHouseProductionAdapter } from './core/infrastructure/adapters/clickhouse-production.adapter';
-import { MemoryMonitorAdapter } from './core/infrastructure/adapters/memory-monitor-adapter.service';
-import { ClickHouseIdentityResolverAdapter } from './core/infrastructure/adapters/clickhouse-identity-resolver.adapter';
 import { MVInsertAdapter } from './core/infrastructure/adapters/mv-insert.adapter';
-import { StagingConfig } from './core/domain/value-objects/staging-config.vo';
 import { DaDataAdapter } from './core/adapters/dadata-adapter';
 import { FuzzyMatcherService } from './core/services/fuzzy-matcher.service';
 import { EnrichmentBatchProcessor } from './core/services/enrichment-batch-processor.service';
@@ -52,8 +45,6 @@ import { CircuitBreakerManager } from './core/domain/circuit-breaker-manager.ser
 import { HealthCheckService } from './core/domain/health-check.service';
 import { CircuitBreakerAdapter } from './core/infrastructure/adapters/circuit-breaker.adapter';
 import { CircuitBreakerConfigFactory } from './core/domain/factories/circuit-breaker-config.factory';
-import { TransformPollingWorker } from './core/workers/transform-polling.worker';
-import { WorkerConfig } from './core/domain/value-objects/worker-config.vo';
 import { ConsoleLoggerAdapter } from './core/infrastructure/adapters/console-logger.adapter';
 
 /**
@@ -134,37 +125,18 @@ export async function initializeServices(
     circuitBreakerManager
   );
 
-  const denormalizedRelationsRepo = new DenormalizedRelationsRepository(clickhouseClient);
-  const denormalization = new DenormalizationService(denormalizedRelationsRepo);
   const parser = new EntityParserService();
   const sanctionParser = new SanctionParserService();
   const progressReporter = ProgressReporterFactory.create(redisClient);
 
   // Staging + Transform layer
   const stagingStorage = new ClickHouseStagingAdapter(clickhouseClient);
-  const identityResolver = new ClickHouseIdentityResolverAdapter(clickhouseClient);
-  const oldTransformService = new StagingTransformService(identityResolver);
-  const productionStorage = new ClickHouseProductionAdapter(clickhouseClient);
-  const memoryMonitor = new MemoryMonitorAdapter(clickhouseClient);
-  const config = StagingConfig.forProduction();
   const transformService = new EgrulTransformService(
     clickhouseClient,
     stagingStorage,
-    productionStorage,
-    memoryMonitor,
-    config
+    enableMetrics ? metrics : undefined
   );
-  const stagingSync = new StagingSyncService(stagingStorage, transformService);
-
-  // Transform Polling Worker (Iteration 4)
-  const transformPollingWorker = new TransformPollingWorker(
-    transformService,
-    WorkerConfig.forProduction(),
-    enableMetrics ? metrics : undefined,
-    new ConsoleLoggerAdapter()
-  );
-  await transformPollingWorker.start();
-  console.log('Transform Polling Worker started (automatic transform enabled)');
+  const stagingSync = new StagingSyncService(stagingStorage);
 
   // External Enrichment (optional)
   let enrichment: import('./core/services/external-enrichment.service').ExternalEnrichmentService | undefined;
@@ -202,7 +174,7 @@ export async function initializeServices(
     syncStateStorage,
     progressReporter,
     identityMapping,
-    denormalization,
+    transformService,
     enrichment,
     resumeStorage
   );
@@ -225,7 +197,6 @@ export async function initializeServices(
       await stopRedisSubscriptions().catch((err: unknown) => console.error('[Shutdown] Redis subscriptions stop error:', err));
 
       await Promise.all([
-        transformPollingWorker.stop(60000).catch((err: unknown) => console.error('[Shutdown] TransformPollingWorker stop error:', err)),
         redisClient.quit().catch((err: unknown) => console.error('[Shutdown] Redis quit error:', err)),
         redisSub.quit().catch((err: unknown) => console.error('[Shutdown] RedisSub quit error:', err)),
         clickhouseClient.close().catch((err: unknown) => console.error('[Shutdown] ClickHouse close error:', err))
@@ -239,8 +210,6 @@ export async function initializeServices(
     repository,
     batchProcessor,
     identityMapping,
-    denormalizedRelationsRepo,
-    denormalization,
     parser,
     sanctionParser,
     progressReporter,
@@ -249,7 +218,6 @@ export async function initializeServices(
     sanctionsOnlyService,
     gracefulShutdownService,
     circuitBreakerManager,
-    healthCheckService,
-    transformPollingWorker
+    healthCheckService
   };
 }

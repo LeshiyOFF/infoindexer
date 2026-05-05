@@ -2,27 +2,21 @@
  * ═══════════════════════════════════════════════════════════════════
  * ARCHITECTURE NOTE: Identity Mapping Data Source
  * ═══════════════════════════════════════════════════════════════════
- * Identity mapping reads from egrul_staging_companies for all
- * entity types. The legacy egrul_companies_raw table was
- * deprecated in migration 015 (id column removed) and the
- * system was switched to staging+transform pattern in
- * migration 021.
+ * Identity mapping reads from egrul_staging_entities (migration 022)
+ * for all entity types. Records are filtered by 'schema' column:
  *
- * The Person method was migrated to staging during 021.
- * Company methods migrated 2026-05-04 (this fix).
+ *   - Person method:   schema = 'Person'
+ *   - Company methods: schema IN ('Company', 'Organization', 'LegalEntity')
  *
- * The legacy egrul_companies_raw table should be dropped
- * in a future migration.
+ * History:
+ *   - Migration 015 deprecated egrul_companies_raw (id column removed).
+ *   - Migration 021 introduced staging+transform pattern with
+ *     egrul_staging_companies.
+ *   - Migration 022 introduced unified egrul_staging_entities table
+ *     for all FTM entity types (including Person without INN).
  *
- * Architectural note: egrul_staging_companies contains all
- * entities with INN (legal entities AND individuals such as
- * ИП, нотариусы, адвокаты). All three identity-mapping methods
- * (Person, CompanyEntity, CompanyInn) read from this single
- * source. Records are differentiated downstream by id_type
- * column ('person_entity' / 'company_entity' / 'company_inn'),
- * not by source or entity_type. This means all three methods
- * legitimately read the same source rows but create distinct
- * mapping records for different resolution contexts.
+ * The legacy egrul_staging_companies table will be dropped in a
+ * future cleanup migration after this code is in production.
  * ═══════════════════════════════════════════════════════════════════
  */
 import type { ClickHouseClient } from '@clickhouse/client';
@@ -181,8 +175,9 @@ export class IdentityMappingService {
           1.0 as confidence,
           now() as created_at,
           now() as updated_at
-        FROM egrul_staging_companies
-        WHERE inn != ''
+        FROM egrul_staging_entities
+        WHERE schema = 'Person'
+          AND inn IS NOT NULL
         ORDER BY id
         LIMIT {limit:UInt32}
         OFFSET {offset}
@@ -228,7 +223,9 @@ export class IdentityMappingService {
           1.0 as confidence,
           now() as created_at,
           now() as updated_at
-        FROM egrul_staging_companies
+        FROM egrul_staging_entities
+        WHERE schema IN ('Company', 'Organization', 'LegalEntity')
+          AND inn IS NOT NULL
         ORDER BY id
         LIMIT {limit:UInt32}
         OFFSET {offset}
@@ -274,7 +271,9 @@ export class IdentityMappingService {
           1.0 as confidence,
           now() as created_at,
           now() as updated_at
-        FROM egrul_staging_companies
+        FROM egrul_staging_entities
+        WHERE schema IN ('Company', 'Organization', 'LegalEntity')
+          AND inn IS NOT NULL
         ORDER BY inn
         LIMIT {limit:UInt32}
         OFFSET {offset}
