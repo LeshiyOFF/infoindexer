@@ -11,9 +11,8 @@
  * v1.5: Uses staging instead of direct MV-triggered inserts.
  */
 import type {
-  EgrulCompanyRow,
-  StagingCompanyRow,
   StagingDirectorshipRow,
+  StagingEntityRow,
   StagingOwnershipRow
 } from '../domain/entities';
 import type { IStagingStoragePort } from '../domain/ports/i-staging-storage.port';
@@ -26,11 +25,10 @@ import type { IStagingStoragePort } from '../domain/ports/i-staging-storage.port
  * All data goes to staging for transform service processing.
  */
 export interface BatchState {
-  // Raw data from parser
-  companies: EgrulCompanyRow[];
+  // Unified base entities (Company, Organization, LegalEntity, Person)
+  entities: StagingEntityRow[];
 
-  // Staging: raw FTM entities (requires transformation)
-  stagingCompanies: StagingCompanyRow[];
+  // Staging: raw FTM relationships (requires transformation)
   directorships: StagingDirectorshipRow[];
   ownerships: StagingOwnershipRow[];
 }
@@ -43,8 +41,7 @@ export interface BatchState {
  */
 export function createEmptyBatchState(): BatchState {
   return {
-    companies: [],
-    stagingCompanies: [],
+    entities: [],
     directorships: [],
     ownerships: []
   };
@@ -72,16 +69,10 @@ export class BatchFlusher {
    * Transform Service (Iteration 2) will process staging → production.
    */
   async flushBatchesIfNeeded(state: BatchState, batchSize: number): Promise<void> {
-    // Companies → staging (via mapping from EgrulCompanyRow to StagingCompanyRow)
-    if (state.companies.length >= batchSize) {
-      await this.stagingStorage.insertCompaniesForTransform(state.companies);
-      state.companies = [];
-    }
-
-    // Staging companies → staging (already in correct format)
-    if (state.stagingCompanies.length >= batchSize) {
-      await this.stagingStorage.insertCompanies(state.stagingCompanies);
-      state.stagingCompanies = [];
+    // Entities → staging (unified table)
+    if (state.entities.length >= batchSize) {
+      await this.stagingStorage.insertEntities(state.entities);
+      state.entities = [];
     }
 
     // Directorships → staging
@@ -104,12 +95,8 @@ export class BatchFlusher {
    * Final flush after processing all records.
    */
   async flushAllBatches(state: BatchState): Promise<void> {
-    if (state.companies.length > 0) {
-      await this.stagingStorage.insertCompaniesForTransform(state.companies);
-    }
-
-    if (state.stagingCompanies.length > 0) {
-      await this.stagingStorage.insertCompanies(state.stagingCompanies);
+    if (state.entities.length > 0) {
+      await this.stagingStorage.insertEntities(state.entities);
     }
 
     if (state.directorships.length > 0) {

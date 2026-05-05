@@ -222,13 +222,13 @@ export async function initializeServices(
     },
     async () => {
       const { stopRedisSubscriptions } = await import('./redis-handlers');
-      await stopRedisSubscriptions().catch(err => console.error('[Shutdown] Redis subscriptions stop error:', err));
+      await stopRedisSubscriptions().catch((err: unknown) => console.error('[Shutdown] Redis subscriptions stop error:', err));
 
       await Promise.all([
-        transformPollingWorker.stop(60000).catch(err => console.error('[Shutdown] TransformPollingWorker stop error:', err)),
-        redisClient.quit().catch(err => console.error('[Shutdown] Redis quit error:', err)),
-        redisSub.quit().catch(err => console.error('[Shutdown] RedisSub quit error:', err)),
-        clickhouseClient.close().catch(err => console.error('[Shutdown] ClickHouse close error:', err))
+        transformPollingWorker.stop(60000).catch((err: unknown) => console.error('[Shutdown] TransformPollingWorker stop error:', err)),
+        redisClient.quit().catch((err: unknown) => console.error('[Shutdown] Redis quit error:', err)),
+        redisSub.quit().catch((err: unknown) => console.error('[Shutdown] RedisSub quit error:', err)),
+        clickhouseClient.close().catch((err: unknown) => console.error('[Shutdown] ClickHouse close error:', err))
       ]);
     }
   );

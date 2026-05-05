@@ -19,6 +19,7 @@ import type { IStagingStoragePort } from '../../domain/ports/i-staging-storage.p
 import type {
   StagingCompanyRow,
   StagingDirectorshipRow,
+  StagingEntityRow,
   StagingOwnershipRow
 } from '../../domain/entities';
 import { StagingStats } from '../../domain/dto/staging-stats.dto';
@@ -46,6 +47,20 @@ export class ClickHouseStagingAdapter implements IStagingStoragePort {
 
     await this.client.insert({
       table: 'egrul_staging_companies',
+      values: records,
+      format: 'JSONEachRow'
+    });
+
+    return records.length;
+  }
+
+  async insertEntities(records: readonly StagingEntityRow[]): Promise<number> {
+    if (records.length === 0) {
+      return 0;
+    }
+
+    await this.client.insert({
+      table: 'egrul_staging_entities',
       values: records,
       format: 'JSONEachRow'
     });

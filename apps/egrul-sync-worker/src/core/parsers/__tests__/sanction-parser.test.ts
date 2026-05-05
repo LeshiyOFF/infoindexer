@@ -4,7 +4,8 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { SanctionParserService } from '../sanction-parser.service';
-import { SanctionParseErrorCode } from '../sanction-parse-error';
+import { SanctionParseErrorCode, SanctionParseError } from '../sanction-parse-error';
+import type { SanctionRow } from 'shared/repositories';
 import type { SanctionSourceData } from '../sanction-parser.service';
 
 describe('SanctionParserService', () => {
@@ -28,7 +29,7 @@ describe('SanctionParserService', () => {
       ok: () => {
         throw new Error('Should not be ok');
       },
-      err: (error) => {
+      err: (error: SanctionParseError) => {
         expect(error.code).toBe(code);
       }
     });
@@ -40,7 +41,7 @@ describe('SanctionParserService', () => {
       expect(result.isOk()).toBe(true);
 
       result.match({
-        ok: (row) => {
+        ok: (row: SanctionRow) => {
           expect(row.id).toBe('123');
           expect(row.inn).toBe('7727771492');
           expect(row.program).toBe('EU Sanctions');

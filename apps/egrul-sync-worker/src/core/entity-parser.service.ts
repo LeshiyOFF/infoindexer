@@ -10,11 +10,11 @@
  */
 import type { FTMEntity } from './entities';
 import type {
-  EgrulCompanyRow,
-  StagingCompanyRow,
   StagingDirectorshipRow,
+  StagingEntityRow,
   StagingOwnershipRow
 } from './domain/entities';
+import type { FtmSchema } from './domain/entities/staging-entity.entity';
 import { parseDate, parseNullableDate } from './parsers/date.parser';
 
 /**
@@ -25,8 +25,7 @@ import { parseDate, parseNullableDate } from './parsers/date.parser';
  * Uses staging entities for relationships (requires transformation).
  */
 export type ParsedEntity =
-  | EgrulCompanyRow
-  | StagingCompanyRow
+  | StagingEntityRow
   | StagingDirectorshipRow
   | StagingOwnershipRow;
 
@@ -54,10 +53,8 @@ export class EntityParserService {
       case 'Company':
       case 'Organization':
       case 'LegalEntity':
-        return this.parseCompany(entity);
-
       case 'Person':
-        return this.parseStagingCompany(entity);
+        return this.parseBaseEntity(entity);
 
       case 'Directorship':
         return this.parseDirectorship(entity);
@@ -71,49 +68,55 @@ export class EntityParserService {
   }
 
   /**
-   * Парсит Company сущность в production format
+   * Парсит base entity в unified staging format
    *
    * @remarks
-   * Companies go directly to production (have INN).
-   * No staging transformation needed.
+   * Unified parser for all FTM base entities (Company, Organization, LegalEntity, Person).
+   * Returns StagingEntityRow without INN filter — all entities are preserved.
    */
-  private parseCompany(entity: FTMEntity): EgrulCompanyRow | null {
-    const inn = entity.properties.innCode?.[0] || '';
-    if (!inn) {
+  private parseBaseEntity(entity: FTMEntity): StagingEntityRow | null {
+    if (!entity.id || !entity.first_seen) {
+      return null;
+    }
+
+    const schema = this.normalizeSchema(entity.schema);
+    if (!schema) {
+      return null;
+    }
+
+    const temporal = this.extractTemporalMetadata(entity);
+    if (!temporal.first_seen || !temporal.last_changed) {
       return null;
     }
 
     return {
       id: entity.id,
-      inn,
-      name: entity.properties.name?.[0] || '',
-      status: entity.properties.status?.[0] || 'ACTIVE',
-      address: entity.properties.address?.[0] || '',
-      ...this.extractTemporalMetadata(entity)
+      schema,
+      inn: entity.properties.innCode?.[0],
+      name: entity.properties.name?.[0],
+      status: entity.properties.status?.[0],
+      address: entity.properties.address?.[0],
+      first_seen: temporal.first_seen,
+      last_changed: temporal.last_changed
     };
   }
 
   /**
-   * Парсит Person сущность в staging format
+   * Нормализует schema в FtmSchema
    *
    * @remarks
-   * Person entities are stored in staging for potential enrichment.
-   * Primary identifier is FTM entity ID.
+   * FTM schema discriminator validator for base entities.
    */
-  private parseStagingCompany(entity: FTMEntity): StagingCompanyRow | null {
-    const inn = entity.properties.innCode?.[0] || '';
-    if (!inn) {
-      return null;
+  private normalizeSchema(schema: string): FtmSchema | null {
+    switch (schema) {
+      case 'Company':
+      case 'Organization':
+      case 'LegalEntity':
+      case 'Person':
+        return schema;
+      default:
+        return null;
     }
-
-    return {
-      id: entity.id,
-      inn,
-      name: entity.properties.name?.[0] || '',
-      status: 'ACTIVE',
-      address: entity.properties.address?.[0] || '',
-      ...this.extractTemporalMetadata(entity)
-    };
   }
 
   /**
@@ -196,27 +199,24 @@ export class EntityParserService {
   }
 
   /**
-   * Проверяет является ли row Company (production format)
+   * Проверяет является ли row StagingEntity
+   *
+   * @remarks
+   * Type guard for unified staging entities.
    */
-  isCompanyRow(row: unknown): row is EgrulCompanyRow {
-    return (
-      typeof row === 'object' &&
-      row !== null &&
-      'inn' in row &&
-      'name' in row
-    );
-  }
+  isStagingEntityRow(row: unknown): row is StagingEntityRow {
+    if (typeof row !== 'object' || row === null) {
+      return false;
+    }
 
-  /**
-   * Проверяет является ли row StagingCompany
-   */
-  isStagingCompanyRow(row: unknown): row is StagingCompanyRow {
+    const r = row as Record<string, unknown>;
     return (
-      typeof row === 'object' &&
-      row !== null &&
-      'id' in row &&
-      'inn' in row &&
-      'first_seen' in row
+      'schema' in r &&
+      typeof r.schema === 'string' &&
+      (r.schema === 'Company' ||
+        r.schema === 'Organization' ||
+        r.schema === 'LegalEntity' ||
+        r.schema === 'Person')
     );
   }
 

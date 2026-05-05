@@ -15,7 +15,7 @@
  *
  * @see ClickHouseStagingAdapter for implementation
  */
-import type { StagingCompanyRow, StagingDirectorshipRow, StagingOwnershipRow } from '../entities';
+import type { StagingCompanyRow, StagingDirectorshipRow, StagingEntityRow, StagingOwnershipRow } from '../entities';
 import type { StagingStats } from '../dto/staging-stats.dto';
 import type { EgrulCompanyRow } from '../../entities/egrul-company.interface';
 
@@ -27,6 +27,18 @@ export interface IStagingStoragePort {
    * @returns Number of records inserted
    */
   insertCompanies(records: readonly StagingCompanyRow[]): Promise<number>;
+
+  /**
+   * Inserts unified entity records into staging table
+   *
+   * @remarks
+   * Uses table egrul_staging_entities from Migration 022.
+   * Supports all FTM base entity types (Company, Organization, LegalEntity, Person).
+   *
+   * @param records - Array of staging entity records
+   * @returns Number of records inserted
+   */
+  insertEntities(records: readonly StagingEntityRow[]): Promise<number>;
 
   /**
    * Inserts directorship records into staging table

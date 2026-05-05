@@ -26,9 +26,8 @@ import type { DenormalizationService } from './services/denormalization.service'
 import type { ExternalEnrichmentService } from './services/external-enrichment.service';
 import { DEFAULT_BATCH_SIZE } from '../config/constants';
 import type {
-  EgrulCompanyRow,
-  StagingCompanyRow,
   StagingDirectorshipRow,
+  StagingEntityRow,
   StagingOwnershipRow
 } from './domain/entities';
 import { BatchFlusher, createEmptyBatchState, type BatchState } from './services/batch-flusher.service';
@@ -145,10 +144,10 @@ export class EgrulSyncService {
 
           this.addToBatch(state, parsed);
 
-          if (this.parser.isCompanyRow(parsed)) {
+          if (this.parser.isStagingEntityRow(parsed)) {
             processedRecords++;
             if (processedRecords === 1) {
-              console.log('[DIAG] First company row:', JSON.stringify(parsed, null, 2));
+              console.log('[DIAG] First entity row:', JSON.stringify(parsed, null, 2));
             }
           }
 
@@ -189,20 +188,18 @@ export class EgrulSyncService {
    * Добавляет распаршенную сущность в соответствующий батч
    *
    * @remarks
-   * Staging Pattern: Direct insert to production, relationships to staging.
+   * Staging Pattern: base entities → unified table, relationships → separate tables.
    */
   private addToBatch(
     state: BatchState,
-    parsed: EgrulCompanyRow | StagingCompanyRow | StagingDirectorshipRow | StagingOwnershipRow
+    parsed: StagingEntityRow | StagingDirectorshipRow | StagingOwnershipRow
   ): void {
-    if (this.parser.isCompanyRow(parsed)) {
-      state.companies.push(parsed);
-    } else if (this.parser.isStagingCompanyRow(parsed)) {
-      state.stagingCompanies.push(parsed);
+    if (this.parser.isStagingEntityRow(parsed)) {
+      state.entities.push(parsed);
     } else if (this.parser.isStagingDirectorshipRow(parsed)) {
-      state.directorships.push(parsed as StagingDirectorshipRow);
+      state.directorships.push(parsed);
     } else if (this.parser.isStagingOwnershipRow(parsed)) {
-      state.ownerships.push(parsed as StagingOwnershipRow);
+      state.ownerships.push(parsed);
     }
   }
 

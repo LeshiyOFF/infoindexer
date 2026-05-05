@@ -12,6 +12,7 @@ import type { ISanctionRepository } from 'shared/repositories';
 import type { SanctionRow } from 'shared/repositories';
 import type { SanctionParserService } from '../parsers/sanction-parser.service';
 import type { FTMHttpClient } from '../infrastructure/http-client';
+import { SanctionParseError } from '../parsers/sanction-parse-error';
 import { BaseSyncStage } from './sync-stage';
 import type { StageContext, StageMetadata, StageOptions, StageResult } from './stage-context';
 import { stageSuccess, stageFailure } from './stage-context';
@@ -157,7 +158,7 @@ export class SanctionsSyncStage extends BaseSyncStage {
         if (!options.skipErrors) {
           result.match({
             ok: () => {},
-            err: (err) => { throw err; }
+            err: (err: SanctionParseError) => { throw err; }
           });
         }
       }
