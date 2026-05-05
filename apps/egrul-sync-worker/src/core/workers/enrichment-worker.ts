@@ -44,7 +44,7 @@ export class EnrichmentWorker {
    * Подписывается на Redis канал
    */
   private subscribe(): void {
-    redisSub.subscribe(this.redisChannel, (err: Error | null) => {
+    redisSub.subscribe(this.redisChannel, (err: unknown) => {
       if (err) {
         console.error(`Failed to subscribe to ${this.redisChannel}:`, err);
       } else {
