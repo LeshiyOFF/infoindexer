@@ -12,11 +12,15 @@
  *   - founders_production from staging_ownerships JOIN staging_entities
  *
  * Memory footprint: ~100MB worker heap (only ClickHouse client overhead).
- * Time complexity: 5-15 minutes for full transform of 47M+ staging rows.
+ * Time complexity: 1-2 min for companies (single query),
+ *   10-30 min for directors and founders (chunked into 10 sequential
+ *   sub-queries each, single-threaded for memory safety on 4GB container).
  */
 import type { ClickHouseClient, CommandResult } from '@clickhouse/client';
 
 export class TransformAggregatorService {
+  private static readonly CHUNK_COUNT = 10;
+
   constructor(private readonly client: ClickHouseClient) {}
 
   /**
@@ -60,29 +64,46 @@ export class TransformAggregatorService {
    * @returns Number of rows inserted
    */
   async aggregateDirectors(): Promise<number> {
-    const result = await this.client.command({
-      query: `
-        INSERT INTO directors_production
-          (inn_company, director_id, director_name, director_inn, updated_at)
-        SELECT
-          replaceRegexpOne(d.organization_id, '^ru-inn-', '') AS inn_company,
-          d.director_id,
-          e.name AS director_name,
-          e.inn AS director_inn,
-          now64() AS updated_at
-        FROM egrul_staging_directorships d
-        LEFT JOIN egrul_staging_entities e
-          ON d.director_id = e.id
-        SETTINGS
-          max_memory_usage = 2147483648,
-          max_bytes_before_external_group_by = 1073741824,
-          max_bytes_before_external_sort = 1073741824,
-          join_algorithm = 'auto',
-          max_threads = 1
-      `
-    });
+    let totalWritten = 0;
 
-    return this.extractWrittenRows(result);
+    for (let chunk = 0; chunk < TransformAggregatorService.CHUNK_COUNT; chunk++) {
+      try {
+        const result = await this.client.command({
+          query: `
+            INSERT INTO directors_production
+              (inn_company, director_id, director_name, director_inn, updated_at)
+            SELECT
+              replaceRegexpOne(d.organization_id, '^ru-inn-', '') AS inn_company,
+              d.director_id,
+              e.name AS director_name,
+              e.inn AS director_inn,
+              now64() AS updated_at
+            FROM egrul_staging_directorships d
+            LEFT JOIN (
+              SELECT id, name, inn
+              FROM egrul_staging_entities
+              WHERE cityHash64(id) % ${TransformAggregatorService.CHUNK_COUNT} = ${chunk}
+            ) e
+              ON d.director_id = e.id
+            WHERE cityHash64(d.director_id) % ${TransformAggregatorService.CHUNK_COUNT} = ${chunk}
+            SETTINGS
+              max_memory_usage = 2147483648,
+              max_bytes_before_external_group_by = 1073741824,
+              max_bytes_before_external_sort = 1073741824,
+              join_algorithm = 'auto',
+              max_threads = 1
+          `
+        });
+        totalWritten += this.extractWrittenRows(result);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `aggregateDirectors failed at chunk ${chunk + 1}/${TransformAggregatorService.CHUNK_COUNT}: ${message}`
+        );
+      }
+    }
+
+    return totalWritten;
   }
 
   /**
@@ -94,29 +115,46 @@ export class TransformAggregatorService {
    * @returns Number of rows inserted
    */
   async aggregateFounders(): Promise<number> {
-    const result = await this.client.command({
-      query: `
-        INSERT INTO founders_production
-          (inn_company, founder_id, founder_name, founder_inn, updated_at)
-        SELECT
-          replaceRegexpOne(o.asset_id, '^ru-inn-', '') AS inn_company,
-          o.owner_id AS founder_id,
-          e.name AS founder_name,
-          e.inn AS founder_inn,
-          now64() AS updated_at
-        FROM egrul_staging_ownerships o
-        LEFT JOIN egrul_staging_entities e
-          ON o.owner_id = e.id
-        SETTINGS
-          max_memory_usage = 2147483648,
-          max_bytes_before_external_group_by = 1073741824,
-          max_bytes_before_external_sort = 1073741824,
-          join_algorithm = 'auto',
-          max_threads = 1
-      `
-    });
+    let totalWritten = 0;
 
-    return this.extractWrittenRows(result);
+    for (let chunk = 0; chunk < TransformAggregatorService.CHUNK_COUNT; chunk++) {
+      try {
+        const result = await this.client.command({
+          query: `
+            INSERT INTO founders_production
+              (inn_company, founder_id, founder_name, founder_inn, updated_at)
+            SELECT
+              replaceRegexpOne(o.asset_id, '^ru-inn-', '') AS inn_company,
+              o.owner_id AS founder_id,
+              e.name AS founder_name,
+              e.inn AS founder_inn,
+              now64() AS updated_at
+            FROM egrul_staging_ownerships o
+            LEFT JOIN (
+              SELECT id, name, inn
+              FROM egrul_staging_entities
+              WHERE cityHash64(id) % ${TransformAggregatorService.CHUNK_COUNT} = ${chunk}
+            ) e
+              ON o.owner_id = e.id
+            WHERE cityHash64(o.owner_id) % ${TransformAggregatorService.CHUNK_COUNT} = ${chunk}
+            SETTINGS
+              max_memory_usage = 2147483648,
+              max_bytes_before_external_group_by = 1073741824,
+              max_bytes_before_external_sort = 1073741824,
+              join_algorithm = 'auto',
+              max_threads = 1
+          `
+        });
+        totalWritten += this.extractWrittenRows(result);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(
+          `aggregateFounders failed at chunk ${chunk + 1}/${TransformAggregatorService.CHUNK_COUNT}: ${message}`
+        );
+      }
+    }
+
+    return totalWritten;
   }
 
   /**
